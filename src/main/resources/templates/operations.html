@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+<head th:replace="common/header :: common-header" />
+<body roleId="page-top" data-spy="scroll"
+	data-target=".navbar-fixed-top">
+<head th:replace="common/header :: navbar" />
+<div class="container ">
+
+	<div class="row">
+		<div class="col-lg-12">
+			<h1 class="page-header">
+				Operations
+				<button type="button" class="btn btn-info" data-bs-toggle="modal"
+					id="helpButton" data-bs-target="#exampleModal">?</button>
+			</h1>
+		</div>
+
+
+		<div class="modal fade" id="exampleModal" tabindex="-1"
+			aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h3 class="modal-title" id="exampleModalLabel">Files - Help</h3>
+					</div>
+					<div class="modal-body">
+
+						<ul>
+							<li>Get users by the patron group then find users with loans
+								and updates.</li>
+						</ul>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row top-buffer container-border">
+
+		<form method="get"
+			th:action="@{/settings/changeLoanDueDatesForPatronGroup}">
+
+			<div class="row">
+
+				<div class="col-xs-8">Get users by the patron group then find
+					users with loans and updates. As an example by executing
+					"OKS-OSU_Faculty" and "2024-05-25"</div>
+				<div class="col-xs-2">
+					<button type="submit" id="executePatronGroupLoans" disabled
+						class="btn btn-success btn-md btn-block">Execute</button>
+				</div>
+				<div class="col-xs-1">
+					<input type="checkbox"
+						onchange="document.getElementById('executePatronGroupLoans').disabled = !this.checked;" />
+				</div>
+				<div class="col-xs-1">
+					<h5 th:text="${Change_LoanDueDates_ForPatronGroup}"></h5>
+				</div>
+
+			</div>
+		</form>
+	</div>
+	<div class="row top-buffer container-border">
+
+		<form method="get" th:action="@{/settings/circulationDataStore}">
+
+			<div class="row">
+
+				<div class="col-xs-8">Get "closed" circulation log details
+					from the API and stored in DB for reporting purposes.</div>
+				<div class="col-xs-2">
+					<button type="submit" id="executeCirculationLog" disabled
+						class="btn btn-success btn-md btn-block">Execute</button>
+				</div>
+
+				<div class="col-xs-1">
+					<input type="checkbox"
+						onchange="document.getElementById('executeCirculationLog').disabled = !this.checked;" />
+				</div>
+				<div class="col-xs-1">
+					<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
+				</div>
+
+			</div>
+		</form>
+
+	</div>
+
+	<div class="row top-buffer container-border">
+
+		<form method="get" th:action="@{/settings/executeinactiveusers}">
+
+			<div class="row">
+				<div class="col-xs-8">Executive inactive users</div>
+				<div class="col-xs-2">
+					<button type="submit" id="executeInactiveUsers" disabled
+						class="btn btn-success btn-md btn-block">Execute</button>
+				</div>
+				<div class="col-xs-1">
+					<input type="checkbox"
+						onchange="document.getElementById('executeInactiveUsers').disabled = !this.checked;" />
+				</div>
+				<div class="col-xs-1">
+					<h5 th:text="${Process_Execute_Inactive_Users}"></h5>
+				</div>
+
+			</div>
+		</form>
+
+	</div>
+
+	<!-- <div class="row top-buffer container-border">
+
+		<form method="get" th:action="@{/settings/executeinactiveusers}">
+
+			<div class="row">
+				<div class="col-xs-8">Executive inactive users</div>
+				<div class="col-xs-2">
+					<button type="submit" id="executeButton"
+						class="btn btn-success btn-md btn-block">execute</button>
+				</div>
+				<div class="col-xs-1">
+					<input type="checkbox"
+						onchange="document.getElementById('executeConvertUsers').disabled = !this.checked;" />
+				</div>
+				<div class="col-xs-1">
+					<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
+				</div>
+
+			</div>
+		</form>
+
+	</div> -->
+
+	<div class="row top-buffer container-border">
+
+		<form method="get" th:action="@{/settings/convertinactiveusers}">
+
+			<div class="row">
+				<div class="col-xs-8">Convert inactive users to active</div>
+				<div class="col-xs-2">
+					<button type="submit" id="executeConvertInactiveUsers" disabled
+						class="btn btn-success btn-md btn-block">Execute</button>
+				</div>
+				<div class="col-xs-1">
+					<input type="checkbox"
+						onchange="document.getElementById('executeConvertInactiveUsers').disabled = !this.checked;" />
+				</div>
+				<div class="col-xs-1">
+					<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
+				</div>
+
+			</div>
+		</form>
+
+	</div>
+
+
+
+	<div class="row top-buffer container-border">
+		<h4>Change patron group</h4>
+		<form method="get" th:action="@{/settings/changePatronGroup}">
+
+			<div class="row">
+				<div class="col-xs-8">Change patron group depending on the CSV
+					file uploaded.</div>
+
+				<div class="col-xs-2">
+					<button type="submit" id="executeChangePatrons"
+						name="executeChangePatrons" disabled
+						class="btn btn-success btn-md btn-block">execute</button>
+				</div>
+				<div class="col-xs-1">
+					<input type="checkbox"
+						onchange="document.getElementById('executeChangePatrons').disabled = !this.checked;" />
+				</div>
+				<div class="col-xs-1">
+					<h5 th:text="${Process_Change_Patron_Group}"></h5>
+				</div>
+
+			</div>
+		</form>
+
+	</div>
+
+	<div class="row top-buffer container-border">
+		<h4>Send Test Email.</h4>
+		<form method="get" th:action="@{/settings/sendTestEmail}">
+
+			<div class="row">
+				<div class="col-xs-8">Send test email to the developers who
+					using RedBud application.</div>
+
+				<div class="col-xs-2">
+					<button type="submit" id="executeSendEmail" name="executeSendEmail"
+						disabled class="btn btn-success btn-md btn-block">execute</button>
+				</div>
+				<div class="col-xs-1">
+					<input type="checkbox"
+						onchange="document.getElementById('executeSendEmail').disabled = !this.checked;" />
+				</div>
+				<div class="col-xs-1">
+					<h5 th:text="${Process_Send_Test_Email}"></h5>
+				</div>
+
+			</div>
+		</form>
+
+	</div>
+
+
+	<div class="row top-buffer"></div>
+</div>
+
+
+<div th:replace="common/footer :: footer"></div>
+<div th:replace="common/header :: body-bottom-scripts"></div>
+<script>
+	$(document).ready(function() {
+		$('#example').DataTable();
+	});
+</script>
+</body>
+</html>

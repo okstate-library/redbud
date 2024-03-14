@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+<head th:replace="common/header :: common-header" />
+<body roleId="page-top" data-spy="scroll"
+	data-target=".navbar-fixed-top">
+<head th:replace="common/header :: navbar" />
+<div class="container ">
+	<div class="row">
+		<div class="col-lg-12">
+			<h1 class="page-header">
+				Files
+				<button type="button" class="btn btn-info" data-bs-toggle="modal"
+					id="helpButton" data-bs-target="#exampleModal">?</button>
+			</h1>
+		</div>
+
+		<div class="modal fade" id="exampleModal" tabindex="-1"
+			aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h3 class="modal-title" id="exampleModalLabel">Files - Help</h3>
+					</div>
+					<div class="modal-body">
+
+						<ul>
+							<li>Displays all the files executed.</li>
+						</ul>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<!-- <div class="row">
+		<div class="table-responsive">
+
+			<label>Roles:
+        <input type="checkbox" name="campusesName"
+            th:each="campus,stat : ${campuses}"
+            th:text="${campuses[${stat.index}]}"
+        />
+    </label>
+		</div>
+	</div> -->
+
+	<div class="row">
+		<div class="table-responsive">
+			<table id="example"
+				class="table table-bordered table-hover table-striped">
+				<thead>
+					<tr>
+						<th>File Name</th>
+						<th>Path</th>
+						<th>Last Modified Date Time</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr data-th-each="csvfile : ${csvfiles}">
+						<td data-th-text="${csvfile.fileName}">...</td>
+						<td data-th-text="${csvfile.path}">...</td>
+						<td data-th-text="${csvfile.lastModifiedDate}">...</td>
+						<td><a th:href="${'/files/import?filename=' + csvfile.path}">Import</a></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
+	</div>
+
+
+	<div class="row top-buffer">
+
+		<form method="get" id="reportDownloadForm"
+			th:action="@{/settings/UserIntegration}">
+
+			<div class="row">
+
+				<div class="col-xs-4"></div>
+				<div class="col-xs-3">
+					<button type="submit" id="executeButton"
+						class="btn btn-success btn-md btn-block">Execute csv
+						files</button>
+				</div>
+
+			</div>
+		</form>
+	</div>
+
+	<div class="row top-buffer"></div>
+
+</div>
+
+
+<div th:replace="common/footer :: footer"></div>
+<div th:replace="common/header :: body-bottom-scripts"></div>
+<script>
+	$(document).ready(function() {
+		$('#example').DataTable();
+	});
+</script>
+</body>
+</html>

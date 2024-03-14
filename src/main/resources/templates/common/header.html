@@ -1,0 +1,227 @@
+
+<!DOCTYPE html>
+
+<html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+<head th:fragment="common-header">
+
+<link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16"
+	href="/images/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32"
+	href="/images/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="48x48"
+	href="/images/favicon-48x48.png">
+
+<meta charset="utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="" />
+<meta name="author" content="" />
+
+<title>Redbud - Oklahoma State University Library</title>
+<!-- Bootstrap Core CSS -->
+<link href="/css/bootstrap.min.css" rel="stylesheet" />
+
+<!-- Website Font style -->
+<link rel="stylesheet"
+	href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.1/css/font-awesome.min.css" />
+
+<!-- Google Fonts -->
+<link href='https://fonts.googleapis.com/css?family=Passion+One'
+	rel='stylesheet' type='text/css' />
+<link href='https://fonts.googleapis.com/css?family=Oxygen'
+	rel='stylesheet' type='text/css' />
+
+<!--bootstrap date-time picker-->
+<link href="/css/bootstrap-datetimepicker.min.css" rel="stylesheet" />
+
+<!--data table-->
+<link href="/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="/css/dataTables.bootstrap.min.css" rel="stylesheet" />
+<link href="/css/dataTables.dataTables.min.css" rel="stylesheet" />
+
+<!-- Custom CSS -->
+<!--<link href="css/scrolling-nav.css" rel="stylesheet" />-->
+<link href="/css/main.css" rel="stylesheet" />
+
+<!-- Latest compiled and minified CSS -->
+<link rel=“stylesheet”
+	href=“https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css”
+	type=“text/css”>
+
+<!-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+ integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+ -->
+<!-- FontAwesome CSS -->
+<link rel=“stylesheet”
+	href=“https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.13.1/css/all.min.css”>
+
+
+
+</head>
+<body>
+	<!-- Navigation -->
+
+	<div th:fragment="navbar">
+
+		<nav class="navbar navbar-inverse" role="navigation">
+			<div class="container">
+				<div class="navbar-header page-scroll">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+						data-target=".navbar-ex1-collapse">
+						<span class="sr-only">Toggle navigation</span> <span
+							class="icon-bar"></span> <span class="icon-bar"></span> <span
+							class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand page-scroll" th:href="@{/index}">Home</a>
+				</div>
+
+				<!-- Collect the nav links, forms, and other content for toggling -->
+				<div class="collapse  navbar-collapse navbar-ex1-collapse">
+
+					<ul class="nav navbar-nav">
+						<!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+						<li class="hidden"><a class="page-scroll" href="#page-top"></a>
+						</li>
+
+						<li th:if="${user != null &&  user.authorized.contains(1)}"
+							class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown" role="button" aria-haspopup="true"
+							aria-expanded="false">Settings <span class="caret"></span>
+						</a>
+							<ul class="dropdown-menu">
+								<li><a th:href="@{/settings/infrastructure}">Infrastructure</a></li>
+								<li><a th:href="@{/settings/groups}">Patron Groups</a></li>
+								<li><a th:href="@{/settings/files}">Files </a></li>
+								<li><a th:href="@{/settings/operations}">Operations</a></li>
+							</ul></li>
+
+					</ul>
+
+					<ul class="nav navbar-nav">
+						<!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+						<li class="hidden"><a class="page-scroll" href="#page-top"></a>
+						</li>
+
+						<li th:if="${user != null  &&  user.authorized.contains(2)}"
+							class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown" role="button" aria-haspopup="true"
+							aria-expanded="false">Reports <span class="caret"></span>
+						</a>
+							<ul class="dropdown-menu">
+								<li><a th:href="@{/reports/overduefines}">Overdue Fines</a></li>
+								<li><a th:href="@{/reports/overdueitems}">Overdue Items</a></li>
+								<li th:if="${user != null  &&  user.authorized.contains(3)}"><a
+									th:href="@{/reports/inventoryloans}">Inventory loans</a></li>
+
+
+								<li><a th:href="@{/reports/circulationlog}">Circulation
+										Log - Closed</a></li>
+
+							</ul></li>
+
+					</ul>
+
+					<ul th:if="${user != null}" class="nav navbar-nav navbar-right">
+						<li class="dropdown"><a href="#" class="dropdown-toggle"
+							data-toggle="dropdown" role="button" aria-haspopup="true"
+							aria-expanded="false"><i class="fa fa-user-cog"></i> <span
+								th:text="${user.roleId} == 1 ? ${user.firstName} + ' (Admin)' : ${user.firstName} + ' (User)' "></span>
+								<span class="caret" /></span></a>
+							<ul class="dropdown-menu">
+								<li><a tabindex="-1" th:href="@{/profile}">Profile</a></li>
+								<li th:if="${user != null && user.authorized.contains(1)}"
+									class="divider"></li>
+								<li th:if="${user != null && user.authorized.contains(1)}"
+									class="dropdown-submenu"><a href="#">Settings</a>
+									<ul class="dropdown-menu">
+										<li><a th:href="@{/users}">Users</a></li>
+										<li><a th:href="@{/sessions}">Sessions</a></li>
+									</ul></li>
+								<li th:if="${user != null && user.authorized.contains(1)}"
+									class="divider"></li>
+								<li><a th:href="@{/logout}">Logout</a></li>
+							</ul></li>
+					</ul>
+
+					<ul th:if="${user == null}" class="nav navbar-nav navbar-right">
+						<li><a th:href="@{/login}">Login</a></li>
+					</ul>
+
+
+				</div>
+				<!-- /.navbar-collapse -->
+			</div>
+			<!-- /.container -->
+		</nav>
+
+		<div id="message-box" class="p-3 mb-2 bg-success text-white show"
+			th:if="${errorMessage}">
+			<h1 class="text-center" th:text="${errorMessage}"></h1>
+		</div>
+
+		<!-- loading wheel-->
+		<div id="loader" class="lds-dual-ring hidden overlay"></div>
+	</div>
+
+
+
+	<div th:fragment="body-bottom-scripts">
+		<!-- jQuery -->
+		<script src="/js/jquery.js"></script>
+
+		<!-- Bootstrap Core JavaScript -->
+		<script src="/js/bootstrap.min.js"></script>
+
+		<script src="/js/jquery.easing.min.js"></script>
+
+		<!--bootstrap date-time picker-->
+		<script src="/js/bootstrap-datetimepicker.min.js"></script>
+
+		<script src="/js/main.datatable.js"></script>
+
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+
+
+		<!--bootbox-->
+		<script src="/js/bootbox.min.js"></script>
+
+		<!--data table-->
+		<script src="/js/jquery.dataTables.min.js"></script>
+		<script src="/js/dataTables.bootstrap.min.js"></script>
+
+		<script
+			src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+		<script
+			src="https://cdn.datatables.net/buttons/1.6.5/js/dataTables.buttons.min.js"></script>
+		<script
+			src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.flash.min.js"></script>
+
+		<script
+			src="https://cdn.datatables.net/select/1.3.3/js/dataTables.select.min.js"></script>
+
+		<!-- <script
+			src="https://cdn.datatables.net/searchpanes/1.2.1/js/dataTables.searchPanes.min.js"></script>
+
+		<script
+			src="https://cdn.datatables.net/select/1.3.2/js/dataTables.select.min.js"></script> -->
+
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+		<script
+			src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+		<script
+			src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.html5.min.js"></script>
+		<script
+			src="https://cdn.datatables.net/buttons/1.6.5/js/buttons.print.min.js"></script>
+
+		<!--main js-->
+		<script src="/js/main.js"></script>
+
+	</div>
+
+</body>
+</html>

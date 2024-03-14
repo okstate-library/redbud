@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+<head th:replace="common/header :: common-header" />
+<body roleId="page-top" data-spy="scroll"
+	data-target=".navbar-fixed-top">
+<head th:replace="common/header :: navbar" />
+<div class="container ">
+
+	<div class="row">
+		<div class="col-lg-12">
+			<h1 class="page-header">
+				System Settings
+				<!-- <button type="button" class="btn btn-info" data-bs-toggle="modal"
+					id="helpButton" data-bs-target="#exampleModal">?</button> -->
+			</h1>
+		</div>
+
+
+		<div class="modal fade" id="exampleModal" tabindex="-1"
+			aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h3 class="modal-title" id="exampleModalLabel">Files - Help</h3>
+					</div>
+					<div class="modal-body">
+
+						<ul>
+							<li>Get users by the patron group then find users with loans
+								and updates.</li>
+						</ul>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row top-buffer container-border">
+
+		<div class="row">
+
+			<div class="col-xs-8">
+				<h4>Number of Sessions currently using</h4>
+			</div>
+			<div class="col-xs-2">
+				<h4 th:text="${number_of_sessions}"></h4>
+			</div>
+			<div class="col-xs-1"></div>
+			<div class="col-xs-1"></div>
+
+		</div>
+
+	</div>
+
+
+	<div class="row top-buffer"></div>
+</div>
+
+
+<div th:replace="common/footer :: footer"></div>
+<div th:replace="common/header :: body-bottom-scripts"></div>
+<script>
+</script>
+</body>
+</html>

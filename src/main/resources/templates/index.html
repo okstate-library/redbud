@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+<head th:replace="common/header :: common-header" />
+<script type="text/javascript"
+	src="https://code.jquery.com/jquery-1.10.1.min.js"></script>
+
+<body roleId="page-top" data-spy="scroll"
+	data-target=".navbar-fixed-top">
+<head th:replace="common/header :: navbar" />
+
+<div class="container main">
+	<h2 style="text-align: center;">Redbud : FOLIO Help Tool</h2>
+	<hr>
+
+	<div class="row" style="padding-top: 50px; padding-bottom: 100px">
+
+
+		<h5 th:text="${config}"></h5>
+		
+		<img alt="" src="/images/index.webp">
+	</div>
+
+</div>
+
+<div th:replace="common/footer :: footer"></div>
+
+<div th:replace="common/header :: body-bottom-scripts"></div>
+
+
+</body>
+</html>

@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+<head th:replace="common/header :: common-header" />
+<body roleId="page-top" data-spy="scroll"
+	data-target=".navbar-fixed-top">
+<head th:replace="common/header :: navbar" />
+<div class="container">
+
+
+
+	<div class="row">
+		<div class="col-lg-12">
+			<h1 class="page-header">My Profile</h1>
+		</div>
+	</div>
+
+	<div class="row ">
+		<div class="col-md-6">
+			<h2 class="title">My Profile</h2>
+			<hr />
+			<form method="post" th:action="@{/profile}">
+				<input type="hidden" name="id" th:value="${user.userId}" />
+
+				<div class="form-group">
+					<label for="firstName">First Name</label>
+					<div class="cols-sm-10">
+						<div class="input-group">
+							<span class="input-group-addon"><i class="fa fa-user fa"
+								aria-hidden="true"></i></span> <input type="text" class="form-control"
+								th:value="${user.firstName}" id="firstName" name="firstName"
+								roleId="firstname" placeholder="Enter your first name"
+								required="required" />
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="lastName" class="cols-sm-2 control-label">Last
+						Name</label>
+					<div class="cols-sm-10">
+						<div class="input-group">
+							<span class="input-group-addon"><i class="fa fa-user fa"
+								aria-hidden="true"></i></span> <input type="text" class="form-control"
+								th:value="${user.lastName}" id="lastName" name="lastName"
+								roleId="lastName" placeholder="Enter your last name"
+								required="required" />
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="email" class="cols-sm-2 control-label">Your
+						Email</label><span class="bg-danger pull-right" th:if="${emailExists}">Email
+						already exists</span>
+					<div class="cols-sm-10">
+						<div class="input-group">
+							<span class="input-group-addon"><i
+								class="fa fa-envelope fa" aria-hidden="true"></i></span> <input
+								type="text" class="form-control" th:value="${user.email}"
+								id="email" name="email" roleId="email"
+								placeholder="Enter your Email" required="required" />
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="username" class="cols-sm-2 control-label">Username</label><span
+						class="bg-danger pull-right" th:if="${usernameExists}">Username
+						already exists</span>
+					<div class="cols-sm-10">
+						<div class="input-group">
+							<span class="input-group-addon"><i class="fa fa-users fa"
+								aria-hidden="true"></i></span> <input type="text" class="form-control"
+								th:value="${user.username}" id="username" name="username"
+								roleId="username" readonly="true"
+								placeholder="Enter your Username" required="required" />
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group ">
+					<button type="submit" class="btn btn-primary btn-block ">Change
+						Settings</button>
+				</div>
+
+			</form>
+		</div>
+		<div class="col-md-6">
+			<h2 class="title">Reset Password</h2>
+			<hr />
+
+
+			<form method="post" th:action="@{/resetpasswordbyuser}">
+
+				<input type="hidden" name="username" id="username_resetpassword"
+					th:value="${user.username}" />
+
+				<div class="form-group">
+					<label for="username" class="cols-sm-2 control-label">Password</label>
+					<div class="cols-sm-10">
+						<div class="input-group">
+							<span class="input-group-addon"><i class="fa fa-users fa"
+								aria-hidden="true"></i></span> <input type="password"
+								class="form-control" id="password" name="password"
+								roleId="username" placeholder="Enter your Password"
+								required="required" />
+						</div>
+						<div class="checkbox">
+							<label> <input id="showPassword" type="checkbox" />Show
+								Password
+							</label>
+						</div>
+					</div>
+				</div>
+				<div class="form-group ">
+					<button type="submit" class="btn btn-primary btn-block ">Change
+						Password</button>
+				</div>
+
+			</form>
+
+
+		</div>
+	</div>
+
+</div>
+<div th:replace="common/footer :: footer"></div>
+
+<div th:replace="common/header :: body-bottom-scripts"></div>
+
+</body>
+</html>

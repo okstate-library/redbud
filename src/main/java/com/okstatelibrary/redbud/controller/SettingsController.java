@@ -1,0 +1,444 @@
+package com.okstatelibrary.redbud.controller;
+
+import com.okstatelibrary.redbud.entity.CsvFileModel;
+import com.okstatelibrary.redbud.entity.FileModel;
+import com.okstatelibrary.redbud.entity.User;
+import com.okstatelibrary.redbud.operations.ChangePatronGroupProcess;
+import com.okstatelibrary.redbud.operations.CirculationLogProcess;
+import com.okstatelibrary.redbud.operations.InactiveUserProcess;
+import com.okstatelibrary.redbud.operations.InfrastructureSetupProcess;
+import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
+import com.okstatelibrary.redbud.operations.LoanDueDateUpdateProcess;
+import com.okstatelibrary.redbud.operations.MainProcess;
+import com.okstatelibrary.redbud.service.CampusService;
+import com.okstatelibrary.redbud.service.CirculationLogService;
+import com.okstatelibrary.redbud.service.GroupService;
+import com.okstatelibrary.redbud.service.InstitutionService;
+import com.okstatelibrary.redbud.service.LibraryService;
+import com.okstatelibrary.redbud.service.LocationService;
+import com.okstatelibrary.redbud.service.UserService;
+import com.okstatelibrary.redbud.util.AppSystemProperties;
+import com.okstatelibrary.redbud.util.CacheMap;
+import com.okstatelibrary.redbud.util.Constants;
+import com.okstatelibrary.redbud.util.DateUtil;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.client.RestClientException;
+
+import java.io.File;
+import java.io.IOException;
+import java.security.Principal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+@Controller
+@RequestMapping("/settings")
+public class SettingsController {
+
+	private static final Logger LOG = LoggerFactory.getLogger(SettingsController.class);
+
+	@Autowired
+	private UserService userService;
+
+	@Autowired
+	private GroupService groupService;
+
+	@Autowired
+	private InstitutionService institutionService;
+
+	@Autowired
+	private CampusService campusService;
+
+	@Autowired
+	private LibraryService libraryService;
+
+	@Autowired
+	private LocationService locationService;
+
+	@Autowired
+	private CirculationLogService circulationLogService;
+
+	@GetMapping("/groups")
+	public String getPatronGroups(Principal principal, Model model) throws IOException {
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		model.addAttribute("groups", groupService.getGroupList());
+
+		return "groups";
+	}
+
+	@GetMapping("/setUpInfra")
+	public String setUpInfra(Principal principal, Model model) throws IOException {
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		InfrastructureSetupProcess infra = new InfrastructureSetupProcess();
+
+		infra.manipulate(institutionService, campusService, libraryService, locationService);
+
+		return "infrastructure";
+	}
+
+	@GetMapping("/infrastructure")
+	public String getInfrastructure(Principal principal, Model model) throws IOException {
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		InfrastructureSetupProcess infra = new InfrastructureSetupProcess();
+
+		model.addAttribute("locations",
+				infra.getLocations(institutionService, campusService, libraryService, locationService));
+
+		return "infrastructure";
+	}
+
+	@GetMapping("/operations")
+	public String operations(Principal principal, Model model) throws IOException {
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		model.addAttribute(CacheMap.process_Execute_Inactive_Users,
+				CacheMap.get(CacheMap.process_Execute_Inactive_Users));
+		
+		model.addAttribute(CacheMap.process_Send_Test_Email,
+				CacheMap.get(CacheMap.process_Send_Test_Email));
+
+		return "operations";
+	}
+
+	@GetMapping("files")
+	public String getFiles(Principal principal, Model model) throws IOException {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		List<FileModel> files = new ArrayList<>();
+
+		for (CsvFileModel csvFileModel : Constants.csvFileModels) {
+
+			File folder = new File(AppSystemProperties.CvsFilePath + csvFileModel.csvFilePath);
+
+			File[] listOfFiles = folder.listFiles();
+
+			for (File file : listOfFiles) {
+
+				if (file.getName().contains(".csv")) {
+
+					System.out.println(file.getName());
+
+					FileModel newFile = new FileModel();
+
+					newFile.setPath(file.getAbsolutePath());
+
+					Date yourDate = new Date(file.lastModified());
+
+					DateFormat formatter = new SimpleDateFormat("dd-MM-yyyy hh-MM-ss");
+
+					newFile.setFileName(file.getName());
+					newFile.setLastModifiedDate(formatter.format(yourDate));
+
+					newFile.setPath(newFile.getPath());
+
+					files.add(newFile);
+
+				}
+
+			}
+
+		}
+
+		model.addAttribute("csvfiles", files);
+
+		// model.addAttribute("campuses", Constants.csvFileModels.get(0));
+
+		return "files";
+	}
+
+	@GetMapping("/UserIntegration")
+	public String executeUserIntegration(Principal principal, Model model) {
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set("ProcessRunning", CacheMap.running);
+
+					UserIntegrationProcess oprocess = new UserIntegrationProcess();
+
+					oprocess.printScreen(
+							"Beeper starts for user integration process manually " + DateUtil.getTodayDateAndTime(),
+							Constants.ErrorLevel.INFO);
+
+					oprocess.copyFiles();
+
+					oprocess.manipulate(groupService);
+
+					CacheMap.set("ProcessRunning", CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "redirect:/settings/files";
+	}
+
+	@GetMapping("/executeinactiveusers")
+	public String executeInactiveUsers(Principal principal, Model model) {
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_Execute_Inactive_Users, CacheMap.running);
+
+					InactiveUserProcess oprocess = new InactiveUserProcess();
+
+					oprocess.printScreen("Beeper starts for inactive user process" + DateUtil.getTodayDateAndTime(),
+							Constants.ErrorLevel.INFO);
+
+					oprocess.copyFiles();
+
+					oprocess.manipulate(groupService);
+
+					CacheMap.set(CacheMap.process_Execute_Inactive_Users, CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "redirect:/settings/files";
+	}
+
+	@GetMapping("/convertinactiveusers")
+	public String convertInactiveUsers(Principal principal, Model model) {
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					// CacheMap.set("ProcessRunning", "true");
+
+					InactiveUserProcess oprocess = new InactiveUserProcess();
+
+					oprocess.printScreen("Beeper starts for convert inactive users " + DateUtil.getTodayDateAndTime(),
+							Constants.ErrorLevel.INFO);
+
+					// oprocess.copyFiles(systemProperties.getSftpfilepath(),
+					// systemProperties.getCvsfilepath());
+
+					oprocess.manipulate(groupService);
+
+					CacheMap.set("ProcessRunning", "stop");
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "redirect:/settings/files";
+	}
+
+	@GetMapping("/changepatrongroup")
+	public String changepatrongroup(Principal principal, Model model) throws IOException {
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		ChangePatronGroupProcess oprocess = new ChangePatronGroupProcess();
+
+		oprocess.changeUserPatronGroup();
+
+		return "operations";
+	}
+
+	@GetMapping("/changeLoanDueDatesForPatronGroup")
+	public String changeLoanDueDatesForPatronGroup(Principal principal, Model model) throws IOException {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set("Change_LoanDueDates_ForPatronGroup", CacheMap.running);
+
+					LoanDueDateUpdateProcess oprocess = new LoanDueDateUpdateProcess();
+
+					try {
+
+						oprocess.manipulate("e8f2c425-2daa-44fd-a813-7bfd2329e8cc");// 02609d66-4b2a-47f6-988a-cf7b5b2932c7
+																					// 81092b0c-c13f-496f-bc16-8c648773c38e");
+																					// e8f2c425-2daa-44fd-a813-7bfd2329e8cc
+																					// - faculty-ret
+					} catch (RestClientException | IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					CacheMap.set("Change_LoanDueDates_ForPatronGroup", CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+	@GetMapping("/circulationDataStore")
+	public String circulationDataStore(Principal principal, Model model) throws IOException {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set("Process_CirculationLog_API_Data_Extraction", CacheMap.running);
+
+					CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
+
+					oprocess.printScreen(
+							"Beeper starts for initiall Circulation data extraction. " + DateUtil.getTodayDateAndTime(),
+							Constants.ErrorLevel.INFO);
+
+					try {
+
+						oprocess.manipulate();
+
+					} catch (RestClientException | IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					oprocess.printScreen(
+							"Beeper ends for initiall Circulation data extraction. " + DateUtil.getTodayDateAndTime(),
+							Constants.ErrorLevel.INFO);
+
+					CacheMap.set("Process_CirculationLog_API_Data_Extraction", CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+	@GetMapping("/sendTestEmail")
+	public String sendTestEmail(Principal principal, Model model) throws IOException {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_Send_Test_Email, CacheMap.running);
+
+					MainProcess oprocess = new MainProcess();
+
+					oprocess.printScreen("Beeper send email " + DateUtil.getTodayDateAndTime(),
+							Constants.ErrorLevel.INFO);
+
+					try {
+
+						oprocess.sendEmaill("Test Title", "Test Message");
+
+					} catch (RestClientException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					oprocess.printScreen("Beeper ends for send email " + DateUtil.getTodayDateAndTime(),
+							Constants.ErrorLevel.INFO);
+
+					CacheMap.set(CacheMap.process_Send_Test_Email, CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+}

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+<head th:replace="common/header :: common-header" />
+<body roleId="page-top" data-spy="scroll"
+	data-target=".navbar-fixed-top">
+<head th:replace="common/header :: navbar" />
+
+
+<div class="container">
+
+	<div class="row">
+		<div class="col-lg-12">
+			<h1 class="page-header">
+				Graphical statistics
+				<button type="button" class="btn btn-info" data-bs-toggle="modal"
+					id="helpButton" data-bs-target="#exampleModal">?</button>
+			</h1>
+		</div>
+
+		<div class="modal fade" id="exampleModal" tabindex="-1"
+			aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h3 class="modal-title" id="exampleModalLabel">Graphical
+							statistics- Help</h3>
+					</div>
+					<div class="modal-body">
+
+						<ul>
+							<li>This report shows a graphical view of in, out, and
+								initial count of patrons at any hour.</li>
+						</ul>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row text-center">
+
+		<div class="col-xs-4 form-inline">
+			<form class="form-group" method="post"
+				th:action="@{/headcount/bargraph}">
+				<div class="form-group">
+					<label for="dateString"> Date:</label>
+				</div>
+				<div class="form-group">
+					<div class="input-group date" id='datetimepicker4'>
+						<input type='text' class="form-control" th:value="${dateString}"
+							name="dateString" id="dateString" required="required" /> <span
+							class="input-group-addon"><i class="fa fa-calendar"
+							aria-hidden="true"></i></span>
+
+					</div>
+				</div>
+				<button type="submit" class="btn btn-primary">Submit</button>
+			</form>
+		</div>
+
+	</div>
+
+	<div class="row top-buffer">
+
+		<div id="container" style="height: 600px; margin: 0 auto"></div>
+	</div>
+
+	<div th:replace="common/footer :: footer"></div>
+</div>
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script src="https://code.highcharts.com/highcharts.js"></script>
+<script src="https://code.highcharts.com/modules/exporting.js"></script>
+
+<script th:inline="javascript">
+	$(function() {
+
+		Highcharts.chart('container', {
+
+			chart : {
+				type : 'column'
+			},
+
+			title : {
+				text : ''
+			},
+
+			xAxis : {
+				categories : 
+					        [[${categories}]],
+			},
+
+			yAxis : {
+				allowDecimals : false,
+				min : 0,
+				title : {
+					text : 'Number of patrons'
+				}
+			},
+			
+			colors : [ '#f0ad4e','#0069d9', '#5cb85c', '#c82333' ],
+			
+			tooltip : {
+				formatter : function() {
+					return '<b>' + this.x + '</b><br/>' + this.series.name
+							+ ': ' + this.y;
+				}
+			},
+			    
+			plotOptions : {
+				column: {
+		            stacking: 'normal'
+		        },
+				 series: {
+			            borderWidth: 2,
+			            dataLabels: {
+			                enabled: true,
+			                formatter:function() {
+			                    if(this.y != 0) {
+			                      return this.y;
+			                    }
+			                  }
+			                
+			            }
+			        }
+			},
+
+			      series : [
+			    	  
+						{
+							name : 'Reset',
+							data : [[${resetCountMap.values()}]],
+							stack : 'total'
+						},{
+							name : 'Initial count',
+							data: [[${liveCountMap.values()}]],
+							stack : 'total'
+						},
+					{
+						name : 'Enter',
+						data: [[${enterMap.values()}]],
+						stack : 'enter'
+					},
+					{
+						name : 'Exit',
+						data : [[${exitMap.values()}]],
+						stack : 'exit'
+					} ]
+		});
+
+	});
+</script>
+
+<div th:replace="common/header :: body-bottom-scripts" />
+<script>
+	$(document).ready(function() {
+		$('#example').DataTable();
+	});
+</script>
+</body>
+</html>

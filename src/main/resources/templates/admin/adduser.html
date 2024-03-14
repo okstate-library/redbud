@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
+<head th:replace="common/header :: common-header" />
+<body roleId="page-top" data-spy="scroll"
+	data-target=".navbar-fixed-top">
+<head th:replace="common/header :: navbar" />
+<div class="container">
+	<div class="row">
+		<div class="col-lg-12">
+			<h1 class="page-header">
+				Add User
+				<button type="button" class="btn btn-info" data-bs-toggle="modal"
+					id="helpButton" data-bs-target="#exampleModal">?</button>
+			</h1>
+		</div>
+		<div class="modal fade" id="exampleModal" tabindex="-1"
+			aria-labelledby="exampleModalLabel" aria-hidden="true">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h3 class="modal-title" id="exampleModalLabel">Add user -
+							Help</h3>
+					</div>
+					<div class="modal-body">
+
+						<ul>
+							<li>If you would like to add a new user to the system, use
+								this page to proceed.</li>
+						</ul>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="row">
+		<div class="col-md-6">
+			<form class="form-horizontal" method="post"
+				th:action="@{/user/adduser}">
+
+				<div class="form-group">
+					<label for="firstName" class="cols-sm-2 control-label">First
+						Name</label>
+					<div class="cols-sm-10">
+						<div class="input-group">
+							<span class="input-group-addon"><i class="fa fa-user fa"
+								aria-hidden="true"></i></span> <input type="text" class="form-control"
+								id="firstName" name="firstName" roleId="firstname"
+								placeholder="Enter your first name" required="required" />
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="lastName" class="cols-sm-2 control-label">Last
+						Name</label>
+					<div class="cols-sm-10">
+						<div class="input-group">
+							<span class="input-group-addon"><i class="fa fa-user fa"
+								aria-hidden="true"></i></span> <input type="text" class="form-control"
+								id="lastName" name="lastName" roleId="lastName"
+								placeholder="Enter your last name" required="required" />
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="email" class="cols-sm-2 control-label">Your
+						Email</label><span class="bg-danger pull-right" th:if="${emailExists}">Email
+						already exists</span>
+					<div class="cols-sm-10">
+						<div class="input-group">
+							<span class="input-group-addon"><i
+								class="fa fa-envelope fa" aria-hidden="true"></i></span> <input
+								type="text" class="form-control" id="email" name="email"
+								roleId="email" placeholder="Enter your Email"
+								required="required" />
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="username" class="cols-sm-2 control-label">Username</label><span
+						class="bg-danger pull-right" th:if="${usernameExists}">Username
+						already exists</span>
+					<div class="cols-sm-10">
+						<div class="input-group">
+							<span class="input-group-addon"><i class="fa fa-users fa"
+								aria-hidden="true"></i></span> <input type="text" class="form-control"
+								id="username" name="username" roleId="username"
+								placeholder="Enter your Username" required="required" />
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group">
+					<label for="password" class="cols-sm-2 control-label">Password</label>
+					<div class="cols-sm-10">
+						<div class="input-group">
+							<span class="input-group-addon"><i
+								class="fa fa-lock fa-lg" aria-hidden="true"></i></span> <input
+								type="password" class="form-control" id="password"
+								name="password" roleId="password"
+								placeholder="Enter your Password" required="required" />
+						</div>
+						<div class="checkbox">
+							<label> <input id="showPassword" type="checkbox" />Show
+								Password
+							</label>
+						</div>
+					</div>
+				</div>
+
+				<div class="form-group ">
+					<button type="submit"
+						class="btn btn-primary btn-lg btn-block login-button">Sign
+						up!</button>
+				</div>
+
+				<hr />
+
+			</form>
+		</div>
+	</div>
+	<div th:replace="common/footer :: footer"></div>
+</div>
+
+
+<div th:replace="common/header :: body-bottom-scripts"></div>
+
+</body>
+</html>
