@@ -23,7 +23,7 @@ public class PatronGroup {
 	private String institutionCode;
 
 	private String institutionGroup;
-
+	
 	@Column(nullable = false, columnDefinition = "BIT", length = 1)
 	public byte isFolioOnly;
 	

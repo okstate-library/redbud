@@ -10,9 +10,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.okstatelibrary.redbud.entity.User;
 import com.okstatelibrary.redbud.service.UserService;
+import com.okstatelibrary.redbud.util.AppSystemProperties;
 
 @Controller
 public class HomeController {
+
+	@Autowired
+	private AppSystemProperties appSystems;
 
 	@Autowired
 	private UserService userService;
@@ -34,7 +38,7 @@ public class HomeController {
 
 		if (principal != null) {
 			user = userService.findByUsername(principal.getName());
-			
+
 			model.addAttribute("user", user);
 		}
 

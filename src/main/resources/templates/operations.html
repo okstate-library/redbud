@@ -209,6 +209,30 @@
 
 	</div>
 
+	<div class="row top-buffer container-border">
+		<h4>OCLC operation.</h4>
+		<form method="get" th:action="@{/settings/oclcMetaDataProcess}">
+
+			<div class="row">
+				<div class="col-xs-8">Send test email to the developers who
+					using RedBud application.</div>
+
+				<div class="col-xs-2">
+					<button type="submit" id="executeoclcMetaDataProcess" name="executeoclcMetaDataProcess"
+						disabled class="btn btn-success btn-md btn-block">execute</button>
+				</div>
+				<div class="col-xs-1">
+					<input type="checkbox"
+						onchange="document.getElementById('executeoclcMetaDataProcess').disabled = !this.checked;" />
+				</div>
+				<div class="col-xs-1">
+					<h5 th:text="${Process_Send_Test_Email}"></h5>
+				</div>
+
+			</div>
+		</form>
+
+	</div>
 
 	<div class="row top-buffer"></div>
 </div>

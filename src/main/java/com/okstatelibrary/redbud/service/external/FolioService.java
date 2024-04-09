@@ -29,13 +29,7 @@ import com.okstatelibrary.redbud.util.AppSystemProperties;
 import com.okstatelibrary.redbud.util.Constants;
 
 @Service
-public class FolioService {
-
-	private String folioURL = AppSystemProperties.FolioURL;
-
-	private String tenant = AppSystemProperties.FolioTenant;
-
-	private String token = AppSystemProperties.FolioToken;
+public class FolioService extends FolioServiceToken {
 
 	/**
 	 * Logger
@@ -50,9 +44,9 @@ public class FolioService {
 
 		HttpHeaders headers = new HttpHeaders();
 
-		headers.add("x-okapi-tenant", tenant);
+		headers.add("x-okapi-tenant", AppSystemProperties.FolioTenant);
 
-		headers.add("x-okapi-token", token);
+		headers.add("x-okapi-token", this.getToken());
 
 		return headers;
 
@@ -70,12 +64,8 @@ public class FolioService {
 		HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
 
 		try {
-//
-//			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-//			String json = ow.writeValueAsString(payload);
-//			System.out.println(json);
 
-			String url = folioURL + "circulation/loans/" + payload.id;
+			String url = AppSystemProperties.FolioURL + "circulation/loans/" + payload.id;
 
 			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
 
@@ -86,14 +76,8 @@ public class FolioService {
 			System.out.println("updateLoan - " + payload.id);
 
 			e.getMessage();
+
 			e.printStackTrace();
-
-			// printScreen("Folio Update User - " + payload.externalSystemId,
-			// Constants.ErrorLevel.ERROR);
-
-			// printScreen(e.getMessage(), Constants.ErrorLevel.ERROR);
-//
-			// System.out.println(e.getMessage());
 
 			return false;
 		}
@@ -104,7 +88,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "circulation/loans?query=(id==\"" + loadId + "\")";
+			String url = AppSystemProperties.FolioURL + "circulation/loans?query=(id==\"" + loadId + "\")";
 
 			ResponseEntity<LoanRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					LoanRoot.class);
@@ -126,7 +110,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL
+			String url = AppSystemProperties.FolioURL
 					+ "circulation/requests?query=(requestType==\"Hold\" and  status ==\"Open - Not yet filled\")&limit=100";
 
 			ResponseEntity<RequestRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
@@ -149,7 +133,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "circulation/loans?limit=1000&query=(userId==\"" + userId
+			String url = AppSystemProperties.FolioURL + "circulation/loans?limit=1000&query=(userId==\"" + userId
 					+ "\" and status.name = \"open\")";
 
 			ResponseEntity<LoanRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
@@ -171,7 +155,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "loan-storage/loans?query=(status.name==\"closed\" )&limit=1";
+			String url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"closed\" )&limit=1";
 
 			ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					CirculationRoot.class);
@@ -193,7 +177,7 @@ public class FolioService {
 
 		try {
 
-//			String url = folioURL + "loan-storage/loans?query=(status.name==\"closed\" and returnDate>=" + startDateTime
+//			String url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"closed\" and returnDate>=" + startDateTime
 //					+ " AND returnDate<=" + endDateTime + ")&limit=1";
 //
 //			ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
@@ -203,7 +187,8 @@ public class FolioService {
 //
 //			return response.getBody().totalRecords;
 
-			String url = folioURL + "loan-storage/loans?query=(status.name==\"closed\" and returnDate>=" + startDateTime
+			String url = AppSystemProperties.FolioURL
+					+ "loan-storage/loans?query=(status.name==\"closed\" and returnDate>=" + startDateTime
 					+ " AND returnDate<=" + endDateTime + ")&limit=1";
 
 			System.out.println("url- " + url);
@@ -219,7 +204,8 @@ public class FolioService {
 
 				int offset = iterations * apiRecordlimit;
 
-				url = folioURL + "loan-storage/loans?query=(status.name==\"closed\" and returnDate>=" + startDateTime
+				url = AppSystemProperties.FolioURL
+						+ "loan-storage/loans?query=(status.name==\"closed\" and returnDate>=" + startDateTime
 						+ " AND returnDate<=" + endDateTime + ")&limit=" + apiRecordlimit + "& offset=" + offset;
 
 				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
@@ -244,7 +230,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "loan-storage/loans?limit=1&query=(status.name==closed)";
+			String url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=1&query=(status.name==closed)";
 
 			ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					CirculationRoot.class);
@@ -259,8 +245,8 @@ public class FolioService {
 
 				int offset = iterations * apiRecordlimit;
 
-				url = folioURL + "loan-storage/loans?limit=" + apiRecordlimit + "&query=(status.name==closed)&offset="
-						+ offset;
+				url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=" + apiRecordlimit
+						+ "&query=(status.name==closed)&offset=" + offset;
 
 				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
 
@@ -282,7 +268,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "inventory/items/" + itemId;
+			String url = AppSystemProperties.FolioURL + "inventory/items/" + itemId;
 
 			ResponseEntity<Item> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Item.class);
 
@@ -303,7 +289,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "users?query=(externalSystemId==" + externalSystemId + ")";
+			String url = AppSystemProperties.FolioURL + "users?query=(externalSystemId==" + externalSystemId + ")";
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
@@ -348,7 +334,7 @@ public class FolioService {
 //			String json = ow.writeValueAsString(payload);
 //			System.out.println(json);
 
-			String url = folioURL + "users/" + payload.id;
+			String url = AppSystemProperties.FolioURL + "users/" + payload.id;
 
 			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
 
@@ -383,7 +369,7 @@ public class FolioService {
 			String jsonString = gson.toJson(payload);
 			System.out.println("jsonString" + jsonString);
 
-			String url = folioURL + "users";
+			String url = AppSystemProperties.FolioURL + "users";
 
 			this.restTemplate.exchange(url, HttpMethod.POST, request, FolioUser.class);
 
@@ -428,7 +414,7 @@ public class FolioService {
 //			try {
 //
 //
-//				String url = folioURL + "users?query=patronGroup=" + patronGroup + "  and active==\"true\"&limit=1";
+//				String url = AppSystemProperties.FolioURL + "users?query=patronGroup=" + patronGroup + "  and active==\"true\"&limit=1";
 //
 //				ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 //
@@ -440,7 +426,7 @@ public class FolioService {
 //
 //					int offset = iterations * apiRecordlimit;
 //
-//					url = folioURL + "users?query=patronGroup=" + patronGroup + "  and active==\"true\"&limit="
+//					url = AppSystemProperties.FolioURL + "users?query=patronGroup=" + patronGroup + "  and active==\"true\"&limit="
 //							+ apiRecordlimit + "&offset=" + offset;
 //
 //					response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
@@ -468,7 +454,7 @@ public class FolioService {
 //
 //			try {
 //
-//				String url = folioURL + "users?query=patronGroup=" + patronGroup + "  and active==\"false\"&limit=1";
+//				String url = AppSystemProperties.FolioURL + "users?query=patronGroup=" + patronGroup + "  and active==\"false\"&limit=1";
 //
 //				ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 //
@@ -480,7 +466,7 @@ public class FolioService {
 //
 //					int offset = iterations * apiRecordlimit;
 //
-//					url = folioURL + "users?query=patronGroup=" + patronGroup + "  and active==\"false\"&limit="
+//					url = AppSystemProperties.FolioURL + "users?query=patronGroup=" + patronGroup + "  and active==\"false\"&limit="
 //							+ apiRecordlimit + "&offset=" + offset;
 //
 //					response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
@@ -508,7 +494,8 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "users?query=patronGroup=" + patronGroup + "  and active==\"true\"&limit=100000";
+			String url = AppSystemProperties.FolioURL + "users?query=patronGroup=" + patronGroup
+					+ "  and active==\"true\"&limit=100000";
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
@@ -530,7 +517,8 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "users?query=patronGroup=" + patronGroup + "  and active==\"false\"&limit=100000";
+			String url = AppSystemProperties.FolioURL + "users?query=patronGroup=" + patronGroup
+					+ "  and active==\"false\"&limit=100000";
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
@@ -552,10 +540,15 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "accounts?query=(status.name==\"open\" and feeFineOwner=\"" + feeFineOwner
-					+ "  \")";
+//			System.out.println("getOverDueAccounts");
+//
+//			FolioServiceToken token = new FolioServiceToken();
+//			token.getToken();
 
-			System.out.println("url -  " + url);
+			String url = AppSystemProperties.FolioURL + "accounts?query=(status.name==\"open\" and feeFineOwner=\""
+					+ feeFineOwner + "  \")";
+
+			// System.out.println("url - " + url);
 
 			ResponseEntity<Accounts> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					Accounts.class);
@@ -570,7 +563,7 @@ public class FolioService {
 
 				int offset = iterations * apiRecordlimit;
 
-				url = folioURL + "accounts?limit=" + apiRecordlimit
+				url = AppSystemProperties.FolioURL + "accounts?limit=" + apiRecordlimit
 						+ "&query=(status.name==\"open\" and feeFineOwner=\"" + feeFineOwner + "  \")&offset" + offset;
 
 				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Accounts.class);
@@ -593,7 +586,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "automated-patron-blocks/" + userId;
+			String url = AppSystemProperties.FolioURL + "automated-patron-blocks/" + userId;
 
 			// System.out.println(url);
 
@@ -614,7 +607,7 @@ public class FolioService {
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 		try {
 
-			String url = folioURL + "circulation/loans?limit=1000&query=(status.name==\"open\" and "
+			String url = "https://okapi-okstate.folio.ebsco.com/circulation/loans?limit=1000&query=(status.name==\"open\" and "
 					+ "itemEffectiveLocationIdAtCheckOut==\"" + location + "\")";
 
 			ResponseEntity<Inventory> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
@@ -638,7 +631,8 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "users?query=(active==true and patronGroup==" + userGroupId + ")&limit=10000";
+			String url = AppSystemProperties.FolioURL + "users?query=(active==true and patronGroup==" + userGroupId
+					+ ")&limit=10000";
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
@@ -660,7 +654,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "users?active=true&patronGroup=" + userGroupId;
+			String url = AppSystemProperties.FolioURL + "users?active=true&patronGroup=" + userGroupId;
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
@@ -679,7 +673,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "/users?query=barcode==" + barCode;
+			String url = AppSystemProperties.FolioURL + "/users?query=barcode==" + barCode;
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
@@ -698,7 +692,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "users?query=id==" + userId;
+			String url = AppSystemProperties.FolioURL + "users?query=id==" + userId;
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
@@ -717,7 +711,8 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "users?query=(active=false and externalSystemId==  " + userId + ")";
+			String url = AppSystemProperties.FolioURL + "users?query=(active=false and externalSystemId==  " + userId
+					+ ")";
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
@@ -756,7 +751,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "location-units/institutions?limit=20";
+			String url = AppSystemProperties.FolioURL + "location-units/institutions?limit=20";
 
 			ResponseEntity<InstitutionRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					InstitutionRoot.class);
@@ -775,7 +770,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "location-units/campuses?limit=20";
+			String url = AppSystemProperties.FolioURL + "location-units/campuses?limit=20";
 
 			ResponseEntity<CampusRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					CampusRoot.class);
@@ -794,7 +789,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "location-units/libraries?limit=500";
+			String url = AppSystemProperties.FolioURL + "location-units/libraries?limit=500";
 
 			ResponseEntity<LibraryRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					LibraryRoot.class);
@@ -813,7 +808,7 @@ public class FolioService {
 
 		try {
 
-			String url = folioURL + "locations?limit=500";
+			String url = AppSystemProperties.FolioURL + "locations?limit=500";
 
 			ResponseEntity<LocationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					LocationRoot.class);

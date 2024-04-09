@@ -95,16 +95,27 @@ public class AppSystemProperties {
 		FolioURL = folioURL;
 	}
 
-	@Value("${folioToken}")
-	private String folioToken;
+	@Value("${folioUsername}")
+	private String folioUsername;
 
-	public static String FolioToken;
+	public static String FolioUsername;
 
 	/**
-	 * @param folioToken the folioToken to set
+	 * @param folioURL the folioURL to set
 	 */
-	public void setFolioToken(String folioToken) {
-		FolioToken = folioToken;
+	public void setFolioUsername(String folioUsername) {
+		FolioUsername = folioUsername;
 	}
+	
+	@Value("${folioPassword}")
+	private String folioPassword;
 
+	public static String FolioPassword;
+
+	/**
+	 * @param folioURL the folioURL to set
+	 */
+	public void setFolioPassword(String folioPassword) {
+		FolioPassword = folioPassword;
+	}
 }

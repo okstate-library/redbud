@@ -12,17 +12,16 @@ import java.time.format.DateTimeFormatter;
 public class DateUtil {
 
 	private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	
 	private static SimpleDateFormat longDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-
-//	
-//	DateUtil.getTodayDate()
-//	
-//	LocalDate now = LocalDate.now();
-//	LocalDate thirty = now.minusDays( 30 );
 
 	public static String get9MonthsAfterTodayDate() {
 
 		return LocalDate.now().plusMonths(9).toString();
+	}
+
+	public static long getCurretTimeStamp() {
+		return System.currentTimeMillis() / 1000;
 	}
 
 	public static String get2YearAfterTodayDate() {
@@ -32,10 +31,10 @@ public class DateUtil {
 
 	public static Date getYesterdayDate() {
 
-		 return new Date(System.currentTimeMillis()-24*60*60*1000);
-		
+		return new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000);
+
 	}
-	
+
 	public static String getYesterdayDate(boolean isMorning) {
 
 		String date = LocalDate.now().plusDays(-1).toString();
@@ -104,11 +103,10 @@ public class DateUtil {
 	public static int compareDates(Date date1) {
 		return dateFormat.format(date1).compareTo(dateFormat.format(getTodayDate()));
 	}
-	
-	public static int compareDates(Date date1,Date date2) {
+
+	public static int compareDates(Date date1, Date date2) {
 		return dateFormat.format(date1).compareTo(dateFormat.format(date2));
 	}
-	
 
 	public static int compareDates(String date1, String date2) throws ParseException {
 
@@ -127,7 +125,7 @@ public class DateUtil {
 		}
 		return null;
 	}
-	
+
 	public static Date getShortDate2(String date) {
 		try {
 			return dateFormat.parse(date);

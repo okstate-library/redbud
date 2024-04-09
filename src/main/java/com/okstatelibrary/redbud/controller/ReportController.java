@@ -310,7 +310,7 @@ public class ReportController {
 		if (location.equalsIgnoreCase("creative_studio")) {
 
 			location = "efa727cb-339c-41bd-8d86-920065dfec37";
-
+			
 			Inventory inventory = folioService.getInventoryLoanDetails(location);
 
 			for (Loan loan : inventory.loans) {

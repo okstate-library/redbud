@@ -10,6 +10,7 @@ import com.okstatelibrary.redbud.operations.InfrastructureSetupProcess;
 import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
 import com.okstatelibrary.redbud.operations.LoanDueDateUpdateProcess;
 import com.okstatelibrary.redbud.operations.MainProcess;
+import com.okstatelibrary.redbud.operations.OCLCMetadataProcess;
 import com.okstatelibrary.redbud.service.CampusService;
 import com.okstatelibrary.redbud.service.CirculationLogService;
 import com.okstatelibrary.redbud.service.GroupService;
@@ -22,6 +23,8 @@ import com.okstatelibrary.redbud.util.CacheMap;
 import com.okstatelibrary.redbud.util.Constants;
 import com.okstatelibrary.redbud.util.DateUtil;
 
+import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
+import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -440,5 +443,59 @@ public class SettingsController {
 
 		return "operations";
 	}
+	
+	@GetMapping("/oclcMetaDataProcess")
+	public String oclcMetaDataProcess(Principal principal, Model model) throws IOException {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_Send_Test_Email, CacheMap.running);
+
+					try {
+						OCLCMetadataProcess oprocess = new OCLCMetadataProcess();
+						
+						
+					} catch (OAuthSystemException | OAuthProblemException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+//					oprocess.printScreen("Beeper send email " + DateUtil.getTodayDateAndTime(),
+//							Constants.ErrorLevel.INFO);
+//
+//					try {
+//
+//						oprocess.sendEmaill("Test Title", "Test Message");
+//
+//					} catch (RestClientException e) {
+//						// TODO Auto-generated catch block
+//						e.printStackTrace();
+//					}
+//
+//					oprocess.printScreen("Beeper ends for send email " + DateUtil.getTodayDateAndTime(),
+//							Constants.ErrorLevel.INFO);
+
+					CacheMap.set(CacheMap.process_Send_Test_Email, CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+	
+	
 
 }
