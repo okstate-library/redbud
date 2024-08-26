@@ -6,8 +6,10 @@ import com.okstatelibrary.redbud.entity.User;
 import com.okstatelibrary.redbud.folio.entity.Account;
 import com.okstatelibrary.redbud.folio.entity.FineAndFeesObject;
 import com.okstatelibrary.redbud.folio.entity.FolioUser;
+import com.okstatelibrary.redbud.folio.entity.PatronBlockObject;
 import com.okstatelibrary.redbud.folio.entity.PatronBlockRoot;
 import com.okstatelibrary.redbud.folio.entity.inventory.*;
+import com.okstatelibrary.redbud.folio.entity.manualblock.ManualBlock;
 import com.okstatelibrary.redbud.service.CampusService;
 import com.okstatelibrary.redbud.service.CirculationLogService;
 import com.okstatelibrary.redbud.service.GroupService;
@@ -89,6 +91,18 @@ public class ReportController {
 		return "reports/overdueitems";
 	}
 
+	@GetMapping("/patronblocks")
+	private String getPatronBlocks(Principal principal, Model model) throws IOException {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("institutionList", institutionService.getInstitutionList());
+
+		model.addAttribute("user", user);
+
+		return "reports/patronblocks";
+	}
+
 	@GetMapping("/inventoryloans")
 	public String getElcsInventory(Principal principal, Model model) throws IOException {
 
@@ -143,6 +157,8 @@ public class ReportController {
 			returnObjects = new ArrayList<FineAndFeesObject>();
 
 			for (Account account : accounts) {
+
+				System.out.println("account.userId" + account.userId);
 
 				FineAndFeesObject fineNFees = new FineAndFeesObject();
 
@@ -310,7 +326,7 @@ public class ReportController {
 		if (location.equalsIgnoreCase("creative_studio")) {
 
 			location = "efa727cb-339c-41bd-8d86-920065dfec37";
-			
+
 			Inventory inventory = folioService.getInventoryLoanDetails(location);
 
 			for (Loan loan : inventory.loans) {
@@ -352,6 +368,76 @@ public class ReportController {
 		}
 
 		return loans;
+	}
+
+	@RequestMapping(value = "/patronBlocks/data", method = RequestMethod.GET)
+	private @ResponseBody List<PatronBlockObject> patronBlocksData(@RequestParam(required = false) String institution)
+			throws RestClientException, IOException {
+
+		List<PatronGroup> groups = groupService.getGroupListByInstituteCode(institution);
+
+		ArrayList<ManualBlock> blocks = folioService.getPatronsBlocks();
+
+		List<PatronBlockObject> returnObjects = null;
+
+		try {
+
+			if (blocks != null && blocks.size() > 0) {
+
+				returnObjects = new ArrayList<PatronBlockObject>();
+
+				for (ManualBlock manualBlock : blocks) {
+
+					// Get the FOLIO User details.
+
+					if (manualBlock.userId != null && !manualBlock.userId.trim().isEmpty()) {
+
+						FolioUser folioUser = folioService.getUsersById(manualBlock.userId);
+
+						// FolioUser folioUser = new FolioUser();
+
+						if (folioUser != null) {
+
+							boolean match = groups.stream()
+									.anyMatch(s -> s.getFolioGroupId().equals(folioUser.patronGroup));
+
+							if (match) {
+
+								PatronBlockObject patronBlockObject = new PatronBlockObject();
+
+								patronBlockObject.type = manualBlock.type;
+								patronBlockObject.code = manualBlock.code;
+								patronBlockObject.desc = manualBlock.desc;
+								patronBlockObject.borrowing = manualBlock.borrowing;
+
+								patronBlockObject.renewals = manualBlock.renewals;
+								patronBlockObject.requests = manualBlock.requests;
+
+								patronBlockObject.identifier = folioUser.externalSystemId;
+								patronBlockObject.name = folioUser.personal.firstName + " "
+										+ folioUser.personal.lastName;
+								patronBlockObject.email = folioUser.personal.email;
+
+								returnObjects.add(patronBlockObject);
+
+							}
+
+						}
+
+					} else {
+						System.out.println("manualBlock.userId" + manualBlock.userId);
+					}
+
+				}
+			}
+
+			return returnObjects;
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@RequestMapping(value = "/circulationlog/data", method = RequestMethod.GET)

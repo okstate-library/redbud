@@ -1,227 +1,206 @@
 package com.okstatelibrary.redbud.operations;
 
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.oltu.oauth2.client.HttpClient;
-import org.apache.oltu.oauth2.client.OAuthClient;
-import org.apache.oltu.oauth2.client.URLConnectionClient;
-import org.apache.oltu.oauth2.client.request.OAuthClientRequest;
-import org.apache.oltu.oauth2.client.response.OAuthJSONAccessTokenResponse;
-import org.apache.oltu.oauth2.common.OAuth;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
-import org.apache.oltu.oauth2.common.message.types.GrantType;
+import org.springframework.web.client.RestClientException;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord;
+import com.okstatelibrary.redbud.oclc.entity.Holding;
+import com.okstatelibrary.redbud.oclc.entity.HoldingRoot;
+import com.okstatelibrary.redbud.service.external.OCLCService;
+import com.okstatelibrary.redbud.util.DateUtil;
 
-//import java.util.logging.Logger;
-//import java.util.logging.Level;
-//import java.util.Base64;
-//import java.util.Map;
-//import java.util.HashMap;
-//import java.util.List;
-//import java.util.ArrayList;
-//import java.util.Arrays;
-//import java.util.Date;
-//import java.text.SimpleDateFormat;
-//
-//import org.apache.http.impl.client.HttpClientBuilder;
-//import org.apache.http.client.methods.HttpGet;
-//import org.apache.http.client.methods.HttpPost;
-//import org.apache.http.HttpResponse;
-//import org.apache.http.HttpStatus;
-//import org.apache.http.entity.StringEntity;
-//import org.apache.http.util.EntityUtils;
-//import org.apache.xmlbeans.impl.xb.xmlconfig.ConfigDocument.Config;
-//import org.apache.http.HttpHeaders;
+import org.apache.http.client.ClientProtocolException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+public class OCLCMetadataProcess extends MainProcess {
 
-public class OCLCMetadataProcess {
+	private OCLCService oclcService;
 
-	// private static final Logger log = Logger.getLogger(Oclc.class.getName());
+	public OCLCMetadataProcess()
+			throws OAuthSystemException, OAuthProblemException, ClientProtocolException, IOException {
 
-	private static final String SERVICE_URL = "https://metadata.api.oclc.org/worldcat";
-	private static final String TOKEN_URL = "https://oauth.oclc.org/token";
-	private static final List<String> SCOPES = Arrays.asList("WorldCatMetadataAPI");
-	private static final int SESSION_BUFFER = 60; // seconds
-
-	// private final Config config;
-	private String token;
-	private long tokenExpirationTime;
-
-	public OCLCMetadataProcess() throws OAuthSystemException, OAuthProblemException {
-		// this.config = config;Config config
-		// log.addHandler(this.config.getLogFileHandler());
-		this.initConnection();
+		oclcService = new OCLCService();
 	}
 
-	private void initConnection() throws OAuthSystemException, OAuthProblemException {
+	public void getOCLCItems(String oclcNumberss)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		// "00227353", "00227353", "77767587", "777251269", "32132132"
+
+//		String[] oclcNumbers = { "1284171474" };
+//
+//		for (String str : oclcNumbers) {
+//
+//			HoldingRoot holdingRoot = oclcService.getOCLCItems(str);
+//
+//			System.out.println("Size " + holdingRoot.holdings.size());
+//
+//			if (holdingRoot != null && holdingRoot.holdings != null && holdingRoot.holdings.size() > 0) {
+//
+//				// System.out.println("id: " + entry.getKey() + ", nos:" + entry.getValue());
+//
+//				for (Holding holding : holdingRoot.holdings) {
+//
+//					if (!holding.holdingSet) {
+//
+//						// System.out.println("id: " + entry.getKey() + ", nos:" + entry.getValue());
+//
+//						System.out.println("holdingSet is False " + holding.requestedControlNumber);
+//					} else {
+//						System.out.println("holdingSet is true " + holding.requestedControlNumber);
+//					}
+//				}
+//
+//			} else {
+//
+//				// System.out.println("id: " + entry.getKey() + ", nos:" + entry.getValue());
+//
+//				System.out.println("No Oclc Records found for : " + str);
+//			}
+//		}
+
+//  The main code to get OCLC numbers from FOLIO and send them to OCKLC API to process
 
 		try {
 
-			String wsKey = "1en9hGcZZlKhFfv5RAjwAAJdgWoATjrTlB0l3nRyUB8XmErEgND1iW2WGdUw5SIdgC35AsJygu22DnVE";
+			List<HoldingsRecord> holdingList = folioService.getInventoryHoldings("912064a8-6296-4d35-8c91-48722c5ddc59",
+					"", "");
 
-			String secret = "2+t07RFacx0ph8ygxDgl1GCdeWTxfk41";
+			System.out.println("list size: " + holdingList.size());
 
-			OAuthClient client = new OAuthClient(new URLConnectionClient());
+			List<Holding> setHoldigsList = new ArrayList<>();
+			List<Holding> unSetHoldigsList = new ArrayList<>();
 
-			OAuthClientRequest request = OAuthClientRequest
-					.tokenLocation(TOKEN_URL)
-					.setGrantType(GrantType.CLIENT_CREDENTIALS)
-					.setClientId(wsKey)
-					.setClientSecret(secret)
-					.setScope("WorldCatMetadataAPI")
-					.buildBodyMessage();
+			int count = 0;
 
-			// OAuthClient client = new OAuthClient(new URLConnectionClient());
+			for (HoldingsRecord selectedHolding : holdingList) {
 
-			OAuthJSONAccessTokenResponse oauthResponse = client.accessToken(request, OAuth.HttpMethod.POST);
+				Set<String> oclcNumbers = folioService.getInventoryInstance(selectedHolding.instanceId);
 
-			token = client.accessToken(request, OAuth.HttpMethod.POST, OAuthJSONAccessTokenResponse.class)
-					.getAccessToken();
+				count++;
 
-			System.out.println("token" + oauthResponse.getBody());
-			
+				if (oclcNumbers.size() > 1) {
+					System.out.println("oclcNumbers.size() > 1" + " Folio id " + selectedHolding.instanceId);
+				}
+
+				for (String oclcNumber : oclcNumbers) {
+
+					// String oclcNummber = (oclcNumber.split("#")[1]);
+
+					HoldingRoot holdingRoot = oclcService.getOCLCItems(oclcNumber);
+
+					if (holdingRoot != null && holdingRoot.holdings != null && holdingRoot.holdings.size() > 0) {
+
+						for (Holding holding : holdingRoot.holdings) {
+
+							if (!holding.holdingSet && !selectedHolding.discoverySuppress) {
+
+								System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
+										+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
+										+ " Folio id " + selectedHolding.instanceId);
+
+								setHoldigsList.add(holding);
+
+							} else if (holding.holdingSet && selectedHolding.discoverySuppress) {
+
+								System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
+										+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
+										+ " Folio id " + selectedHolding.instanceId);
+
+								unSetHoldigsList.add(holding);
+							}
+						}
+
+					}
+
+				}
+
+				if (count % 10000 == 0) {
+					System.out.println("Process record Count" + count);
+				}
+
+			}
+
+			for (Holding setHolding : setHoldigsList) {
+				System.out.println("OCLCNumber " + setHolding.currentControlNumber + "  response "
+						+ oclcService.setOCLCItems(setHolding.currentControlNumber));
+			}
+
+			for (Holding setHolding : unSetHoldigsList) {
+				System.out.println("OCLCNumber " + setHolding.currentControlNumber + "  response "
+						+ oclcService.unSetOCLCItems(setHolding.currentControlNumber));
+			}
+
+			System.out.println("End of processing ");
+
 		} catch (Exception e) {
-			System.out.println(e.getMessage());
-
-			//throw new RuntimeException(e);
-
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			// return null;
 		}
 
-//String keys = wsKey+":Client secret goes here";
-////		var URL = "http://localhost:8080/api/token"
+//		List<HashMap<String, List<String>>> list = folioService.getInventoryIdentifiers(DateUtil.getYesterdayDate(true),
+//				DateUtil.getYesterdayDate(false));
 //
-//		HashMap<String, String> parameters = new HashMap<>();
-//		parameters.put("grant_type", "client_credentials");
-//		String form = parameters.keySet().stream()
-//		        .map(key -> key + "=" + URLEncoder.encode(parameters.get(key), StandardCharsets.UTF_8))
-//		        .collect(Collectors.joining("&"));
+//		System.out.println("list:" + list.size());
 //
-//		String encoding = Base64.getEncoder().encodeToString(keys.getBytes());
-//		HttpClient client = HttpClient.newHttpClient();
+//		for (HashMap<String, List<String>> map : list) {
 //
-//		HttpRequest request = HttpRequest.newBuilder().uri(URI.create(url))
-//		        .headers("Content-Type", "application/x-www-form-urlencoded", "Authorization", "Basic "+encoding)
-//		        .POST(BodyPublishers.ofString(form)).build();
-//		HttpResponse<?> response = client.send(request, BodyHandlers.ofString());
-//		System.out.println(response.statusCode() + response.body().toString());
-//		
-
-//		String wsKey = "1en9hGcZZlKhFfv5RAjwAAJdgWoATjrTlB0l3nRyUB8XmErEgND1iW2WGdUw5SIdgC35AsJygu22DnVE";
-//		// this.config.get("Oclc",
-//		// "ws_key");
-//		String secret = "2+t07RFacx0ph8ygxDgl1GCdeWTxfk41"; // this.config.get("Oclc", "secret");
+//			for (Map.Entry<String, List<String>> entry : map.entrySet()) {
 //
-//		String basicAuthHeader = "Basic " + Base64.getEncoder().encodeToString((wsKey + ":" + secret).getBytes());
+//				// List<String> oclcNumbers = new ArrayList<String>();
 //
-//		this.token = "";
-//		this.tokenExpirationTime = 0;
+//				System.out.println("id: " + entry.getKey() + ", nos:" + entry.getValue());
 //
-//		try {
-//			HttpClientBuilder httpClientBuilder = HttpClientBuilder.create();
+//				if (entry.getValue().size() > 0) {
 //
-//			HttpResponse httpResponse = httpClientBuilder.build().execute(new HttpPost(TOKEN_URL) {
-//				{
-//					setHeader(HttpHeaders.AUTHORIZATION, basicAuthHeader);
-//					setHeader(HttpHeaders.CONTENT_TYPE, "application/json");
-//					setEntity(new StringEntity("grant_type=client_credentials"));
-//				}
-//			});
+//					for (String oclcNumber : entry.getValue()) {
 //
-//			if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
+//						// oclcNumbers.add(oclcNumber.split("#")[1]);
 //
-//				@SuppressWarnings("unchecked")
-//				Map<String, Object> responseMap = new ObjectMapper()
-//						.readValue(EntityUtils.toString(httpResponse.getEntity()), Map.class);
+//						String oclcNummber = (oclcNumber.split("#")[1]);
 //
-//				this.token = (String) responseMap.get("access_token");
-//				long expiresIn = ((Number) responseMap.get("expires_in")).longValue();
-//				this.tokenExpirationTime = new Date().getTime() + expiresIn * 1000;
-//				System.out.println("Got token." + this.token);
+//						System.out.println(oclcNummber);
+//								
+//						HoldingRoot holdingRoot = oclcService.getOCLCItems(oclcNummber);
 //
-//			} else {
-////				log.log(Level.SEVERE,
-////						"Failed to get token. Status code: " + httpResponse.getStatusLine().getStatusCode());
+//						if (holdingRoot != null && holdingRoot.holdings != null && holdingRoot.holdings.size() > 0) {
 //
-//				System.out.println("AASASA" + httpResponse.getStatusLine());
-//				// throw new RuntimeException("Failed to get token.");
-//			}
-//		} catch (Exception e) {
-//			System.out.println(e.getMessage());
+//							// System.out.println("id: " + entry.getKey() + ", nos:" + entry.getValue());
 //
-//			throw new RuntimeException(e);
-//		}
-	}
-
-//	private void checkConnection() {
-//		if (this.tokenExpirationTime - new Date().getTime() <= SESSION_BUFFER * 1000) {
-//			this.initConnection();
-//		}
-//	}
+//							for (Holding holding : holdingRoot.holdings) {
 //
-//	public CheckHoldingResult checkHolding(String oclcNumber) {
-//		this.checkConnection();
-//		try {
-//			String url = SERVICE_URL + "/manage/institution/holdings/current?oclcNumbers=" + oclcNumber;
-//			HttpResponse httpResponse = HttpClientBuilder.create().build().execute(new HttpGet(url) {
-//				{
-//					setHeader(HttpHeaders.AUTHORIZATION, "Bearer " + token);
-//					setHeader(HttpHeaders.ACCEPT, "application/json");
-//				}
-//			});
-//			if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_NOT_FOUND) {
-//				// log.log(Level.INFO, "Record was not found in OCLC: " + oclcNumber);
-//				return new CheckHoldingResult(false, null);
-//			} else if (httpResponse.getStatusLine().getStatusCode() == HttpStatus.SC_OK) {
-//				Map<String, Object> result = new ObjectMapper()
-//						.readValue(EntityUtils.toString(httpResponse.getEntity()), Map.class);
-//				Map<String, Object> holdings = (Map<String, Object>) ((List<Object>) result.get("holdings")).get(0);
-//				boolean isHoldingSet = (boolean) holdings.get("holdingSet");
-//				String currentOclcNumber = (String) holdings.get("currentControlNumber");
-//				if (currentOclcNumber == null || currentOclcNumber.isEmpty()) {
-//					// log.log(Level.INFO, "Record was not found in OCLC: " + oclcNumber);
-//					return new CheckHoldingResult(false, null);
-//				} else if (!isHoldingSet) {
-//					// log.log(Level.INFO, "Checked holdings for " + oclcNumber + ": Not set.");
-//					return new CheckHoldingResult(false, currentOclcNumber);
-//				} else {
-//					if (currentOclcNumber.equals(oclcNumber)) {
-//						// log.log(Level.INFO, "Checked holdings for " + oclcNumber + ": Set.");
-//					} else {
-//						// log.log(Level.INFO, "Checked holdings for " + oclcNumber + ": Set with new
-//						// OCLC number: "
-//						// + currentOclcNumber + ".");
+//								if (!holding.holdingSet) {
+//
+//									// System.out.println("id: " + entry.getKey() + ", nos:" + entry.getValue());
+//
+//									System.out.println("holdingSet is False " + holding.requestedControlNumber);
+//								}
+//							}
+//
+//						} else {
+//
+//							// System.out.println("id: " + entry.getKey() + ", nos:" + entry.getValue());
+//
+//							System.out.println("No Oclc Records found for : " + oclcNummber);
+//						}
+//
 //					}
-//					return new CheckHoldingResult(true, currentOclcNumber);
+//				} else {
+//					System.out.println("No Records ");
 //				}
-//			} else {
-////				log.log(Level.SEVERE, "Failed to check holdings for " + oclcNumber + ". Unexpected status code: "
-////						+ httpResponse.getStatusLine().getStatusCode() + ".");
-//				throw new RuntimeException("Failed to check holdings for " + oclcNumber + ". Unexpected status code: "
-//						+ httpResponse.getStatusLine().getStatusCode() + ".");
+//
 //			}
-//		} catch (Exception e) {
-//			// log.log(Level.SEVERE, "Error when trying to check holdings for " + oclcNumber
-//			// + ": " + e.getMessage());
-//			throw new RuntimeException(e);
 //		}
-//	}
 
-	// Other methods...
-
-	public static class CheckHoldingResult {
-		private final boolean isSet;
-		private final String currentOclcNumber;
-
-		public CheckHoldingResult(boolean isSet, String currentOclcNumber) {
-			this.isSet = isSet;
-			this.currentOclcNumber = currentOclcNumber;
-		}
-
-		// Getters...
 	}
+
 }

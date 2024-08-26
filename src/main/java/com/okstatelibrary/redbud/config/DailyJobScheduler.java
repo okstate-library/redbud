@@ -17,6 +17,7 @@ import com.okstatelibrary.redbud.util.CacheMap;
 import com.okstatelibrary.redbud.util.Constants;
 import com.okstatelibrary.redbud.util.DateUtil;
 
+
 @Component
 public class DailyJobScheduler {
 
@@ -38,7 +39,7 @@ public class DailyJobScheduler {
 
 				public void run() {
 
-					CacheMap.set("ProcessRunning", "true");
+					CacheMap.set("UserIntegrationProcess", "true");
 
 					UserIntegrationProcess oprocess = new UserIntegrationProcess();
 
@@ -49,7 +50,7 @@ public class DailyJobScheduler {
 
 					oprocess.manipulate(groupService);
 
-					CacheMap.set("ProcessRunning", "stop");
+					CacheMap.set("UserIntegrationProcess", "stop");
 				}
 			});
 
@@ -61,6 +62,7 @@ public class DailyJobScheduler {
 
 	}
 
+	// Define the cron expression for 1:30 AM every day
 	@Scheduled(cron = "0 00 3 * * *")
 	public void runCirculationJob() {
 

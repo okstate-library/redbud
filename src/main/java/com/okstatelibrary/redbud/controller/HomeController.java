@@ -8,6 +8,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import com.okstatelibrary.redbud.config.CronJobLister;
 import com.okstatelibrary.redbud.entity.User;
 import com.okstatelibrary.redbud.service.UserService;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
@@ -23,6 +24,9 @@ public class HomeController {
 
 	@RequestMapping("/")
 	public String index() {
+
+		System.out.println(appSystems.toString());
+
 		return "redirect:/index";
 	}
 

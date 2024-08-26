@@ -8,4 +8,9 @@ public class Usergroup {
 
 	public String id;
 
+	@Override
+	public String toString() {
+		return "id " + this.id + "  - " + this.group + "  -  " + this.desc;
+	}
+
 }

@@ -34,9 +34,7 @@ public class GroupServiceImpl implements GroupService {
 
 	@Override
 	public List<PatronGroup> getGroupListByInstituteCode(String instituteCode) {
-		
-		System.out.println(instituteCode);
-		
+
 		return getGroupList().stream().filter(p -> p.getInstitutionCode().equals(instituteCode))
 				.collect(Collectors.toList());
 	}

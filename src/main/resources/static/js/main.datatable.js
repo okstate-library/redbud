@@ -1,22 +1,139 @@
-//$(document).ready(function() {
-//
-//	// callBrowseRequest();
-//});
 
-// Transaction Queue page options
+// Overdue fine report Expanding text for title
+function formatTitle(d) {
+	// `d` is the original data object for the row
 
+	return ('<dl>' + '<dt>Title</dt>' + '<dd>' + d.title + '</dd>' + '</dl>');
 
-function format(d) {
-    // `d` is the original data object for the row
+}
+
+// Patron BLock report Expanding text for description
+function formatDescription(d) {
+	// `d` is the original data object for the row
+
+	return ('<dl>' + '<dt>Description</dt>' + '<dd>'+ d.desc+'</dd>' + '</dl>');
 	
-	return (
-	        '<dl>' +
-	        '<dt>Title</dt>' +
-	        '<dd>' +
-	        d.title +
-	        '</dd>' +
-	        '</dl>'
-	    );
+}
+
+function callPatronBlocksReportAjaxRequest() {
+
+	var e = document.getElementById("institutionDropDown");
+	var institution = e.value;
+
+	if (institution != 0) {
+
+	$.ajax({
+		type : "GET",
+		cache : false,
+		url : '/reports/patronBlocks/data',
+		data : {
+			"institution" : institution
+		},
+		beforeSend : function() {
+			$('#loader').removeClass('hidden') // Loader
+		},
+		success : function(data) {
+
+			$('#patronBlocksDataTable').dataTable().fnDestroy();
+
+			var table = $('#patronBlocksDataTable').DataTable(
+					{
+
+						dom : 'Bfrtip',
+						buttons : [ 'excel', 'print' ],
+						data : data,
+						dom : 'Blfrtip',
+						orderCellsTop : true,
+						fixedHeader : true,
+						autoWidth : false,
+
+						"columnDefs" : [ {
+							title : "",
+							"targets" : 0
+						}, {
+							title : "Primary Identifiier",
+							"targets" : 1
+						}, {
+							title : "User",
+							"targets" : 2
+						}, {
+							title : "Email",
+							"targets" : 3
+						}, {
+							title : "Type",
+							"targets" : 4
+						}, {
+							title : "Code",
+							"targets" : 5
+						}, {
+							title : "Borrowing",
+							"targets" : 6
+						},
+						{
+							title : "Renewals",
+							"targets" : 7
+						},
+						{
+							title : "Requests",
+							"targets" : 8
+						},],
+						columns : [ {
+							className : 'dt-control',
+							orderable : false,
+							data : null,
+							defaultContent : ''
+						}, {
+							"data" : "identifier",
+						}, {
+							"data" : "name"
+						}, {
+							"data" : "email"
+						}, {
+							"data" : "type"
+						}, {
+							"data" : "code"
+						}, { 
+							"data" : "borrowing",
+							render : getBooleanImage,
+							class : 'text-center' ,
+							 'sortable': false,
+						},{ 
+							"data" : "renewals",
+							render : getBooleanImage,
+							class : 'text-center' ,
+							 'sortable': false,
+						},{ 
+							"data" : "requests",
+							render : getBooleanImage,
+							class : 'text-center' ,
+							 'sortable': false,
+						}],
+
+						"lengthMenu" : [ [ 10, 50, 100, 200, -1 ],
+								[ 10, 50, 100, 200, "All" ] ],
+						"pageLength" : 10,
+					});
+
+			table.on('click', 'td.dt-control', function(e) {
+				let tr = e.target.closest('tr');
+				let row = table.row(tr);
+
+				if (row.child.isShown()) {
+					// This row is already open - close it
+					row.child.hide();
+				} else {
+					// Open this row
+					row.child(formatDescription(row.data())).show();
+				}
+			});
+
+		},
+		complete : function() {
+			// class and hiding the spinner.
+			$('#loader').addClass('hidden')
+		},
+	});
+	}
 
 }
 
@@ -38,8 +155,8 @@ function callOverdueFinesReportAjaxRequest() {
 			},
 			success : function(data) {
 
-				//alert(JSON.stringify(data));
-				
+				// alert(JSON.stringify(data));
+
 				$('#overdueFinesDataTable').dataTable().fnDestroy();
 
 				// $('#overdueFinesDataTable thead tr').clone(true).appendTo(
@@ -49,20 +166,18 @@ function callOverdueFinesReportAjaxRequest() {
 						{
 
 							dom : 'Bfrtip',
-							buttons : [ 'excel' ,'print'],
+							buttons : [ 'excel', 'print' ],
 							data : data,
 							order : [ [ 7, 'asc' ] ],
 							dom : 'Blfrtip',
 							orderCellsTop : true,
 							fixedHeader : true,
-							autoWidth : false, 
-							
-							"columnDefs" : [
-							{
+							autoWidth : false,
+
+							"columnDefs" : [ {
 								title : "",
 								"targets" : 0
-							},	
-							{
+							}, {
 								title : "Group",
 								"targets" : 1
 							}, {
@@ -81,23 +196,21 @@ function callOverdueFinesReportAjaxRequest() {
 								title : "Patron Block",
 								"targets" : 6,
 								width : '5px'
-							},{
+							}, {
 								title : "Primary Identifiier",
 								"targets" : 7
 							}, {
 								title : "User",
 								"targets" : 8
-							}, 
-							
+							},
+
 							{
 								title : "Email",
 								"targets" : 9
-							}, 
-							{
+							}, {
 								title : "Barcode",
 								"targets" : 10
-							}, 						
-							{
+							}, {
 								title : "Amount",
 								"targets" : 11,
 								"width" : '5px'
@@ -106,14 +219,12 @@ function callOverdueFinesReportAjaxRequest() {
 								"targets" : 12,
 								"width" : '5px'
 							} ],
-							columns : [
-							{
-					            className: 'dt-control',
-					            orderable: false,
-					            data: null,
-					            defaultContent: ''
-					        },
-							{
+							columns : [ {
+								className : 'dt-control',
+								orderable : false,
+								data : null,
+								defaultContent : ''
+							}, {
 								"data" : "group"
 							}, {
 								"data" : "location"
@@ -123,7 +234,7 @@ function callOverdueFinesReportAjaxRequest() {
 								"data" : "type"
 							}, {
 								"data" : "date"
-							},{
+							}, {
 								"data" : "isPatronBlock",
 							}, {
 								"data" : "identifier",
@@ -133,8 +244,7 @@ function callOverdueFinesReportAjaxRequest() {
 								"data" : "email"
 							}, {
 								"data" : "barcode"
-							}, 
-							{
+							}, {
 								"data" : "amount"
 							}, {
 								"data" : "remaningAmount"
@@ -144,23 +254,22 @@ function callOverdueFinesReportAjaxRequest() {
 									[ 10, 50, 100, 200, "All" ] ],
 							"pageLength" : 10,
 						});
-				
-					table.on('click', 'td.dt-control', function (e) {
-					    let tr = e.target.closest('tr');
-					    let row = table.row(tr);
-					 
-					    if (row.child.isShown()) {
-					        // This row is already open - close it
-					        row.child.hide();
-					    }
-					    else {
-					        // Open this row
-					        row.child(format(row.data())).show();
-					    }
+
+				table.on('click', 'td.dt-control', function(e) {
+					let tr = e.target.closest('tr');
+					let row = table.row(tr);
+
+					if (row.child.isShown()) {
+						// This row is already open - close it
+						row.child.hide();
+					} else {
+						// Open this row
+						row.child(formatTitle(row.data())).show();
+					}
 				});
 
 			},
-			complete : function() { 
+			complete : function() {
 				// class and hiding the spinner.
 				$('#loader').addClass('hidden')
 			},
@@ -168,7 +277,6 @@ function callOverdueFinesReportAjaxRequest() {
 	}
 
 }
-
 
 function callOverdueItemsReportAjaxRequest() {
 
@@ -188,29 +296,26 @@ function callOverdueItemsReportAjaxRequest() {
 			},
 			success : function(data) {
 
-				//alert(JSON.stringify(data));
-				
+				// alert(JSON.stringify(data));
+
 				$('#overdueItemsDataTable').dataTable().fnDestroy();
 
 				// $('#overdueFinesDataTable thead tr').clone(true).appendTo(
 				// '#overdueFinesDataTable thead' );
 
-				
-				
 				var table = $('#overdueItemsDataTable').DataTable(
 						{
 
 							dom : 'Bfrtip',
-							buttons : [ 'excel' ,'print'],
+							buttons : [ 'excel', 'print' ],
 							data : data,
 							order : [ [ 7, 'asc' ] ],
 							dom : 'Blfrtip',
 							orderCellsTop : true,
 							fixedHeader : true,
-							autoWidth : false, 
-							
-							"columnDefs" : [
-							{
+							autoWidth : false,
+
+							"columnDefs" : [ {
 								title : "Location",
 								"targets" : 0
 							}, {
@@ -222,24 +327,22 @@ function callOverdueItemsReportAjaxRequest() {
 							}, {
 								title : "Due Date",
 								"targets" : 3
-							},{
+							}, {
 								title : "Primary Identifiier",
 								"targets" : 4
 							}, {
 								title : "User",
 								"targets" : 5
-							}, 
-							
+							},
+
 							{
 								title : "Email",
 								"targets" : 6
-							}, 
-							{
+							}, {
 								title : "Phone",
 								"targets" : 7
-							}],
-							columns : [
-							{
+							} ],
+							columns : [ {
 								"data" : "location"
 							}, {
 								"data" : "barcode"
@@ -255,17 +358,15 @@ function callOverdueItemsReportAjaxRequest() {
 								"data" : "email"
 							}, {
 								"data" : "phone"
-							}, 
-							 ],
+							}, ],
 
 							"lengthMenu" : [ [ 10, 50, 100, 200, -1 ],
 									[ 10, 50, 100, 200, "All" ] ],
 							"pageLength" : 10,
 						});
-				
 
 			},
-			complete : function() { 
+			complete : function() {
 				// class and hiding the spinner.
 				$('#loader').addClass('hidden')
 			},
@@ -297,7 +398,7 @@ function callInventoryLoansReportAjaxRequest() {
 					{
 
 						dom : 'Bfrtip',
-						buttons : [ 'excel' ,'print' ],
+						buttons : [ 'excel', 'print' ],
 						data : data,
 						order : [ [ 4, 'asc' ] ],
 						dom : 'Blfrtip',
@@ -393,14 +494,14 @@ function callCirculationLogReportAjaxRequest() {
 			$('#loader').removeClass('hidden') // Loader
 		},
 		success : function(data) {
-			
+
 			$('#circulationLogTable').dataTable().fnDestroy();
 
 			var table = $('#circulationLogTable').DataTable(
 					{
 
 						dom : 'Bfrtip',
-						buttons : [ 'excel' ,'print' ],
+						buttons : [ 'excel', 'print' ],
 						data : data,
 						order : [ [ 4, 'asc' ] ],
 						dom : 'Blfrtip',
@@ -436,7 +537,7 @@ function callCirculationLogReportAjaxRequest() {
 
 						{
 							"data" : "barcode"
-						},{
+						}, {
 							"data" : "callNumber"
 						}, {
 							"data" : "materialType"
@@ -460,6 +561,14 @@ function callCirculationLogReportAjaxRequest() {
 		},
 	});
 
+}
+
+function getBooleanImage(data, type, full, meta) {
+	if (data == '1') {
+		return '<i class="fa fa-check" aria-hidden="true"/>'
+	} else {
+		return '<i class="fa fa-times" aria-hidden="true"/>';
+	}
 }
 
 function getShortDate(data) {

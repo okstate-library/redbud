@@ -9,6 +9,8 @@ public class CacheMap {
 
 	public static String running = "Running";
 	
+	public static String process_OCLC_NUmbers_Process = "oclc_Number_Process";
+	
 	public static String process_Execute_Inactive_Users = "Process_Execute_Inactive_Users";
 
 	public static String process_Send_Test_Email = "Process_Send_Test_Email";

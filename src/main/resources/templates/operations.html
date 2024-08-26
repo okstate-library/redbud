@@ -21,13 +21,14 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h3 class="modal-title" id="exampleModalLabel">Files - Help</h3>
+						<h3 class="modal-title" id="exampleModalLabel">Operations -
+							Help</h3>
 					</div>
 					<div class="modal-body">
 
 						<ul>
-							<li>Get users by the patron group then find users with loans
-								and updates.</li>
+							<li>All the helpful operations related to the FOLIO use
+								FOLIO API.</li>
 						</ul>
 					</div>
 
@@ -36,201 +37,372 @@
 		</div>
 	</div>
 
-	<div class="row top-buffer container-border">
 
-		<form method="get"
-			th:action="@{/settings/changeLoanDueDatesForPatronGroup}">
 
-			<div class="row">
+	<ul class="nav nav-tabs">
+		<li class="active"><a data-toggle="tab" href="#general">General</a></li>
+		<li><a data-toggle="tab" href="#user">User</a></li>
+		<li><a data-toggle="tab" href="#user-patron-group">User
+				Patron Group</a></li>
+		<li><a data-toggle="tab" href="#settings">Settings</a></li>
+	</ul>
 
-				<div class="col-xs-8">Get users by the patron group then find
-					users with loans and updates. As an example by executing
-					"OKS-OSU_Faculty" and "2024-05-25"</div>
-				<div class="col-xs-2">
-					<button type="submit" id="executePatronGroupLoans" disabled
-						class="btn btn-success btn-md btn-block">Execute</button>
-				</div>
-				<div class="col-xs-1">
-					<input type="checkbox"
-						onchange="document.getElementById('executePatronGroupLoans').disabled = !this.checked;" />
-				</div>
-				<div class="col-xs-1">
-					<h5 th:text="${Change_LoanDueDates_ForPatronGroup}"></h5>
-				</div>
+
+	<div class="tab-content">
+
+		<div id="general" class="tab-pane fade in active">
+
+			<div class="row top-buffer container-border">
+
+				<form method="get"
+					th:action="@{/settings/changeLoanDueDatesForPatronGroup}">
+
+					<div class="row">
+
+						<div class="col-xs-8">Get users by the patron group then
+							find users with loans and updates. As an example by executing
+							"OKS-OSU_Faculty" and "2024-05-25"</div>
+						<div class="col-xs-2">
+							<button type="submit" id="executePatronGroupLoans" disabled
+								class="btn btn-success btn-md btn-block">Execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executePatronGroupLoans').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Change_LoanDueDates_ForPatronGroup}"></h5>
+						</div>
+
+					</div>
+				</form>
+			</div>
+
+
+			<div class="row top-buffer container-border">
+
+				<form method="get" th:action="@{/settings/circulationDataStore}">
+
+					<div class="row">
+
+						<div class="col-xs-8">Get "closed" circulation log details
+							from the API and stored in DB for reporting purposes.</div>
+						<div class="col-xs-2">
+							<button type="submit" id="executeCirculationLog" disabled
+								class="btn btn-success btn-md btn-block">Execute</button>
+						</div>
+
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeCirculationLog').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
+						</div>
+
+					</div>
+				</form>
 
 			</div>
-		</form>
-	</div>
-	<div class="row top-buffer container-border">
 
-		<form method="get" th:action="@{/settings/circulationDataStore}">
 
-			<div class="row">
+			<div class="row top-buffer container-border">
+				<h4>OCLC operation.</h4>
+				<form method="get" th:action="@{/settings/oclcMetaDataProcess}">
 
-				<div class="col-xs-8">Get "closed" circulation log details
-					from the API and stored in DB for reporting purposes.</div>
-				<div class="col-xs-2">
-					<button type="submit" id="executeCirculationLog" disabled
-						class="btn btn-success btn-md btn-block">Execute</button>
-				</div>
+					<div class="row">
+						<div class="col-xs-8">Send test email to the developers who
+							using RedBud application.</div>
 
-				<div class="col-xs-1">
-					<input type="checkbox"
-						onchange="document.getElementById('executeCirculationLog').disabled = !this.checked;" />
-				</div>
-				<div class="col-xs-1">
-					<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
-				</div>
+						<div class="col-xs-2">
+							<button type="submit" id="executeoclcMetaDataProcess"
+								name="executeoclcMetaDataProcess" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeoclcMetaDataProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${oclc_Number_Process}"></h5>
+						</div>
 
-			</div>
-		</form>
-
-	</div>
-
-	<div class="row top-buffer container-border">
-
-		<form method="get" th:action="@{/settings/executeinactiveusers}">
-
-			<div class="row">
-				<div class="col-xs-8">Executive inactive users</div>
-				<div class="col-xs-2">
-					<button type="submit" id="executeInactiveUsers" disabled
-						class="btn btn-success btn-md btn-block">Execute</button>
-				</div>
-				<div class="col-xs-1">
-					<input type="checkbox"
-						onchange="document.getElementById('executeInactiveUsers').disabled = !this.checked;" />
-				</div>
-				<div class="col-xs-1">
-					<h5 th:text="${Process_Execute_Inactive_Users}"></h5>
-				</div>
+					</div>
+				</form>
 
 			</div>
-		</form>
 
-	</div>
 
-	<!-- <div class="row top-buffer container-border">
 
-		<form method="get" th:action="@{/settings/executeinactiveusers}">
 
-			<div class="row">
-				<div class="col-xs-8">Executive inactive users</div>
-				<div class="col-xs-2">
-					<button type="submit" id="executeButton"
-						class="btn btn-success btn-md btn-block">execute</button>
-				</div>
-				<div class="col-xs-1">
-					<input type="checkbox"
-						onchange="document.getElementById('executeConvertUsers').disabled = !this.checked;" />
-				</div>
-				<div class="col-xs-1">
-					<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
-				</div>
+		</div>
 
-			</div>
-		</form>
+		<div id="user" class="tab-pane fade">
 
-	</div> -->
+			<div class="row top-buffer container-border">
 
-	<div class="row top-buffer container-border">
+				<form method="get" th:action="@{/settings/executeinactiveusers}">
 
-		<form method="get" th:action="@{/settings/convertinactiveusers}">
+					<div class="row">
+						<div class="col-xs-8">Executive inactive users</div>
+						<div class="col-xs-2">
+							<button type="submit" id="executeInactiveUsers" disabled
+								class="btn btn-success btn-md btn-block">Execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeInactiveUsers').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_Execute_Inactive_Users}"></h5>
+						</div>
 
-			<div class="row">
-				<div class="col-xs-8">Convert inactive users to active</div>
-				<div class="col-xs-2">
-					<button type="submit" id="executeConvertInactiveUsers" disabled
-						class="btn btn-success btn-md btn-block">Execute</button>
-				</div>
-				<div class="col-xs-1">
-					<input type="checkbox"
-						onchange="document.getElementById('executeConvertInactiveUsers').disabled = !this.checked;" />
-				</div>
-				<div class="col-xs-1">
-					<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
-				</div>
+					</div>
+				</form>
 
 			</div>
-		</form>
 
-	</div>
+			<div class="row top-buffer container-border">
 
+				<form method="get" th:action="@{/settings/convertinactiveusers}">
 
+					<div class="row">
+						<div class="col-xs-8">Convert inactive users to active</div>
+						<div class="col-xs-2">
+							<button type="submit" id="executeConvertInactiveUsers" disabled
+								class="btn btn-success btn-md btn-block">Execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeConvertInactiveUsers').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
+						</div>
 
-	<div class="row top-buffer container-border">
-		<h4>Change patron group</h4>
-		<form method="get" th:action="@{/settings/changePatronGroup}">
-
-			<div class="row">
-				<div class="col-xs-8">Change patron group depending on the CSV
-					file uploaded.</div>
-
-				<div class="col-xs-2">
-					<button type="submit" id="executeChangePatrons"
-						name="executeChangePatrons" disabled
-						class="btn btn-success btn-md btn-block">execute</button>
-				</div>
-				<div class="col-xs-1">
-					<input type="checkbox"
-						onchange="document.getElementById('executeChangePatrons').disabled = !this.checked;" />
-				</div>
-				<div class="col-xs-1">
-					<h5 th:text="${Process_Change_Patron_Group}"></h5>
-				</div>
+					</div>
+				</form>
 
 			</div>
-		</form>
 
-	</div>
+			<div class="row top-buffer container-border">
+				<h4>Update User details from Excel file.</h4>
+				<form method="get" th:action="@{/settings/userFieldsUpdateProcess}">
 
-	<div class="row top-buffer container-border">
-		<h4>Send Test Email.</h4>
-		<form method="get" th:action="@{/settings/sendTestEmail}">
+					<div class="row">
+						<div class="col-xs-8">Update the user details (birth date,
+							middle initial, phone number, and email) from excel file .</div>
 
-			<div class="row">
-				<div class="col-xs-8">Send test email to the developers who
-					using RedBud application.</div>
+						<!-- Check mail on 2024-05-17 By Megan -->
 
-				<div class="col-xs-2">
-					<button type="submit" id="executeSendEmail" name="executeSendEmail"
-						disabled class="btn btn-success btn-md btn-block">execute</button>
-				</div>
-				<div class="col-xs-1">
-					<input type="checkbox"
-						onchange="document.getElementById('executeSendEmail').disabled = !this.checked;" />
-				</div>
-				<div class="col-xs-1">
-					<h5 th:text="${Process_Send_Test_Email}"></h5>
-				</div>
+						<div class="col-xs-2">
+							<button type="submit" id="executeuserFieldsUpdateProcess"
+								name="executeoclcMetaDataProcess" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeuserFieldsUpdateProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_Send_Test_Email}"></h5>
+						</div>
 
-			</div>
-		</form>
-
-	</div>
-
-	<div class="row top-buffer container-border">
-		<h4>OCLC operation.</h4>
-		<form method="get" th:action="@{/settings/oclcMetaDataProcess}">
-
-			<div class="row">
-				<div class="col-xs-8">Send test email to the developers who
-					using RedBud application.</div>
-
-				<div class="col-xs-2">
-					<button type="submit" id="executeoclcMetaDataProcess" name="executeoclcMetaDataProcess"
-						disabled class="btn btn-success btn-md btn-block">execute</button>
-				</div>
-				<div class="col-xs-1">
-					<input type="checkbox"
-						onchange="document.getElementById('executeoclcMetaDataProcess').disabled = !this.checked;" />
-				</div>
-				<div class="col-xs-1">
-					<h5 th:text="${Process_Send_Test_Email}"></h5>
-				</div>
+					</div>
+				</form>
 
 			</div>
-		</form>
+
+			<div class="row top-buffer container-border">
+				<h4>Update User new bar codes.</h4>
+				<form method="get"
+					th:action="@{/settings/userBarcodesUpdateProcess}">
+
+					<div class="row">
+						<div class="col-xs-8">Update the user new bar code from csv
+							file .</div>
+
+						<!-- Check Megan Request from Slack on -->
+
+						<div class="col-xs-2">
+							<button type="submit" id="executeuserBarcodesUpdateProcess"
+								name="executeuserBarcodesUpdateProcess" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeuserBarcodesUpdateProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_Send_Test_Email}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+
+			<div class="row top-buffer container-border">
+				<h4>Check User with null Values</h4>
+				<form method="get"
+					th:action="@{/settings/nullUserPropertyCheckProcess}">
+
+					<div class="row">
+						<div class="col-xs-8">Check User with null Values.</div>
+
+						<div class="col-xs-2">
+							<button type="submit" id="executenullUserCheckProcess"
+								name="executenullUserCheckProcess" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executenullUserCheckProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_Send_Test_Email}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+		</div>
+
+		<div id="user-patron-group" class="tab-pane fade">
+
+			<div class="row top-buffer container-border">
+				<h4>Change patron group</h4>
+				<form method="get" th:action="@{/settings/changePatronGroup}">
+
+					<div class="row">
+						<div class="col-xs-8">Change patron group depending on the
+							CSV file uploaded.</div>
+
+						<div class="col-xs-2">
+							<button type="submit" id="executeChangePatrons"
+								name="executeChangePatrons" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeChangePatrons').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_Change_Patron_Group}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+
+
+
+			<div class="row top-buffer container-border">
+				<h4>Update User patron group.</h4>
+				<form method="get"
+					th:action="@{/settings/userPatronGroupUpdateProcess}">
+
+					<div class="row">
+						<div class="col-xs-8">Update User patron group based on the
+							CSV file.</div>
+
+						<div class="col-xs-2">
+							<button type="submit" id="executeUserPatronGroupUpdateProcess"
+								name="executeUserPatronGroupUpdateProcess" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeUserPatronGroupUpdateProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_Send_Test_Email}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+
+			<div class="row top-buffer container-border">
+				<h4>Compare user's "Patron group" with "Custom field"</h4>
+				<form method="get"
+					th:action="@{/settings/userPatronGroupReportProcess}">
+
+					<div class="row">
+						<div class="col-xs-8">Compare FOLIO user's "Patron group"
+							with "Custom field" in order to check is there is differences or
+							not.</div>
+
+						<div class="col-xs-2">
+							<button type="submit" id="executeUserPatronGroupReportProcess"
+								name="executeUserPatronGroupUpdateProcess" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeUserPatronGroupReportProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_Send_Test_Email}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+
+		</div>
+
+		<div id="settings" class="tab-pane fade">
+
+			<div class="row top-buffer container-border">
+				<h4>Send Test Email.</h4>
+				<form method="get" th:action="@{/settings/sendTestEmail}">
+
+					<div class="row">
+						<div class="col-xs-8">Send test email to the developers who
+							using RedBud application.</div>
+
+						<div class="col-xs-2">
+							<button type="submit" id="executeSendEmail"
+								name="executeSendEmail" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeSendEmail').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_Send_Test_Email}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+
+			<div class="row top-buffer container-border">
+				<h4>Schedule jobs</h4>
+				<!-- <form method="get" th:action="@{/settings/sendTestEmail}"> -->
+
+				<div class="row">
+					<div class="col-xs-8">
+						<h1>List of Strings</h1>
+						<ul>
+							<li th:each="str : ${scheduled_jobs}" th:text="${str}"></li>
+						</ul>
+					</div>
+
+				</div>
+				<!-- </form> -->
+
+			</div>
+		</div>
+
+
 
 	</div>
 

@@ -9,6 +9,7 @@ public class FolioUser {
 	public boolean active;
 	public String patronGroup;
 	public String barcode;
+
 	public ArrayList<Object> departments;
 	public ArrayList<Object> proxyFor;
 
@@ -23,7 +24,11 @@ public class FolioUser {
 
 	@Override
 	public String toString() {
-		return "FOLIO: " + this.externalSystemId + "  - " + this.personal.firstName + "  -  "
-				+ this.customFields.additionalPatronGroup_4;
+//		return "FOLIO: " + this.externalSystemId + " - " + this.barcode + " - " + this.username + " - "
+//				+ this.personal.firstName + " " + this.personal.lastName + "  -  "
+//				+ this.customFields.additionalPatronGroup_4;
+		
+return this.externalSystemId + " - " + this.barcode + " - " + this.username + " - " + this.personal.firstName + " "
+		+ this.personal.lastName + "  -  " + this.customFields.additionalPatronGroup_4;
 	}
 }

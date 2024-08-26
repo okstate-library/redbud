@@ -106,7 +106,7 @@ public class AppSystemProperties {
 	public void setFolioUsername(String folioUsername) {
 		FolioUsername = folioUsername;
 	}
-	
+
 	@Value("${folioPassword}")
 	private String folioPassword;
 
@@ -117,5 +117,70 @@ public class AppSystemProperties {
 	 */
 	public void setFolioPassword(String folioPassword) {
 		FolioPassword = folioPassword;
+	}
+
+	@Value("${oclcApiUrl}")
+	private String oclcApiUrl;
+
+	public static String OclcApiUrl;
+
+	/**
+	 * @param oclcApiUrl to set
+	 */
+	public void setOclcApiUrl(String oclcApiUrl) {
+		OclcApiUrl = oclcApiUrl;
+	}
+
+	@Value("${oclcTokenEndpoint}")
+	private String oclcTokenEndpoint;
+
+	public static String OclcTokenEndpoint;
+
+	/**
+	 * @param oclcTokenEndpoint to set
+	 */
+	public void setOclcTokenEndpoint(String oclcTokenEndpoint) {
+		OclcTokenEndpoint = oclcTokenEndpoint;
+	}
+
+	@Value("${oclcKey}")
+	private String oclcKey;
+
+	public static String OclcKey;
+
+	/**
+	 * @param OclcKey to set
+	 */
+	public void setOclcKey(String oclcKey) {
+		OclcKey = oclcKey;
+	}
+
+	@Value("${oclcKeySecret}")
+	private String oclcKeySecret;
+
+	public static String OclcKeySecret;
+
+	/**
+	 * @param OclcKeySecret to set
+	 */
+	public void setOclcKeySecret(String oclcKeySecret) {
+		OclcKeySecret = oclcKeySecret;
+	}
+
+	@Value("${oclcScope}")
+	private String oclcScope;
+
+	public static String OclcScope;
+
+	/**
+	 * @param oclcScope to set
+	 */
+	public void setOclcScope(String oclcScope) {
+		OclcScope = oclcScope;
+	}
+
+	@Override
+	public String toString() {
+		return "Red Bud App settings";
 	}
 }

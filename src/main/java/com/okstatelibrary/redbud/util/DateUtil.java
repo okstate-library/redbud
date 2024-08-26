@@ -8,11 +8,12 @@ import java.util.Date;
 import java.util.Locale;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 
 public class DateUtil {
 
 	private static DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	
+
 	private static SimpleDateFormat longDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
 	public static String get9MonthsAfterTodayDate() {
@@ -65,6 +66,59 @@ public class DateUtil {
 
 	public static DateFormat getDateFormat() {
 		return dateFormat;
+	}
+
+	public static LocalDate getDate(String stringDate) {
+
+		DateTimeFormatter[] formatters = new DateTimeFormatter[] { DateTimeFormatter.ofPattern("M/d/yyyy"),
+				DateTimeFormatter.ofPattern("MM/d/yyyy"), DateTimeFormatter.ofPattern("M/dd/yyyy"),
+				DateTimeFormatter.ofPattern("MM/dd/yyyy"), DateTimeFormatter.ofPattern("M/d/yy"),
+				DateTimeFormatter.ofPattern("MM/d/yy"), DateTimeFormatter.ofPattern("M/dd/yy"),
+				DateTimeFormatter.ofPattern("MM/dd/yy") };
+
+		// LocalDate referenceDate = null;
+
+		// for (String dateStr : dates) {
+		LocalDate parsedDate = null;
+
+		for (DateTimeFormatter formatter : formatters) {
+			try {
+				parsedDate = LocalDate.parse(stringDate, formatter);
+				
+				 // Adjust the year if necessary
+                if (parsedDate.getYear() >= 2000) {
+                	parsedDate = parsedDate.withYear(parsedDate.getYear() - 100);
+                }
+
+                
+				break; // Exit the loop if parsing was successful
+			} catch (DateTimeParseException e) {
+				// Continue trying other formatters
+			}
+		}
+
+		return parsedDate;
+
+//		if (parsedDate == null) {
+//			System.err.println("Invalid date format: " + stringDate);
+//			// return; // Exit the program if any date is invalid
+//		}
+//
+//		if (referenceDate == null) {
+//			referenceDate = parsedDate;
+//		}
+
+//			else if (!referenceDate.equals(parsedDate)) {
+//				//System.out.println("Dates do not match.");
+//				//return; // Exit the program if dates do not match
+//			}
+		// }
+
+//		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy", Locale.ENGLISH);
+//		
+//		return LocalDate.parse(date, formatter);
+
+		// System.out.println(date); // 2010-01-02
 	}
 
 	public static LocalDate getLocaleDate(String date) {

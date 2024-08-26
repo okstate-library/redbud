@@ -16,74 +16,69 @@ import com.okstatelibrary.redbud.folio.entity.loan.Loan;
 import com.okstatelibrary.redbud.folio.entity.request.Request;
 import com.okstatelibrary.redbud.util.DateUtil;
 
+/**
+ * @author Damith
+ * 
+ *         // Tasks run the code // 1. Get some sample user details from Megan
+ *         relevant to the User group // 2. Use of the user id try to get the
+ *         loan records from FOLIO // 3. Get the relevant due date and and put
+ *         in the relevant format to get the records // 4. Run the code with the
+ *         relevant user id and compare with the FOLIO records // 5. Get the new
+ *         due date in correct format , modify the records for test. // 6. Run
+ *         the entire code and get the report
+ * 
+ */
 public class LoanDueDateUpdateProcess extends MainProcess {
 
 	protected String startTime;
-
-	// FolioService folioService = new FolioService();
 
 	public void manipulate(String userGroup) throws JsonParseException, JsonMappingException, RestClientException,
 			IOException, ParseException, InterruptedException {
 
 		System.out.println("Started");
 
-		System.out.println("userid,email, first and last name , loans count, modified loans");
-
-		folioService.getUsersByPatronGroupIdForLoans(userGroup);
+		Root userRoot = folioService.getUsersByPatronGroupIdForLoans(userGroup);
 
 		ArrayList<Request> requests = folioService.getOpenRequests();
 
-		String str = "31be75f0-f880-592e-8966-7ba59727b51c,9a689972-08ac-50b0-abff-aa200cc09ad3,f8b5f8b7-69ca-565b-a739-c25b27c37136,75dfad23-82e7-5f5f-b16d-56cae63b9e1f,0194023a-0025-5f51-baec-e91281d1c4ec,1b5159b2-2860-5326-b5d6-45341dfb3925";
+		System.out.println("Users Size : " + userRoot.users.size());
 
-		List<String> items = Arrays.asList(str.split("\\s*,\\s*"));
+		System.out.println("Request Size : " + requests.size());
 
-		for (String userId : items) {
+		System.out.println("userid,email, first and last name , loans count, modified loans");
 
-			// for (FolioUser user : userRoot.users) {
-
-			// System.out.println("User name- " + user.username);
-
-			// String userId = "c4de33e9-ce30-5d21-b37b-13c67ddd5693";
-
-			FolioUser user = folioService.getUsersById(userId);
-
-			ArrayList<Loan> loans = folioService.getLoansByUser(user.id); // user.id);
-
-			// "e5483ea8-6ad8-5602-8365-7abf255a0825");
-
+		
+// 		Code  segment 1 - User details
+		
+//		String str = "c153a535-c255-5aee-8217-9e3f58936522";
 //
-//		
-//		for (Request request : requests) {
-//			System.out.println("Requuest itemid " + request.itemId);
-//		}
+//		List<String> items = Arrays.asList(str.split("\\s*,\\s*"));
+
+		// for (String userId : items) {
+
+		for (FolioUser user : userRoot.users) {
+
+			// FolioUser user = folioService.getUsersById(userId);
+
+			ArrayList<Loan> loans = folioService.getLoansByUser(user.id);
 
 			ArrayList<Loan> sortedLoans = new ArrayList<Loan>();
 
 			for (Loan loan : loans) {
-
-//			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
-//			String json = ow.writeValueAsString(loan);
-//			System.out.println(json);
 //
 				// System.out.println("Loaan due date - " + loan.getDueDate());
-
-				// loan.setDueDate("2024-11-21T00:00:00.000+00:00");
-				// folioService.updateLoan(loan);
-
-//				 dateFormat = DateFormat.getDateInstance(DateFormat.SHORT, Locale.TAIWAN);
-//				 System.out.println("Locale TAIWAN = " + dateFormat.format(loan.dueDate));
 
 				// System.out.println("Loaan due date - " + loan.getDueDate());
 				String dateTime = DateUtil.getShortDate(loan.getDueDate());
 
 				// LocalDateTime dateTime = LocalDateTime.parse(loan.getDueDate());
 
-				// System.out.println("Loaan due date - " + dateTime);
+				System.out.println("Loaan due date - " + dateTime);
 
 				if (!loan.item.materialType.name.equals("equipment")
 						&& loan.loanPolicyId.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")//
 						&& !loan.itemEffectiveLocationIdAtCheckOut.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")
-						&& dateTime.equals("2024-02-29")) {
+						&& dateTime.equals("2024-09-02")) {
 
 					// System.out.println("Loaan due date - " + loan.getDueDate());
 
@@ -102,53 +97,45 @@ public class LoanDueDateUpdateProcess extends MainProcess {
 
 						sortedLoans.add(loan);
 
-//					
-////					loan.setLoanDate("2019-08-29T17:33:21+00:00");
-////					loan.setDueDate("2024-11-21T00:00:00.000+00:00");// java.sql.Date.valueOf("2014-03-14");
-////																	// //"2024-03-05T05:59:00.000+00:00";//
-//																	// DateUtil.getLongDate("2014/03/14"); // Fri Mar 15
-//					loan.metadata = getMetadata(loan.metadata); // 00:59:00 CDT 2024
-//
-//					folioService.updateLoan(loan);
-
 					}
 
 				}
 
 			}
 
+//  Sending the email with replacing to a lib-dls and after sending add the replace to old email.
+
 			if (sortedLoans.size() > 0) {
 
 				String userEmail = user.personal.email;
 
-				// System.out.println("User email " + userEmail);
+//  Task 4. To remove the comments before running.
 
-				user.personal.email = "lib-dls@okstate.edu";
+//				user.personal.email = "lib-dls@okstate.edu";
+//
+//				folioService.updateUser(user);
+//
+//				Thread.sleep(30000);
+//
+//				for (Loan loan : sortedLoans) {
+//
+//					// System.out.println("loan " + loan.id + " - due Date - " + loan.getDueDate());
+//
+//					loan.actionComment = "faculty auto-renewal spring 2024";
+//					loan.setDueDate("2025-03-01T04:59:59.000+00:00");
+//
+//					loan.loanPolicyId = "7abd2943-08a0-4ca1-8cc8-6a1f116e8763";
+//					folioService.updateLoan(loan);
+//				}
+//
+//				Thread.sleep(30000);
+//
+//				user.personal.email = userEmail;
+//				folioService.updateUser(user);
+//
+//				System.out.println(user.id + "," + user.personal.email + "," + user.personal.firstName + " "
+//						+ user.personal.lastName + "," + loans.size() + "," + +sortedLoans.size());
 
-				folioService.updateUser(user);
-
-				Thread.sleep(30000);
-
-				for (Loan loan : sortedLoans) {
-
-					// System.out.println("loan " + loan.id + " - due Date - " + loan.getDueDate());
-
-					loan.actionComment = "faculty-retired auto-renewal spring 2024";
-					loan.setDueDate("2024-09-02T04:59:59.000+00:00");
-
-					loan.loanPolicyId = "7abd2943-08a0-4ca1-8cc8-6a1f116e8763";
-					folioService.updateLoan(loan);
-				}
-
-				Thread.sleep(30000);
-
-				user.personal.email = userEmail;
-				folioService.updateUser(user);
-
-				System.out.println(
-
-						user.id + "," + user.personal.email + "," + user.personal.firstName + " "
-								+ user.personal.lastName + "," + loans.size() + "," + +sortedLoans.size());
 			}
 
 		}

@@ -7,14 +7,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-import org.springframework.web.client.RestClientException;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.okstatelibrary.redbud.entity.*;
 import com.okstatelibrary.redbud.folio.entity.*;
 import com.okstatelibrary.redbud.service.*;
-import com.okstatelibrary.redbud.service.external.FolioService;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
 import com.okstatelibrary.redbud.util.Constants;
 import com.okstatelibrary.redbud.util.DateUtil;
@@ -328,7 +323,7 @@ public class UserIntegrationProcess extends MainProcess {
 									// Error occurred when updating the user to inactive status
 									// need to add a dummy record.
 									CustomFields newCustommFields = new CustomFields();
-									newCustommFields.additionalPatronGroup_4 = "Expired user custom field update";
+									newCustommFields.additionalPatronGroup_4 = Constants.expired_user_cutom_field;
 									folioUser.customFields = newCustommFields;
 
 									folioUser.metadata = getMetadata(folioUser.metadata);
@@ -582,30 +577,6 @@ public class UserIntegrationProcess extends MainProcess {
 		return idList;
 	}
 
-	public ArrayList<Root> getFolioUsers(FolioService folioService, GroupService groupService, String instituteCode)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
-
-		ArrayList<Root> userList = new ArrayList<>();
-
-		List<PatronGroup> groups = groupService.getGroupListByInstituteCode(instituteCode);
-
-		for (PatronGroup group : groups) {
-
-			String folioGroupId = group.getFolioGroupId();
-
-			Root root = folioService.getUsersbyPatronGroup(folioGroupId);
-
-			root.folioGroupId = folioGroupId;
-
-			root.folioGroupName = group.getFolioGroupName();
-
-			root.institutionGroup = group.getInstitutionGroup();
-
-			userList.add(root);
-
-		}
-
-		return userList;
-	}
+	
 
 }

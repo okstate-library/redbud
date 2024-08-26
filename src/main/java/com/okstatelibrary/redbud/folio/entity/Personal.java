@@ -12,6 +12,8 @@ public class Personal {
 
 	public String preferredFirstName;
 
+	public String dateOfBirth;
+	
 	public String mobilePhone;
 
 	public String phone;

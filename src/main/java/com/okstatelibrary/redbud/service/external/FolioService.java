@@ -2,6 +2,8 @@ package com.okstatelibrary.redbud.service.external;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -20,10 +22,14 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.okstatelibrary.redbud.folio.entity.*;
+import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord;
+import com.okstatelibrary.redbud.folio.entity.instance.Identifier;
+import com.okstatelibrary.redbud.folio.entity.instance.Instance;
 import com.okstatelibrary.redbud.folio.entity.inventory.Inventory;
 import com.okstatelibrary.redbud.folio.entity.inventory.Item;
 import com.okstatelibrary.redbud.folio.entity.loan.Loan;
 import com.okstatelibrary.redbud.folio.entity.loan.LoanRoot;
+import com.okstatelibrary.redbud.folio.entity.manualblock.ManualBlock;
 import com.okstatelibrary.redbud.folio.entity.request.Request;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
 import com.okstatelibrary.redbud.util.Constants;
@@ -263,6 +269,165 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
+	public ArrayList<HoldingsRecord> getInventoryHoldings(String locationID, String startDateTime, String endDateTime)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+		try {
+			String url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId= "
+					+ locationID + ")&limit=1";
+
+			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					HoldingRoot.class);
+
+			// System.out.println("response.getBody().totalRecords- " +
+			// response.getBody().totalRecords);
+
+			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+
+			ArrayList<HoldingsRecord> pairList = new ArrayList<>();
+
+			System.out.println("totalIterations - " + totalIterations);
+
+			// totalIterations = 20;
+
+			for (int iterations = 0; iterations < totalIterations; iterations++) {
+
+				int offset = iterations * apiRecordlimit;
+
+				url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=( effectiveLocationId= "
+						+ locationID + " )&limit=" + apiRecordlimit + "& offset=" + offset;
+
+//						+ "query=(returnDate>=" + startDateTime
+//						+ " AND returnDate<=" + endDateTime + ")&limit=" + 10 + "
+
+				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), HoldingRoot.class);
+
+				pairList.addAll(response.getBody().holdingsRecords);
+			}
+
+			return pairList;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+	public Set<String> getInventoryInstance(String instanceId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "inventory/instances?query=(id=" + instanceId + ")";
+
+			ResponseEntity<InstanceRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					InstanceRoot.class);
+
+			ArrayList<Instance> Instance = response.getBody().instances;
+
+			Set<String> oclcNumbers = new LinkedHashSet<>();
+
+			for (Instance instance : Instance) {
+
+				for (Identifier identifier : instance.identifiers) {
+
+					String originalText = identifier.value;
+
+					if (originalText.toLowerCase().contains("(ocolc)")
+							&& identifier.identifierTypeId.equals("439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef")) {
+
+						oclcNumbers.add(originalText.replaceAll("\\D+", ""));
+					}
+
+				}
+			}
+
+			return oclcNumbers;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public List<HashMap<String, List<String>>> getInventoryIdentifiers(String startDateTime, String endDateTime)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "inventory/instances?limit=1";
+//					+ "query=(returnDate>=" + startDateTime
+//					+ " AND returnDate<=" + endDateTime + ")&limit=1";
+
+			System.out.println("url- " + url);
+
+			ResponseEntity<InstanceRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					InstanceRoot.class);
+
+			// System.out.println("response.getBody().totalRecords- " +
+			// response.getBody().totalRecords);
+
+			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+
+			List<HashMap<String, List<String>>> pairList = new ArrayList<>();
+
+			System.out.println("totalIterations - " + totalIterations);
+
+			for (int iterations = 0; iterations < 5; iterations++) {
+
+				int offset = iterations * apiRecordlimit;
+
+				url = AppSystemProperties.FolioURL + "inventory/instances?limit=" + apiRecordlimit + "& offset="
+						+ offset;
+//						+ "query=(returnDate>=" + startDateTime
+//						+ " AND returnDate<=" + endDateTime + ")&limit=" + 10 + "
+
+				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), InstanceRoot.class);
+
+				ArrayList<Instance> Instance = response.getBody().instances;
+
+				// System.out.println("Instance.size - " + Instance.size());
+
+				for (Instance instance : Instance) {
+
+					HashMap<String, List<String>> map = new HashMap<>();
+
+					List<String> list = new ArrayList<String>();
+
+					for (Identifier identifier : instance.identifiers) {
+
+						String originalText = identifier.value;
+
+						if (originalText.toLowerCase().contains("(ocolc)")) {
+
+							list.add(originalText + "#" + originalText.replaceAll("\\D+", ""));
+						}
+
+					}
+
+					map.put(instance.id, list);
+
+					pairList.add(map);
+				}
+
+			}
+
+			System.out.println("pairList.size - " + pairList.size());
+
+			return pairList;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	public Item getItem(String itemId)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
@@ -293,7 +458,66 @@ public class FolioService extends FolioServiceToken {
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
-			return response.getBody().users.get(0);
+			if (response.getBody().users.size() > 0) {
+
+				return response.getBody().users.get(0);
+
+			} else {
+
+				System.out.println("externalSystemId is null for" + externalSystemId);
+
+				return null;
+			}
+
+		} catch (Exception e) {
+
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	// https://okapi-okstate.folio.ebsco.com/groups?query=(group
+	// =="OKS-OSU-STUDENT-grad")
+
+	///
+	// Get Patron Group By name
+	///
+	public FolioPatronGroup getPatronGroups()
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "groups?limit=1000";
+
+			ResponseEntity<FolioPatronGroup> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					FolioPatronGroup.class);
+
+			return response.getBody();
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	///
+	// Get Patron Group By Id
+	///
+	public FolioPatronGroup getPatronGroupById(String id)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "groups?query=(id=" + id + ")";
+
+			ResponseEntity<FolioPatronGroup> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					FolioPatronGroup.class);
+
+			return response.getBody();
 
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -486,6 +710,25 @@ public class FolioService extends FolioServiceToken {
 //			}
 //		}
 //		
+
+	public Root getActiveUsers() throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "users?query=active==\"true\"&limit=100000";
+
+			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+
+			return response.getBody();
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	///
 	// Get users by the institute code -
 	///
@@ -535,20 +778,53 @@ public class FolioService extends FolioServiceToken {
 	///
 	// Get over due accounts by the institute code -
 	///
+	public ArrayList<ManualBlock> getPatronsBlocks()
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "manualblocks";
+
+			ResponseEntity<ManualBlockRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					ManualBlockRoot.class);
+
+			int totalIterations = (int) Math.ceil((double) response.getBody().manualblocks.size() / apiRecordlimit);
+
+			ArrayList<ManualBlock> blocks = new ArrayList<>();
+
+			for (int iterations = 0; iterations < totalIterations; iterations++) {
+
+				response = null;
+
+				int offset = iterations * apiRecordlimit;
+
+				url = AppSystemProperties.FolioURL + "manualblocks?limit=" + apiRecordlimit + "&offset" + offset;
+
+				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), ManualBlockRoot.class);
+
+				blocks.addAll(response.getBody().manualblocks);
+			}
+
+			return blocks;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	///
+	// Get over due accounts by the institute code -
+	///
 	public ArrayList<Account> getOverDueAccounts(String feeFineOwner)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
 		try {
 
-//			System.out.println("getOverDueAccounts");
-//
-//			FolioServiceToken token = new FolioServiceToken();
-//			token.getToken();
-
 			String url = AppSystemProperties.FolioURL + "accounts?query=(status.name==\"open\" and feeFineOwner=\""
 					+ feeFineOwner + "  \")";
-
-			// System.out.println("url - " + url);
 
 			ResponseEntity<Accounts> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					Accounts.class);
@@ -654,11 +930,54 @@ public class FolioService extends FolioServiceToken {
 
 		try {
 
-			String url = AppSystemProperties.FolioURL + "users?active=true&patronGroup=" + userGroupId;
+			String url = AppSystemProperties.FolioURL + "users?query=(active==true and patronGroup==" + userGroupId + ")&limit=40000";
+
+			// String url = AppSystemProperties.FolioURL + "users?active=true&patronGroup="
+			// + userGroupId;
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
 			return response.getBody();
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	///
+	// Get users by the patron group id - GUID
+	///
+	public ArrayList<FolioUser> getUsersByPatronGroupId2(String userGroupId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "users?query=(patronGroup==" + userGroupId + ")&limit=1";
+
+			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+
+			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+
+			ArrayList<FolioUser> users = new ArrayList<>();
+
+			for (int iterations = 0; iterations < totalIterations; iterations++) {
+
+				response = null;
+
+				int offset = iterations * apiRecordlimit;
+
+				url = AppSystemProperties.FolioURL + "users?query=(patronGroup==" + userGroupId + ")&limit="
+						+ apiRecordlimit + "&offset" + offset;
+
+				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+
+				users.addAll(response.getBody().users);
+			}
+
+			return users;
 
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -677,7 +996,11 @@ public class FolioService extends FolioServiceToken {
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
-			return response.getBody().users.get(0);
+			if (response.getBody().users.size() > 0) {
+				return response.getBody().users.get(0);
+			} else {
+				return null;
+			}
 
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -696,7 +1019,11 @@ public class FolioService extends FolioServiceToken {
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
-			return response.getBody().users.get(0);
+			if (response.getBody().users.size() > 0) {
+				return response.getBody().users.get(0);
+			} else {
+				return null;
+			}
 
 		} catch (Exception e) {
 			// TODO: handle exception

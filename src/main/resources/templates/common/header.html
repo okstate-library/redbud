@@ -111,6 +111,7 @@
 							<ul class="dropdown-menu">
 								<li><a th:href="@{/reports/overduefines}">Overdue Fines</a></li>
 								<li><a th:href="@{/reports/overdueitems}">Overdue Items</a></li>
+									<li><a th:href="@{/reports/patronblocks}">Patrons Blocks</a></li>
 								<li th:if="${user != null  &&  user.authorized.contains(3)}"><a
 									th:href="@{/reports/inventoryloans}">Inventory loans</a></li>
 

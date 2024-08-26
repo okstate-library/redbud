@@ -169,138 +169,138 @@ public class InactiveUserProcess extends MainProcess {
 
 	}
 
-	public void manipulate(GroupService groupService, String cvsfilepath) {
-
-		startTime = DateUtil.getTodayDateAndTime();
-
-		ArrayList<CsvRoot> csvUserList = new ArrayList<CsvRoot>();
-
-		try {
-			List<PatronGroup> groupList = groupService.getGroupList();
-
-			for (CsvFileModel csvFileModel : Constants.csvFileModels) {
-
-				for (String instituteCode : csvFileModel.institueCodes) {
-
-					csvUserList.add(new CsvRoot(instituteCode));
-				}
-
-				String filePath = cvsfilepath + csvFileModel.csvFilePath;
-
-				csvUserList = getCsvUsers(csvUserList, filePath);
-
-				for (String institueCode : csvFileModel.institueCodes) {
-
-					CsvRoot csvRoot = csvUserList.stream().filter(selRoot -> selRoot.institution.equals(institueCode))
-							.findAny().orElse(null);
-
-					printScreen(institueCode + "  " + csvRoot.users.size(), Constants.ErrorLevel.INFO);
-
-					if (csvUserList == null || csvRoot.users.size() == 0) {
-
-						break;
-					}
-
-					List<PatronGroup> selGroupList = groupList.stream()
-							.filter(selGroup -> selGroup.getInstitutionCode() != null
-									&& selGroup.getInstitutionCode().equals(institueCode)
-									&& selGroup.isFolioOnly() == 0)
-							.collect(Collectors.toList());
-
-					try {
-
-						ReportModel report = csvRoot.report;
-
-						report.fileName = filePath;
-
-						report.subReports = new ArrayList<SubReportModel>();
-
-						for (PatronGroup group : selGroupList) {
-
-							SubReportModel subReport = new SubReportModel(institueCode, group.getFolioGroupName());
-
-							subReport.modifiedUsersInFolioAndCsvUserList = new ArrayList<String>();
-							subReport.modifiedUsersInFoliOnlyErrorUserList = new ArrayList<String>();
-
-							printScreen(group.getFolioGroupId() + "   " + group.getFolioGroupName(),
-									Constants.ErrorLevel.INFO);
-
-							Root folioRoot = folioService.getUsersbyPatronGroup(group.getFolioGroupId());
-
-							List<CsvUserModel> users = csvRoot.users.stream()
-									.filter(selUser -> selUser.getMainUserGroup().equals(group.getFolioGroupName()))
-									.collect(Collectors.toList());
-
-							printScreen("Folio Users count - " + folioRoot.users.size() + " CSV Users count - "
-									+ users.size(), Constants.ErrorLevel.INFO);
-
-							// **********************
-							// USERS IN BOTH CSV FILE AND FOLIO
-							// **********************
-
-							subReport.existingUserModified = new ArrayList<String>();
-
-							for (CsvUserModel csvUser : users) {
-
-								FolioUser folioUser = folioService.getUsersByExternalSystemId(csvUser.getBannerId());
-
-								if (folioUser != null) {
-
-									folioUser.active = true;
-									folioUser.expirationDate = DateUtil.get9MonthsAfterTodayDate();
-
-									CustomFields newCustommFields = new CustomFields();
-									newCustommFields.additionalPatronGroup_4 = csvUser.getUserGroup();
-									folioUser.customFields = newCustommFields;
-
-									folioUser.metadata = getMetadata(folioUser.metadata);
-
-									if (!folioService.updateUser(folioUser)) {
-										printScreen("Error modify only Folio User " + folioUser,
-												Constants.ErrorLevel.INFO);
-
-										subReport.modifiedUsersInFoliOnlyErrorCount++;
-										subReport.modifiedUsersInFoliOnlyErrorUserList.add(folioUser.toString());
-									} else {
-
-										PatronGroup foliogrgoup = groupList.stream()
-												.filter(g -> g.getFolioGroupId().equals(folioUser.patronGroup))
-												.findAny().orElse(null);
-
-										String message = csvUser.toString() + " FOLIO :- "
-												+ foliogrgoup.getFolioGroupName();
-
-										printScreen(message, Constants.ErrorLevel.INFO);
-
-										subReport.modifiedUsersInFolioAndCsvCount++;
-										subReport.modifiedUsersInFolioAndCsvUserList.add(message);
-									}
-
-								}
-
-							}
-
-							report.subReports.add(subReport);
-
-						}
-
-					} catch (Exception e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}
-
-				}
-
-			}
-
-			emailUserInactiveReport(csvUserList);
-
-		} catch (Exception e1) {
-			// TODO Auto-generated catch blocks
-			e1.printStackTrace();
-		}
-
-	}
+//	public void manipulate(GroupService groupService, String cvsfilepath) {
+//
+//		startTime = DateUtil.getTodayDateAndTime();
+//
+//		ArrayList<CsvRoot> csvUserList = new ArrayList<CsvRoot>();
+//
+//		try {
+//			List<PatronGroup> groupList = groupService.getGroupList();
+//
+//			for (CsvFileModel csvFileModel : Constants.csvFileModels) {
+//
+//				for (String instituteCode : csvFileModel.institueCodes) {
+//
+//					csvUserList.add(new CsvRoot(instituteCode));
+//				}
+//
+//				String filePath = cvsfilepath + csvFileModel.csvFilePath;
+//
+//				csvUserList = getCsvUsers(csvUserList, filePath);
+//
+//				for (String institueCode : csvFileModel.institueCodes) {
+//
+//					CsvRoot csvRoot = csvUserList.stream().filter(selRoot -> selRoot.institution.equals(institueCode))
+//							.findAny().orElse(null);
+//
+//					printScreen(institueCode + "  " + csvRoot.users.size(), Constants.ErrorLevel.INFO);
+//
+//					if (csvUserList == null || csvRoot.users.size() == 0) {
+//
+//						break;
+//					}
+//
+//					List<PatronGroup> selGroupList = groupList.stream()
+//							.filter(selGroup -> selGroup.getInstitutionCode() != null
+//									&& selGroup.getInstitutionCode().equals(institueCode)
+//									&& selGroup.isFolioOnly() == 0)
+//							.collect(Collectors.toList());
+//
+//					try {
+//
+//						ReportModel report = csvRoot.report;
+//
+//						report.fileName = filePath;
+//
+//						report.subReports = new ArrayList<SubReportModel>();
+//
+//						for (PatronGroup group : selGroupList) {
+//
+//							SubReportModel subReport = new SubReportModel(institueCode, group.getFolioGroupName());
+//
+//							subReport.modifiedUsersInFolioAndCsvUserList = new ArrayList<String>();
+//							subReport.modifiedUsersInFoliOnlyErrorUserList = new ArrayList<String>();
+//
+//							printScreen(group.getFolioGroupId() + "   " + group.getFolioGroupName(),
+//									Constants.ErrorLevel.INFO);
+//
+//							Root folioRoot = folioService.getUsersbyPatronGroup(group.getFolioGroupId());
+//
+//							List<CsvUserModel> users = csvRoot.users.stream()
+//									.filter(selUser -> selUser.getMainUserGroup().equals(group.getFolioGroupName()))
+//									.collect(Collectors.toList());
+//
+//							printScreen("Folio Users count - " + folioRoot.users.size() + " CSV Users count - "
+//									+ users.size(), Constants.ErrorLevel.INFO);
+//
+//							// **********************
+//							// USERS IN BOTH CSV FILE AND FOLIO
+//							// **********************
+//
+//							subReport.existingUserModified = new ArrayList<String>();
+//
+//							for (CsvUserModel csvUser : users) {
+//
+//								FolioUser folioUser = folioService.getUsersByExternalSystemId(csvUser.getBannerId());
+//
+//								if (folioUser != null) {
+//
+//									folioUser.active = true;
+//									folioUser.expirationDate = DateUtil.get9MonthsAfterTodayDate();
+//
+//									CustomFields newCustommFields = new CustomFields();
+//									newCustommFields.additionalPatronGroup_4 = csvUser.getUserGroup();
+//									folioUser.customFields = newCustommFields;
+//
+//									folioUser.metadata = getMetadata(folioUser.metadata);
+//
+//									if (!folioService.updateUser(folioUser)) {
+//										printScreen("Error modify only Folio User " + folioUser,
+//												Constants.ErrorLevel.INFO);
+//
+//										subReport.modifiedUsersInFoliOnlyErrorCount++;
+//										subReport.modifiedUsersInFoliOnlyErrorUserList.add(folioUser.toString());
+//									} else {
+//
+//										PatronGroup foliogrgoup = groupList.stream()
+//												.filter(g -> g.getFolioGroupId().equals(folioUser.patronGroup))
+//												.findAny().orElse(null);
+//
+//										String message = csvUser.toString() + " FOLIO :- "
+//												+ foliogrgoup.getFolioGroupName();
+//
+//										printScreen(message, Constants.ErrorLevel.INFO);
+//
+//										subReport.modifiedUsersInFolioAndCsvCount++;
+//										subReport.modifiedUsersInFolioAndCsvUserList.add(message);
+//									}
+//
+//								}
+//
+//							}
+//
+//							report.subReports.add(subReport);
+//
+//						}
+//
+//					} catch (Exception e1) {
+//						// TODO Auto-generated catch block
+//						e1.printStackTrace();
+//					}
+//
+//				}
+//
+//			}
+//
+//			emailUserInactiveReport(csvUserList);
+//
+//		} catch (Exception e1) {
+//			// TODO Auto-generated catch blocks
+//			e1.printStackTrace();
+//		}
+//
+//	}
 
 	private void emailUserInactiveReport(ArrayList<CsvRoot> csvRoots) {
 

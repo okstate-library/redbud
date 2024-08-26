@@ -1,16 +1,24 @@
 package com.okstatelibrary.redbud.controller;
 
+import com.okstatelibrary.redbud.config.CronJobLister;
 import com.okstatelibrary.redbud.entity.CsvFileModel;
+import com.okstatelibrary.redbud.entity.CsvRoot;
+import com.okstatelibrary.redbud.entity.CsvUserModel;
 import com.okstatelibrary.redbud.entity.FileModel;
+import com.okstatelibrary.redbud.entity.ReportModel;
 import com.okstatelibrary.redbud.entity.User;
 import com.okstatelibrary.redbud.operations.ChangePatronGroupProcess;
 import com.okstatelibrary.redbud.operations.CirculationLogProcess;
 import com.okstatelibrary.redbud.operations.InactiveUserProcess;
 import com.okstatelibrary.redbud.operations.InfrastructureSetupProcess;
 import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
+import com.okstatelibrary.redbud.operations.UserPatronGroupReportProcess;
+import com.okstatelibrary.redbud.operations.UserPatronGroupUpdateProcess;
 import com.okstatelibrary.redbud.operations.LoanDueDateUpdateProcess;
 import com.okstatelibrary.redbud.operations.MainProcess;
+import com.okstatelibrary.redbud.operations.NullUserPropertyCheckProcess;
 import com.okstatelibrary.redbud.operations.OCLCMetadataProcess;
+import com.okstatelibrary.redbud.operations.UserFieldsUpdateProcess;
 import com.okstatelibrary.redbud.service.CampusService;
 import com.okstatelibrary.redbud.service.CirculationLogService;
 import com.okstatelibrary.redbud.service.GroupService;
@@ -23,6 +31,7 @@ import com.okstatelibrary.redbud.util.CacheMap;
 import com.okstatelibrary.redbud.util.Constants;
 import com.okstatelibrary.redbud.util.DateUtil;
 
+import org.apache.http.client.ClientProtocolException;
 import org.apache.oltu.oauth2.common.exception.OAuthProblemException;
 import org.apache.oltu.oauth2.common.exception.OAuthSystemException;
 import org.slf4j.Logger;
@@ -34,7 +43,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestClientException;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.security.Principal;
 import java.text.DateFormat;
@@ -49,6 +60,9 @@ import java.util.List;
 public class SettingsController {
 
 	private static final Logger LOG = LoggerFactory.getLogger(SettingsController.class);
+
+	@Autowired
+	CronJobLister lister;
 
 	@Autowired
 	private UserService userService;
@@ -117,10 +131,13 @@ public class SettingsController {
 
 		model.addAttribute(CacheMap.process_Execute_Inactive_Users,
 				CacheMap.get(CacheMap.process_Execute_Inactive_Users));
-		
-		model.addAttribute(CacheMap.process_Send_Test_Email,
-				CacheMap.get(CacheMap.process_Send_Test_Email));
 
+		model.addAttribute(CacheMap.process_Send_Test_Email, CacheMap.get(CacheMap.process_Send_Test_Email));
+
+		//model.addAttribute("scheduled_jobs", lister.listCronJobs());
+
+		lister.listCronJobs();
+		
 		return "operations";
 	}
 
@@ -264,15 +281,10 @@ public class SettingsController {
 
 				public void run() {
 
-					// CacheMap.set("ProcessRunning", "true");
-
 					InactiveUserProcess oprocess = new InactiveUserProcess();
 
 					oprocess.printScreen("Beeper starts for convert inactive users " + DateUtil.getTodayDateAndTime(),
 							Constants.ErrorLevel.INFO);
-
-					// oprocess.copyFiles(systemProperties.getSftpfilepath(),
-					// systemProperties.getCvsfilepath());
 
 					oprocess.manipulate(groupService);
 
@@ -324,10 +336,12 @@ public class SettingsController {
 
 					try {
 
-						oprocess.manipulate("e8f2c425-2daa-44fd-a813-7bfd2329e8cc");// 02609d66-4b2a-47f6-988a-cf7b5b2932c7
-																					// 81092b0c-c13f-496f-bc16-8c648773c38e");
-																					// e8f2c425-2daa-44fd-a813-7bfd2329e8cc
-																					// - faculty-ret
+						// c88e6e42-9544-4e5e-ae94-a50c07b9dfbf OKS-OSU-admin
+						// 02609d66-4b2a-47f6-988a-cf7b5b2932c7 - OKS-OSU-faculty
+						// e8f2c425-2daa-44fd-a813-7bfd2329e8cc - OKS-OSU-faculty -ret
+
+						oprocess.manipulate("c88e6e42-9544-4e5e-ae94-a50c07b9dfbf");
+
 					} catch (RestClientException | IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -443,9 +457,57 @@ public class SettingsController {
 
 		return "operations";
 	}
-	
+
 	@GetMapping("/oclcMetaDataProcess")
 	public String oclcMetaDataProcess(Principal principal, Model model) throws IOException {
+
+		System.out.println("oclcMetaDataProcess ");
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_OCLC_NUmbers_Process, CacheMap.running);
+
+					try {
+						OCLCMetadataProcess oprocess = new OCLCMetadataProcess();
+
+						oprocess.getOCLCItems("");
+
+					} catch (OAuthSystemException | OAuthProblemException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (ClientProtocolException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					CacheMap.set(CacheMap.process_OCLC_NUmbers_Process, CacheMap.idle);
+				}
+			});
+
+			System.out.println("oclcMetaDataProcess -finished");
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+	@GetMapping("/userFieldsUpdateProcess")
+	public String userFieldsUpdateProcess(Principal principal, Model model) throws IOException {
 
 		User user = userService.findByUsername(principal.getName());
 
@@ -459,29 +521,9 @@ public class SettingsController {
 
 					CacheMap.set(CacheMap.process_Send_Test_Email, CacheMap.running);
 
-					try {
-						OCLCMetadataProcess oprocess = new OCLCMetadataProcess();
-						
-						
-					} catch (OAuthSystemException | OAuthProblemException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
+					UserFieldsUpdateProcess oprocess = new UserFieldsUpdateProcess();
 
-//					oprocess.printScreen("Beeper send email " + DateUtil.getTodayDateAndTime(),
-//							Constants.ErrorLevel.INFO);
-//
-//					try {
-//
-//						oprocess.sendEmaill("Test Title", "Test Message");
-//
-//					} catch (RestClientException e) {
-//						// TODO Auto-generated catch block
-//						e.printStackTrace();
-//					}
-//
-//					oprocess.printScreen("Beeper ends for send email " + DateUtil.getTodayDateAndTime(),
-//							Constants.ErrorLevel.INFO);
+					oprocess.manipulate(groupService);
 
 					CacheMap.set(CacheMap.process_Send_Test_Email, CacheMap.idle);
 				}
@@ -495,7 +537,161 @@ public class SettingsController {
 
 		return "operations";
 	}
-	
-	
+
+	/**
+	 * Update the user's new bar codes depending on their's old bar code values.
+	 * 
+	 * @param principal
+	 * @param model
+	 * @return to the same page that operates.
+	 * @throws IOException
+	 */
+
+	@GetMapping("/userBarcodesUpdateProcess")
+	public String userBarcodesUpdateProcess(Principal principal, Model model) throws IOException {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_Send_Test_Email, CacheMap.running);
+
+					UserFieldsUpdateProcess oprocess = new UserFieldsUpdateProcess();
+
+					oprocess.manipulateBarcode();
+
+					CacheMap.set(CacheMap.process_Send_Test_Email, CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+	@GetMapping("/userPatronGroupUpdateProcess")
+	public String userPatronGroupUpdateProcess(Principal principal, Model model) {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set("ProcessRunning", CacheMap.running);
+
+					UserPatronGroupUpdateProcess oprocess = new UserPatronGroupUpdateProcess();
+
+					oprocess.manipulate(groupService);
+
+					CacheMap.set("ProcessRunning", CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+	@GetMapping("/userPatronGroupReportProcess")
+	public String userPatronGroupReportProcess(Principal principal, Model model) {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set("ProcessRunning", CacheMap.running);
+
+					UserPatronGroupReportProcess oprocess = new UserPatronGroupReportProcess();
+
+					try {
+						oprocess.manipulate(groupService);
+					} catch (RestClientException | IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					CacheMap.set("ProcessRunning", CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+	@GetMapping("/nullUserPropertyCheckProcess")
+	public String nullUserPropertyCheckProcess(Principal principal, Model model) {
+
+		System.out.println("null chekc user ");
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set("ProcessRunning", CacheMap.running);
+
+					NullUserPropertyCheckProcess oprocess = new NullUserPropertyCheckProcess();
+
+					oprocess.manipulate(groupService);
+
+					CacheMap.set("ProcessRunning", CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
 
 }
