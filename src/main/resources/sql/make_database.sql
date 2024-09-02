@@ -1,3 +1,12 @@
+CREATE TABLE `redbuddb`.`service_point` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `code` VARCHAR(45) NULL,
+  `name` VARCHAR(45) NOT NULL,
+  PRIMARY KEY (`id`));
+
+ALTER TABLE `redbuddb`.`service_point` 
+ADD COLUMN `servicepoint_id` VARCHAR(45) NULL AFTER `id`;
+
 CREATE TABLE `campus` (
   `id` int NOT NULL AUTO_INCREMENT,
   `institution_id` varchar(45) DEFAULT NULL,

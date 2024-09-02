@@ -125,7 +125,7 @@ public class CirculationLogProcess extends MainProcess {
 
 	public void initialManipulate() throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		ArrayList<Loan> loans = folioService.getClosedLoans();
+		ArrayList<Loan> loans = folioService.getClosedLoans(true, "");
 
 		printScreen("Yesterday time - " + DateUtil.getYesterdayDate(true), Constants.ErrorLevel.INFO);
 

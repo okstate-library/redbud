@@ -62,7 +62,7 @@ public class DailyJobScheduler {
 
 	}
 
-	// Define the cron expression for 1:30 AM every day
+	// Define the cron expression for 3:00 AM every day
 	@Scheduled(cron = "0 00 3 * * *")
 	public void runCirculationJob() {
 

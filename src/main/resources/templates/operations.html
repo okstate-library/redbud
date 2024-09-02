@@ -131,6 +131,32 @@
 				</form>
 
 			</div>
+			
+			<div class="row top-buffer container-border">
+				<h4>GOV Docs location operation.</h4>
+				<form method="get" th:action="@{/settings/govDocsLocationUpdateProcess}">
+
+					<div class="row">
+						<div class="col-xs-8">Update the location of the selected Gov Doc location.</div>
+
+						<div class="col-xs-2">
+							<button type="submit" id="executegovDocsLocationUpdateProcess"
+								name="executegovDocsLocationUpdateProcess" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executegovDocsLocationUpdateProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${oclc_Number_Process}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+			
 
 
 
@@ -390,9 +416,8 @@
 
 				<div class="row">
 					<div class="col-xs-8">
-						<h1>List of Strings</h1>
 						<ul>
-							<li th:each="str : ${scheduled_jobs}" th:text="${str}"></li>
+							<li th:each="str : ${corn_scheduled_jobs}" th:text="${str}"></li>
 						</ul>
 					</div>
 

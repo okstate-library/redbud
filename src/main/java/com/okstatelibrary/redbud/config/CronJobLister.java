@@ -6,8 +6,12 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
+import com.okstatelibrary.redbud.util.SingletonStringList;
+
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 @Service
@@ -16,7 +20,12 @@ public class CronJobLister {
 	@Autowired
 	private ApplicationContext applicationContext;
 
+	public SingletonStringList singletonList;
+
 	public void listCronJobs() {
+
+		singletonList = SingletonStringList.getInstance();
+		
 		Map<String, Object> beans = applicationContext.getBeansWithAnnotation(Component.class);
 
 		beans.forEach((name, bean) -> {
@@ -29,13 +38,24 @@ public class CronJobLister {
 	}
 
 	private void printCronJobDetails(Method method) {
+
 		Scheduled scheduled = method.getAnnotation(Scheduled.class);
 
-		System.out.println("Cron Job Method: " + method.getName());
-		System.out.println("Cron Expression: " + scheduled.cron());
-		System.out.println("Fixed Rate: " + scheduled.fixedRate());
-		System.out.println("Fixed Delay: " + scheduled.fixedDelay());
-		System.out.println("Initial Delay: " + scheduled.initialDelay());
-		System.out.println("-----------------------------------");
+		System.out.println("Adding values to the list");
+		
+		singletonList.addValue("Cron Job Method: " + method.getName());
+		singletonList.addValue("Cron Expression: " + scheduled.cron());
+		singletonList.addValue("Fixed Rate: " + scheduled.fixedRate());
+		singletonList.addValue("Fixed Delay: " + scheduled.fixedDelay());
+		singletonList.addValue("Initial Delay: " + scheduled.initialDelay());
+		singletonList.addValue("-----------------------------------");
+
+//		
+//		System.out.println("Cron Job Method: " + method.getName());
+//		System.out.println("Cron Expression: " + scheduled.cron());
+//		System.out.println("Fixed Rate: " + scheduled.fixedRate());
+//		System.out.println("Fixed Delay: " + scheduled.fixedDelay());
+//		System.out.println("Initial Delay: " + scheduled.initialDelay());
+//		System.out.println("-----------------------------------");
 	}
 }

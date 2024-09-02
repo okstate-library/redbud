@@ -5,7 +5,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import org.springframework.web.client.RestClientException;
@@ -14,6 +16,9 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.okstatelibrary.redbud.entity.*;
 import com.okstatelibrary.redbud.folio.entity.*;
+import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord;
+import com.okstatelibrary.redbud.folio.entity.inventory.Item;
+import com.okstatelibrary.redbud.folio.entity.inventory.PermanentLocation;
 import com.okstatelibrary.redbud.service.*;
 import com.okstatelibrary.redbud.service.external.FolioService;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
@@ -25,7 +30,8 @@ public class GovDocsLocationUpdateProcess extends MainProcess {
 	// Stores the Start time
 	protected String startTime;
 
-	public void manipulate(GroupService groupService) {
+	public void manipulate(GroupService groupService)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException, InterruptedException {
 
 		FolioPatronGroup foliGroups = null;
 
@@ -36,175 +42,158 @@ public class GovDocsLocationUpdateProcess extends MainProcess {
 			e1.printStackTrace();
 		}
 
-		
-		 Map<String, String> map = new HashMap<>();
-	        map.put(" Gov Docs Books", "8dbf28fd-cfc9-4d64-8119-05f20abb9388");
-	        map.put("key2", "value2");
-		
-		
-		
-		for (CsvFileModel csvFileModel : Constants.csvFileModels) {
+		Map<String, String> map = new HashMap<>();
 
-			String filePath = AppSystemProperties.CvsFilePath + csvFileModel.csvFilePath;
+//		map.put("OKS-OSU Gov Docs Books", "5786bece-3dae-4d56-85a3-3a5402bf1921");
+//		map.put("OKS-OSU Gov Docs Oversize", "240b5123-8b7f-43ce-bc9e-4dc34f1f0ce1");
+//		map.put("OKS-OSU Gov Docs Periodical", "30576e1f-4fdb-4d3d-b195-b8dbd075f5b0");
+		map.put("OKS-OSU Gov Docs Legal Reference", "59123119-f149-422f-a231-d8de99f7f355");
+//		map.put("OKS-OSU Gov Docs Reference, Main", "bb4ba5bf-7443-4a07-a034-20348999267d");
+//		map.put("OKS-OSU Gov Docs Reference", "8ef9df9d-0b62-40a8-ac14-4d4e0fc33e17");
 
-			ArrayList<CsvUserModel> csvUserList = getCsvUsers(filePath);
+		for (Map.Entry<String, String> entry : map.entrySet()) {
 
-			System.out.println("filePath " + filePath);
+			String locationName = entry.getKey();
+			String locationId = entry.getValue();
 
-			System.out.println("csv file size " + csvUserList.size());
+			System.out.println("Location name: " + locationName + ", location Id: " + locationId);
 
-			System.out.println("BannerId, Name , folio User Group , custom field user group");
+			HoldingRoot holdingRoot = folioService.getHoldingsStorageByLocationId(entry.getValue());
 
-			int count = 0;
+			System.out.println("Total Holdings Records" + holdingRoot.totalRecords);
 
-			for (CsvUserModel csvUserModel : csvUserList) {
+			int emptyRecords = 0;
+			int notEmptyRecords = 0;
 
-				count++;
+			for (HoldingsRecord holding : holdingRoot.holdingsRecords) {
 
-				if (count % 1000 == 0) {
-					System.out.println("record count " + count);
+				System.out.println(" holding.instanceId " + holding.id);
 
-				}
+				ItemRoot itemRoot = folioService.getInventoryItemById(holding.id);
 
-//					System.out.println(csvUserModel.getBannerId() + "- " + csvUserModel.getFirstName() + " "
-//							+ csvUserModel.getLastName());
-//					
-				String[] customFields = csvUserModel.getUserGroup().split(";");
+				System.out.println(" Total item records " + itemRoot.totalRecords);
 
-				String currentUserGroup = customFields[0];
+				for (Item item : itemRoot.items) {
 
-				Usergroup futureUserGroup = foliGroups.usergroups.stream()
-						.filter(selGroup -> selGroup.group.toLowerCase().equals(currentUserGroup.toLowerCase()))
-						.findFirst().get();
+					if (item.permanentLocation == null) {
+						emptyRecords++;
 
-//					System.out.println(csvUserModel.getBannerId() + " - " + csvUserModel.getFirstName() + " "
-//							+ csvUserModel.getLastName() + " - " + csvUserModel.getUserGroup());
+						System.out.println("Hoding id" + holding.id + "----");
 
-				try {
+						item.permanentLocation = new PermanentLocation();
 
-					FolioUser folioUser = folioService.getUserByExternalSystemId(csvUserModel.getBannerId());
+						item.permanentLocation.id = locationId;
+						item.permanentLocation.name = locationName;
+						folioService.updateInventoryItem(item);
 
-					if (folioUser != null) {
+						System.out.println("DONE DONE");
 
-						Usergroup folioUserGroup = foliGroups.usergroups.stream()
-								.filter(selGroup -> selGroup.id.equals(folioUser.patronGroup)).findFirst().get();
+						Thread.sleep(5000);
 
-//					System.out.println(folioUser.externalSystemId + " - " + folioUser.personal.firstName + " "
-//							+ folioUser.personal.lastName + " - " + pastUserGroup.group + " - "
-//							+ futureUserGroup.group);
-
-						if (!futureUserGroup.id.equals(folioUser.patronGroup)) {
-
-							// Update Code
-//							folioUser.patronGroup = futureUserGroup.id;
-//
-//							CustomFields newCustommFields = new CustomFields();
-//							newCustommFields.additionalPatronGroup_4 = csvUserModel.getUserGroup();
-//							folioUser.customFields = newCustommFields;
-//
-//							folioUser.metadata = getMetadata(folioUser.metadata);
-
-//							if (!folioService.updateUser(folioUser)) {
-//
-//								printScreen("Error modify only Folio User " + folioUser, Constants.ErrorLevel.INFO);
-//
-//							} else {
-
-							System.out.println(csvUserModel.getBannerId() + ", " + csvUserModel.getFirstName() + " "
-									+ csvUserModel.getLastName() + "," + folioUserGroup.group + "," + currentUserGroup);
-							// }
-
-//						System.out.println(folioUser.externalSystemId + " - " + folioUser.personal.firstName + " "
-//								+ folioUser.personal.lastName + " - " + pastUserGroup.group);
-						}
+					} else {
+						notEmptyRecords++;
+						// System.out.println(item.title + " " + holding.id + "+++");
 					}
-
-				} catch (RestClientException | IOException e) {
-
-					e.printStackTrace();
 				}
+
+				System.out.println("emptyRecords-" + emptyRecords + "notEmptyRecords-" + notEmptyRecords);
+
+				System.out.println("");
+
+				emptyRecords = 0;
+				notEmptyRecords = 0;
 
 			}
 
-			System.out.println(" end of csv file " + csvFileModel.csvFilePath);
-
 		}
 
-	}
+//		for (CsvFileModel csvFileModel : Constants.csvFileModels) {
+//
+//			String filePath = AppSystemProperties.CvsFilePath + csvFileModel.csvFilePath;
+//
+//			ArrayList<CsvUserModel> csvUserList = getCsvUsers(filePath);
+//
+//			System.out.println("filePath " + filePath);
+//
+//			System.out.println("csv file size " + csvUserList.size());
+//
+//			System.out.println("BannerId, Name , folio User Group , custom field user group");
+//
+//			int count = 0;
+//
+//			for (CsvUserModel csvUserModel : csvUserList) {
+//
+//				count++;
+//
+//				if (count % 1000 == 0) {
+//					System.out.println("record count " + count);
+//
+//				}
+//
+////					System.out.println(csvUserModel.getBannerId() + "- " + csvUserModel.getFirstName() + " "
+////							+ csvUserModel.getLastName());
+////					
+//				String[] customFields = csvUserModel.getUserGroup().split(";");
+//
+//				String currentUserGroup = customFields[0];
+//
+//				Usergroup futureUserGroup = foliGroups.usergroups.stream()
+//						.filter(selGroup -> selGroup.group.toLowerCase().equals(currentUserGroup.toLowerCase()))
+//						.findFirst().get();
+//
+////					System.out.println(csvUserModel.getBannerId() + " - " + csvUserModel.getFirstName() + " "
+////							+ csvUserModel.getLastName() + " - " + csvUserModel.getUserGroup());
+//
+//				try {
+//
+//					FolioUser folioUser = folioService.getUserByExternalSystemId(csvUserModel.getBannerId());
+//
+//					if (folioUser != null) {
+//
+//						Usergroup folioUserGroup = foliGroups.usergroups.stream()
+//								.filter(selGroup -> selGroup.id.equals(folioUser.patronGroup)).findFirst().get();
+//
+////					System.out.println(folioUser.externalSystemId + " - " + folioUser.personal.firstName + " "
+////							+ folioUser.personal.lastName + " - " + pastUserGroup.group + " - "
+////							+ futureUserGroup.group);
+//
+//						if (!futureUserGroup.id.equals(folioUser.patronGroup)) {
+//
+//							// Update Code
+////							folioUser.patronGroup = futureUserGroup.id;
+////
+////							CustomFields newCustommFields = new CustomFields();
+////							newCustommFields.additionalPatronGroup_4 = csvUserModel.getUserGroup();
+////							folioUser.customFields = newCustommFields;
+////
+////							folioUser.metadata = getMetadata(folioUser.metadata);
+//
+////							if (!folioService.updateUser(folioUser)) {
+////
+////								printScreen("Error modify only Folio User " + folioUser, Constants.ErrorLevel.INFO);
+////
+////							} else {
+//
+//							System.out.println(csvUserModel.getBannerId() + ", " + csvUserModel.getFirstName() + " "
+//									+ csvUserModel.getLastName() + "," + folioUserGroup.group + "," + currentUserGroup);
+//							// }
+//
+////						System.out.println(folioUser.externalSystemId + " - " + folioUser.personal.firstName + " "
+////								+ folioUser.personal.lastName + " - " + pastUserGroup.group);
+//						}
+//					}
+//
+//				} catch (RestClientException | IOException e) {
+//
+//					e.printStackTrace();
+//				}
+//
+//			}
+//
+//			System.out.println(" end of csv file " + csvFileModel.csvFilePath);
+//
+//		}
 
-	// Get the users reading the csv file.
-	public ArrayList<CsvUserModel> getCsvUsers(String filePath) {
-
-		ArrayList<CsvUserModel> csvUserList = new ArrayList<CsvUserModel>();
-
-		File folder = new File(filePath);
-
-		File[] listOfFiles = folder.listFiles();
-
-		for (int i = 0; i < listOfFiles.length; i++) {
-
-			File csvFile = listOfFiles[i];
-
-			if (csvFile.isFile() && csvFile.getName().contains(".csv")) {
-
-				String line = "";
-
-				try {
-
-					// parsing a CSV file into BufferedReader class constructor
-					@SuppressWarnings("resource")
-					BufferedReader br = new BufferedReader(new FileReader(csvFile));
-
-					while ((line = br.readLine()) != null) // returns a Boolean value
-					{
-
-						String csvInstitution = line.split(",")[0];
-
-						if (csvInstitution.equals("INSTITUTION")) {
-							continue;
-						}
-
-						try {
-
-							CsvUserModel csvModel = new CsvUserModel(line);
-
-							csvUserList.add(csvModel);
-
-						} catch (Exception e) {
-							System.out.println("line" + line);
-							e.printStackTrace();
-						}
-
-					}
-
-				} catch (IOException e) {
-
-					e.printStackTrace();
-				}
-
-			}
-		}
-
-		return csvUserList;
-	}
-
-	// Get the users reading the csv file.
-	public ArrayList<String> getValues(String filePath) throws IOException {
-
-		ArrayList<String> idList = new ArrayList<String>();
-
-		String line = "";
-
-		// parsing a CSV file into BufferedReader class constructor
-		@SuppressWarnings("resource")
-		BufferedReader br = new BufferedReader(new FileReader(filePath));
-
-		while ((line = br.readLine()) != null) // returns a Boolean value
-		{
-			idList.add(line);
-		}
-
-		return idList;
 	}
 
 }

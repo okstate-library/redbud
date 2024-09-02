@@ -231,12 +231,24 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
-	public ArrayList<Loan> getClosedLoans()
+	public ArrayList<Loan> getClosedLoans(boolean isClosed, String servicePoint)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
 		try {
 
-			String url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=1&query=(status.name==closed)";
+			String url = "";
+
+			if (isClosed) {
+				url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=1&query=(status.name==closed)";
+
+			} else {
+				// loan-storage/loans?limit=1&query=(status.name==open)";
+
+				url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"open\" AND "
+						+ "checkoutServicePointId == \"" + servicePoint + "\")&limit=1";
+			}
+
+			System.out.println(url);
 
 			ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					CirculationRoot.class);
@@ -251,8 +263,17 @@ public class FolioService extends FolioServiceToken {
 
 				int offset = iterations * apiRecordlimit;
 
-				url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=" + apiRecordlimit
-						+ "&query=(status.name==closed)&offset=" + offset;
+				if (isClosed) {
+
+					url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=" + apiRecordlimit
+							+ "&query=(status.name==closed)&offset=" + offset;
+
+				} else {
+					// loan-storage/loans?limit=1&query=(status.name==open)";
+
+					url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=" + apiRecordlimit
+							+ "&query=(status.name==\"open\" AND checkoutServicePointId == \"" + servicePoint + "\")";
+				}
 
 				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
 
@@ -442,6 +463,78 @@ public class FolioService extends FolioServiceToken {
 			return response.getBody();
 
 		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public ItemRoot getInventoryItemById(String holdingsRecordId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "inventory/items-by-holdings-id?query=(holdingsRecordId=="
+					+ holdingsRecordId + ")";
+
+			// System.out.println("url" + url);
+
+			ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					ItemRoot.class);
+
+			// System.out.println(response);
+
+			return response.getBody();
+
+		} catch (Exception e) {
+
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public boolean updateInventoryItem(Item payload) {
+
+		HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "inventory/holdings/" + payload.id;
+
+			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
+
+			return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
+
+		} catch (Exception e) {
+
+			System.out.println("Error update Item - " + payload.id);
+
+			e.getMessage();
+
+			e.printStackTrace();
+
+			return false;
+		}
+	}
+
+	public HoldingRoot getHoldingsStorageByLocationId(String permanentLocationId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL
+					+ "holdings-storage/holdings?limit=10000&query=(permanentLocationId==" + permanentLocationId + ")";
+
+			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					HoldingRoot.class);
+
+			return response.getBody();
+
+		} catch (Exception e) {
+
 			// TODO: handle exception
 			e.getMessage();
 			e.printStackTrace();
@@ -930,7 +1023,8 @@ public class FolioService extends FolioServiceToken {
 
 		try {
 
-			String url = AppSystemProperties.FolioURL + "users?query=(active==true and patronGroup==" + userGroupId + ")&limit=40000";
+			String url = AppSystemProperties.FolioURL + "users?query=(active==true and patronGroup==" + userGroupId
+					+ ")&limit=40000";
 
 			// String url = AppSystemProperties.FolioURL + "users?active=true&patronGroup="
 			// + userGroupId;
@@ -1071,6 +1165,25 @@ public class FolioService extends FolioServiceToken {
 			LOG.warn(msg);
 			break;
 
+		}
+	}
+
+	public ArrayList<com.okstatelibrary.redbud.folio.entity.servicepoint.ServicePoint> getServicePoints() {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "service-points?limit=100";
+
+			ResponseEntity<ServicePointRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					ServicePointRoot.class);
+
+			return response.getBody().servicepoints;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
 		}
 	}
 

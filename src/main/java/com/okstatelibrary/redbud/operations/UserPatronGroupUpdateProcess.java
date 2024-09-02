@@ -59,12 +59,13 @@ public class UserPatronGroupUpdateProcess extends MainProcess {
 
 				}
 
-//					System.out.println(csvUserModel.getBannerId() + "- " + csvUserModel.getFirstName() + " "
-//							+ csvUserModel.getLastName());
 //					
 				String[] customFields = csvUserModel.getUserGroup().split(";");
 
 				String currentUserGroup = customFields[0];
+
+//				System.out.println(csvUserModel.getBannerId() + "- " + csvUserModel.getFirstName() + " "
+//						+ csvUserModel.getLastName() + " - "  + currentUserGroup);
 
 				Usergroup futureUserGroup = foliGroups.usergroups.stream()
 						.filter(selGroup -> selGroup.group.toLowerCase().equals(currentUserGroup.toLowerCase()))
@@ -89,23 +90,24 @@ public class UserPatronGroupUpdateProcess extends MainProcess {
 						if (!futureUserGroup.id.equals(folioUser.patronGroup)) {
 
 							// Update Code
-//							folioUser.patronGroup = futureUserGroup.id;
-//
-//							CustomFields newCustommFields = new CustomFields();
-//							newCustommFields.additionalPatronGroup_4 = csvUserModel.getUserGroup();
-//							folioUser.customFields = newCustommFields;
-//
-//							folioUser.metadata = getMetadata(folioUser.metadata);
+							folioUser.patronGroup = futureUserGroup.id;
 
-//							if (!folioService.updateUser(folioUser)) {
-//
-//								printScreen("Error modify only Folio User " + folioUser, Constants.ErrorLevel.INFO);
-//
-//							} else {
+							CustomFields newCustommFields = new CustomFields();
+							newCustommFields.additionalPatronGroup_4 = csvUserModel.getUserGroup();
+							folioUser.customFields = newCustommFields;
 
-							System.out.println(csvUserModel.getBannerId() + ", " + csvUserModel.getFirstName() + " "
-									+ csvUserModel.getLastName() + "," + folioUserGroup.group + "," + currentUserGroup);
-							// }
+							folioUser.metadata = getMetadata(folioUser.metadata);
+
+							if (!folioService.updateUser(folioUser)) {
+
+								printScreen("Error modify only Folio User " + folioUser, Constants.ErrorLevel.INFO);
+
+							} else {
+
+								System.out.println(csvUserModel.getBannerId() + ", " + csvUserModel.getFirstName() + " "
+										+ csvUserModel.getLastName() + "," + folioUserGroup.group + ","
+										+ currentUserGroup);
+							}
 
 //						System.out.println(folioUser.externalSystemId + " - " + folioUser.personal.firstName + " "
 //								+ folioUser.personal.lastName + " - " + pastUserGroup.group);

@@ -7,8 +7,10 @@ import com.okstatelibrary.redbud.entity.CsvUserModel;
 import com.okstatelibrary.redbud.entity.FileModel;
 import com.okstatelibrary.redbud.entity.ReportModel;
 import com.okstatelibrary.redbud.entity.User;
+import com.okstatelibrary.redbud.folio.entity.servicepoint.ServicePoint;
 import com.okstatelibrary.redbud.operations.ChangePatronGroupProcess;
 import com.okstatelibrary.redbud.operations.CirculationLogProcess;
+import com.okstatelibrary.redbud.operations.GovDocsLocationUpdateProcess;
 import com.okstatelibrary.redbud.operations.InactiveUserProcess;
 import com.okstatelibrary.redbud.operations.InfrastructureSetupProcess;
 import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
@@ -25,6 +27,7 @@ import com.okstatelibrary.redbud.service.GroupService;
 import com.okstatelibrary.redbud.service.InstitutionService;
 import com.okstatelibrary.redbud.service.LibraryService;
 import com.okstatelibrary.redbud.service.LocationService;
+import com.okstatelibrary.redbud.service.ServicePointService;
 import com.okstatelibrary.redbud.service.UserService;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
 import com.okstatelibrary.redbud.util.CacheMap;
@@ -80,6 +83,9 @@ public class SettingsController {
 	private LibraryService libraryService;
 
 	@Autowired
+	private ServicePointService servicePointService;
+
+	@Autowired
 	private LocationService locationService;
 
 	@Autowired
@@ -104,7 +110,7 @@ public class SettingsController {
 
 		InfrastructureSetupProcess infra = new InfrastructureSetupProcess();
 
-		infra.manipulate(institutionService, campusService, libraryService, locationService);
+		infra.manipulate(institutionService, campusService, libraryService, locationService, servicePointService);
 
 		return "infrastructure";
 	}
@@ -134,10 +140,10 @@ public class SettingsController {
 
 		model.addAttribute(CacheMap.process_Send_Test_Email, CacheMap.get(CacheMap.process_Send_Test_Email));
 
-		//model.addAttribute("scheduled_jobs", lister.listCronJobs());
-
 		lister.listCronJobs();
-		
+
+		model.addAttribute("corn_scheduled_jobs", lister.singletonList.getList());
+
 		return "operations";
 	}
 
@@ -694,4 +700,48 @@ public class SettingsController {
 		return "operations";
 	}
 
+	@GetMapping("/govDocsLocationUpdateProcess")
+	public String govDocsLocationUpdateProcess(Principal principal, Model model) {
+
+		System.out.println("null chekc user ");
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set("ProcessRunning", CacheMap.running);
+
+					GovDocsLocationUpdateProcess oprocess = new GovDocsLocationUpdateProcess();
+
+					try {
+						oprocess.manipulate(groupService);
+					} catch (RestClientException | IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					CacheMap.set("ProcessRunning", CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
 }

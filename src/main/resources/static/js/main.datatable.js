@@ -15,6 +15,103 @@ function formatDescription(d) {
 	
 }
 
+function  callOverdueOpenLoansReportAjaxRequest()
+{
+	//alert('sdadsd');
+	
+	var e = document.getElementById("servicePointDropDown");
+	var servicepointid = e.value;
+
+	if (servicepointid != 0) {
+
+	$.ajax({
+		type : "GET",
+		cache : false,
+		url : '/reports/overdueOpenLoans/data',
+		data : {
+			"servicepointid" : servicepointid
+		},
+		beforeSend : function() {
+			$('#loader').removeClass('hidden') // Loader
+		},
+		success : function(data) {
+
+			$('#overdueOpenLoansDataTable').dataTable().fnDestroy();
+
+			var table = $('#overdueOpenLoansDataTable').DataTable(
+					{
+
+						dom : 'Bfrtip',
+						buttons : [ 'excel', 'print' ],
+						data : data,
+						order : [ [ 1, 'asc' ] ],
+						dom : 'Blfrtip',
+						orderCellsTop : true,
+						fixedHeader : true,
+						autoWidth : false,
+
+						"columnDefs" : [ {
+							title : "Location",
+							"targets" : 0
+						}, {
+							title : "Barcode",
+							"targets" : 1,
+							width : '5px'
+						}, {
+							title : "Title",
+							"targets" : 2,
+							width : '15px'
+						}, {
+							title : "Due Date",
+							"targets" : 3,
+							width : '5px'
+						}, {
+							title : "Primary Identifiier",
+							"targets" : 4
+						}, {
+							title : "User",
+							"targets" : 5
+						},
+						{
+							title : "Email",
+							"targets" : 6
+						}, {
+							title : "Phone",
+							"targets" : 7
+						} ],
+						columns : [ {
+							"data" : "location"
+						}, {
+							"data" : "barcode"
+						}, {
+							"data" : "title"
+						}, {
+							"data" : "date"
+						}, {
+							"data" : "identifier",
+						}, {
+							"data" : "name"
+						}, {
+							"data" : "email"
+						}, {
+							"data" : "phone"
+						}, ],
+
+						"lengthMenu" : [ [ 10, 50, 100, 200, -1 ],
+								[ 10, 50, 100, 200, "All" ] ],
+						"pageLength" : 10,
+					});
+
+		},
+		complete : function() {
+			// class and hiding the spinner.
+			$('#loader').addClass('hidden')
+		},
+	});
+	}
+	
+}
+
 function callPatronBlocksReportAjaxRequest() {
 
 	var e = document.getElementById("institutionDropDown");

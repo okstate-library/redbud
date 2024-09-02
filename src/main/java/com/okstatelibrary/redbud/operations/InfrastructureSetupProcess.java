@@ -16,12 +16,13 @@ import com.okstatelibrary.redbud.util.Constants;
 public class InfrastructureSetupProcess extends MainProcess {
 
 	public InfrastructureSetupProcess() {
+
 	}
 
 	protected String startTime;
 
 	public void manipulate(InstitutionService institutionService, CampusService campusService,
-			LibraryService libraryService, LocationService locationService)
+			LibraryService libraryService, LocationService locationService, ServicePointService servicePointService)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
 		setupInstitution(institutionService);
@@ -31,6 +32,8 @@ public class InfrastructureSetupProcess extends MainProcess {
 		setupLibrary(libraryService);
 
 		setupLocation(locationService);
+
+		setupServicePoint(servicePointService);
 	}
 
 	public ArrayList<LocationModel> getLocations(InstitutionService institutionService, CampusService campusService,
@@ -234,6 +237,48 @@ public class InfrastructureSetupProcess extends MainProcess {
 					institution.setInstitution_name(folioInstute.name);
 
 					institutionService.saveInstitution(institution);
+				}
+
+			}
+
+		} catch (Exception e1) {
+			printScreen("setupInstitution : " + e1.getMessage(), Constants.ErrorLevel.ERROR);
+		}
+	}
+
+	private void setupServicePoint(ServicePointService servicePointService) {
+
+		ArrayList<com.okstatelibrary.redbud.folio.entity.servicepoint.ServicePoint> folioServicePoints = folioService
+				.getServicePoints();
+
+		try {
+
+			List<ServicePoint> servicePoints = servicePointService.getServicePointList();
+
+			for (com.okstatelibrary.redbud.folio.entity.servicepoint.ServicePoint folioServicePoint : folioServicePoints) {
+
+				Boolean isIn = false;
+
+				for (ServicePoint servicePoint : servicePoints) {
+
+					if (folioServicePoint.id.equals(servicePoint.getServicepoint_id())) {
+
+						isIn = true;
+
+						break;
+					}
+
+				}
+
+				if (!isIn) {
+
+					ServicePoint servicePoint = new ServicePoint();
+
+					servicePoint.setCode(folioServicePoint.code);
+					servicePoint.setName(folioServicePoint.name);
+					servicePoint.setServicepoint_id(folioServicePoint.id);
+
+					servicePointService.saveServicePoint(servicePoint);
 				}
 
 			}

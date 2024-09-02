@@ -1,6 +1,8 @@
 package com.okstatelibrary.redbud.controller;
 
 import com.okstatelibrary.redbud.entity.CirculationLog;
+import com.okstatelibrary.redbud.entity.Institution;
+import com.okstatelibrary.redbud.entity.Location;
 import com.okstatelibrary.redbud.entity.PatronGroup;
 import com.okstatelibrary.redbud.entity.User;
 import com.okstatelibrary.redbud.folio.entity.Account;
@@ -16,6 +18,7 @@ import com.okstatelibrary.redbud.service.GroupService;
 import com.okstatelibrary.redbud.service.InstitutionService;
 import com.okstatelibrary.redbud.service.LibraryService;
 import com.okstatelibrary.redbud.service.LocationService;
+import com.okstatelibrary.redbud.service.ServicePointService;
 import com.okstatelibrary.redbud.service.UserService;
 import com.okstatelibrary.redbud.service.external.FolioService;
 import com.okstatelibrary.redbud.util.DateUtil;
@@ -64,6 +67,9 @@ public class ReportController {
 
 	@Autowired
 	private LocationService locationService;
+
+	@Autowired
+	private ServicePointService servicePointService;
 
 	private String notApplicable = "N/A";
 
@@ -138,9 +144,130 @@ public class ReportController {
 
 	}
 
+	@GetMapping("/overdueopenloans")
+	public String getOverdueOpenLoans(Principal principal, Model model) throws IOException {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		model.addAttribute("servicePointList", servicePointService.getServicePointList());
+
+		return "reports/overdueopenloans";
+	}
+
+	@RequestMapping(value = "/overdueOpenLoans/data", method = RequestMethod.GET)
+	private @ResponseBody List<FineAndFeesObject> overdueOpenLoansData(
+			@RequestParam(required = false) String servicepointid) throws RestClientException, IOException {
+
+		System.out.print("dsadsadsadsad");
+
+		List<PatronGroup> groupList = groupService.getGroupList();
+
+		ArrayList<com.okstatelibrary.redbud.folio.entity.loan.Loan> loans = folioService.getClosedLoans(false,
+				servicepointid);
+
+		List<FineAndFeesObject> returnObjects = null;
+
+		List<FolioUser> filteredUserList = new ArrayList<FolioUser>();
+
+		List<PatronBlockRoot> filteredPatronBlockRootList = new ArrayList<PatronBlockRoot>();
+
+		if (loans != null && loans.size() > 0) {
+
+			returnObjects = new ArrayList<FineAndFeesObject>();
+
+			for (com.okstatelibrary.redbud.folio.entity.loan.Loan loan : loans) {
+
+				// System.out.println("account.userId" + account.userId);
+
+				FineAndFeesObject fineNFees = new FineAndFeesObject();
+
+				Item item = folioService.getItem(loan.itemId);
+
+				fineNFees.location = "N/A";
+
+				Optional<Location> location = locationService.getLocationList().stream()
+						.filter(loc -> loc.getLocation_id().equals(loan.itemEffectiveLocationIdAtCheckOut)).findFirst();
+
+				if (location.isPresent()) {
+					Optional<Institution> institution = institutionService.getInstitutionList().stream()
+							.filter(loc -> loc.getInstitution_id().equals(location.get().getInstitution_id()))
+							.findFirst();
+
+					fineNFees.location = institution.get().getInstitution_name();
+				}
+
+//				fineNFees.type = "account.feeFineType";
+//				fineNFees.status = "account.status.name";
+//				fineNFees.paymentStatus = "account.paymentStatus.name";
+
+				fineNFees.barcode = item.barcode;
+				fineNFees.title = item.title;
+
+				fineNFees.date = DateUtil.getShortDate(loan.metadata.createdDate);
+
+				// Get the FOLIO User details.
+
+				FolioUser fillteredUser = filteredUserList.stream().filter(u -> u.id.equals(loan.userId)).findFirst()
+						.orElse(null);
+
+				FolioUser folioUser = new FolioUser();
+
+				if (fillteredUser != null) {
+					folioUser = fillteredUser;
+				} else {
+					folioUser = folioService.getUsersById(loan.userId);
+					filteredUserList.add(folioUser);
+				}
+
+				fineNFees.identifier = folioUser.externalSystemId;
+				fineNFees.name = folioUser.personal.firstName + " " + folioUser.personal.lastName;
+				fineNFees.phone = folioUser.personal.mobilePhone;
+				fineNFees.email = folioUser.personal.email;
+
+				String groupname = folioUser.patronGroup;
+
+				Optional<PatronGroup> group = groupList.stream()
+						.filter(selGroup -> selGroup.getFolioGroupId().equals(groupname)).findAny();
+
+				if (group != null && group.isPresent()) {
+					fineNFees.group = group.get().getFolioGroupName();
+				}
+
+				PatronBlockRoot filterpatronBlockRoot = filteredPatronBlockRootList.stream()
+						.filter(u -> u.userId.equals(loan.userId)).findFirst().orElse(null);
+
+				PatronBlockRoot patronBlock = null;
+
+				if (filterpatronBlockRoot != null) {
+					patronBlock = filterpatronBlockRoot;
+				} else {
+
+					patronBlock = folioService.getAutomatedPatronBlocks(loan.userId);
+					patronBlock.userId = loan.userId;
+
+					filteredPatronBlockRootList.add(patronBlock);
+				}
+
+				if (patronBlock != null && patronBlock.automatedPatronBlocks.size() > 0) {
+					fineNFees.isPatronBlock = "Yes";
+				}
+
+				returnObjects.add(fineNFees);
+
+			}
+		}
+
+		return returnObjects;
+
+	}
+
 	@RequestMapping(value = "/overdueItems/data", method = RequestMethod.GET)
 	private @ResponseBody List<FineAndFeesObject> overDueItemsData(@RequestParam(required = false) String feeFineOwner)
 			throws RestClientException, IOException {
+
+		// System.out.print("DAmith ");
 
 		List<PatronGroup> groupList = groupService.getGroupList();
 
@@ -158,7 +285,7 @@ public class ReportController {
 
 			for (Account account : accounts) {
 
-				System.out.println("account.userId" + account.userId);
+				// System.out.println("account.userId" + account.userId);
 
 				FineAndFeesObject fineNFees = new FineAndFeesObject();
 

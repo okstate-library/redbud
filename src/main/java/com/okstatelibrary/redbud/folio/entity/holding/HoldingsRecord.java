@@ -5,4 +5,5 @@ public class HoldingsRecord {
 	public boolean discoverySuppress;
 	public String permanentLocationId;
 	public String effectiveLocationId;
+	public String id;
 }
