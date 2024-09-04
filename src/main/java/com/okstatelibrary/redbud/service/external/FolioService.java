@@ -449,26 +449,7 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
-	public Item getItem(String itemId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
-
-		try {
-
-			String url = AppSystemProperties.FolioURL + "inventory/items/" + itemId;
-
-			ResponseEntity<Item> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Item.class);
-
-			// System.out.println("Total records- " + response.getBody().totalRecords);
-
-			return response.getBody();
-
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+	
 
 	public ItemRoot getInventoryItemById(String holdingsRecordId)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
@@ -495,7 +476,54 @@ public class FolioService extends FolioServiceToken {
 			return null;
 		}
 	}
+	
+	public Item getItem(String itemId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
+		try {
+
+			String url = AppSystemProperties.FolioURL + "inventory/items/" + itemId;
+
+			ResponseEntity<Item> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Item.class);
+
+			// System.out.println("Total records- " + response.getBody().totalRecords);
+
+			return response.getBody();
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public boolean updateItem(Item payload) {
+
+		HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "inventory/items/" + payload.id;
+
+			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
+
+			return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
+
+		} catch (Exception e) {
+
+			System.out.println("Error update Item - " + payload.id);
+
+			e.getMessage();
+
+			e.printStackTrace();
+
+			return false;
+		}
+	}
+	
+	
+	
 	public boolean updateInventoryItem(Item payload) {
 
 		HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());

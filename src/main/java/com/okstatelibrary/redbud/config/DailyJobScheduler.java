@@ -30,7 +30,7 @@ public class DailyJobScheduler {
 	private CirculationLogService circulationLogService;
 
 	// Define the cron expression for 1:30 AM every day
-	@Scheduled(cron = "0 30 1 * * *")
+	//@Scheduled(cron = "0 30 1 * * *")
 	public void runUserIntegrationJob() {
 
 		try {
