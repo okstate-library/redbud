@@ -27,14 +27,12 @@ public class GovDocsLocationUpdateProcess extends MainProcess {
 
 		Map<String, String> map = new HashMap<>();
 
-//		map.put("OKS-OSU Gov Docs Legal Reference", "59123119-f149-422f-a231-d8de99f7f355");
-		// map.put("OKS-OSU Gov Docs Oversize", "240b5123-8b7f-43ce-bc9e-4dc34f1f0ce1");
-		// map.put("OKS-OSU Gov Docs Reference,
-		// Main","bb4ba5bf-7443-4a07-a034-20348999267d");
-		// map.put("OKS-OSU Gov Docs Reference",
-		// "8ef9df9d-0b62-40a8-ac14-4d4e0fc33e17");
+		map.put("OKS-OSU Gov Docs Legal Reference", "59123119-f149-422f-a231-d8de99f7f355");
+		map.put("OKS-OSU Gov Docs Oversize", "240b5123-8b7f-43ce-bc9e-4dc34f1f0ce1");
+		map.put("OKS-OSU Gov Docs Reference,Main", "bb4ba5bf-7443-4a07-a034-20348999267d");
+		map.put("OKS-OSU Gov Docs Reference", "8ef9df9d-0b62-40a8-ac14-4d4e0fc33e17");
 		map.put("OKS-OSU Gov Docs Periodical", "30576e1f-4fdb-4d3d-b195-b8dbd075f5b0");
-		// map.put("OKS-OSU Gov Docs Books", "5786bece-3dae-4d56-85a3-3a5402bf1921");
+		map.put("OKS-OSU Gov Docs Books", "5786bece-3dae-4d56-85a3-3a5402bf1921");
 
 		for (Map.Entry<String, String> entry : map.entrySet()) {
 
@@ -79,12 +77,12 @@ public class GovDocsLocationUpdateProcess extends MainProcess {
 						realItem.permanentLocation.name = locationName;
 						folioService.updateItem(realItem);
 
-						Thread.sleep(1000);
+						//Thread.sleep(1000);
 
 					} else {
 						notEmptyRecords++;
-						System.out.println(counter + " -               permanent Location Not null item id " + item.id
-								+ " Call Number " + item.callNumber);
+//						System.out.println(counter + " -               permanent Location Not null item id " + item.id
+//								+ " Call Number " + item.callNumber);
 					}
 				}
 

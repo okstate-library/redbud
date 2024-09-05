@@ -44,3 +44,4 @@ src/main/resources/.DS_Store
 src/main/resources/application-dev.properties
 src/main/resources/application-prod.properties
 /bin/
+src/main/resources/application.properties
