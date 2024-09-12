@@ -54,6 +54,10 @@ public class UserPatronGroupUpdateProcess extends MainProcess {
 
 				count++;
 
+				if (count < 4000) {
+					continue;
+				}
+
 				if (count % 1000 == 0) {
 					System.out.println("record count " + count);
 
@@ -64,8 +68,8 @@ public class UserPatronGroupUpdateProcess extends MainProcess {
 
 				String currentUserGroup = customFields[0];
 
-//				System.out.println(csvUserModel.getBannerId() + "- " + csvUserModel.getFirstName() + " "
-//						+ csvUserModel.getLastName() + " - "  + currentUserGroup);
+				System.out.println(csvUserModel.getBannerId() + "- " + csvUserModel.getFirstName() + " "
+						+ csvUserModel.getLastName() + " - "  + currentUserGroup);
 
 				Usergroup futureUserGroup = foliGroups.usergroups.stream()
 						.filter(selGroup -> selGroup.group.toLowerCase().equals(currentUserGroup.toLowerCase()))
@@ -100,18 +104,45 @@ public class UserPatronGroupUpdateProcess extends MainProcess {
 
 							if (!folioService.updateUser(folioUser)) {
 
-								printScreen("Error modify only Folio User " + folioUser, Constants.ErrorLevel.INFO);
+								printScreen("Error modify Folio User Patron Group " + folioUser,
+										Constants.ErrorLevel.INFO);
 
-							} else {
+							}
+
+							else {
 
 								System.out.println(csvUserModel.getBannerId() + ", " + csvUserModel.getFirstName() + " "
 										+ csvUserModel.getLastName() + "," + folioUserGroup.group + ","
-										+ currentUserGroup);
+										+ currentUserGroup + " - Update Patron Group");
 							}
 
-//						System.out.println(folioUser.externalSystemId + " - " + folioUser.personal.firstName + " "
-//								+ folioUser.personal.lastName + " - " + pastUserGroup.group);
+////						System.out.println(folioUser.externalSystemId + " - " + folioUser.personal.firstName + " "
+////								+ folioUser.personal.lastName + " - " + pastUserGroup.group);
 						}
+
+						if (!folioUser.barcode.contentEquals(csvUserModel.getISOCode())) {
+
+//							System.out.println(folioUser.externalSystemId + " - " + folioUser.personal.firstName + " "
+//									+ folioUser.personal.lastName + " - ");
+
+							folioUser.barcode = csvUserModel.getISOCode();
+
+							folioUser.metadata = getMetadata(folioUser.metadata);
+
+							if (!folioService.updateUser(folioUser)) {
+
+								printScreen("Error modify only Folio User Barcode " + folioUser,
+										Constants.ErrorLevel.INFO);
+
+							}
+
+							else {
+
+								System.out.println(csvUserModel.getBannerId() + ", " + csvUserModel.getFirstName() + " "
+										+ csvUserModel.getLastName() + " - Update Barcode");
+							}
+						}
+
 					}
 
 				} catch (RestClientException | IOException e) {
@@ -181,25 +212,6 @@ public class UserPatronGroupUpdateProcess extends MainProcess {
 		}
 
 		return csvUserList;
-	}
-
-	// Get the users reading the csv file.
-	public ArrayList<String> getValues(String filePath) throws IOException {
-
-		ArrayList<String> idList = new ArrayList<String>();
-
-		String line = "";
-
-		// parsing a CSV file into BufferedReader class constructor
-		@SuppressWarnings("resource")
-		BufferedReader br = new BufferedReader(new FileReader(filePath));
-
-		while ((line = br.readLine()) != null) // returns a Boolean value
-		{
-			idList.add(line);
-		}
-
-		return idList;
 	}
 
 }
