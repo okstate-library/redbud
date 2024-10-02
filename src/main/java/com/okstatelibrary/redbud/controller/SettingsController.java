@@ -1,34 +1,12 @@
 package com.okstatelibrary.redbud.controller;
 
 import com.okstatelibrary.redbud.config.CronJobLister;
+import com.okstatelibrary.redbud.config.DailyJobScheduler;
 import com.okstatelibrary.redbud.entity.CsvFileModel;
-import com.okstatelibrary.redbud.entity.CsvRoot;
-import com.okstatelibrary.redbud.entity.CsvUserModel;
 import com.okstatelibrary.redbud.entity.FileModel;
-import com.okstatelibrary.redbud.entity.ReportModel;
 import com.okstatelibrary.redbud.entity.User;
-import com.okstatelibrary.redbud.folio.entity.servicepoint.ServicePoint;
-import com.okstatelibrary.redbud.operations.ChangePatronGroupProcess;
-import com.okstatelibrary.redbud.operations.CirculationLogProcess;
-import com.okstatelibrary.redbud.operations.GovDocsLocationUpdateProcess;
-import com.okstatelibrary.redbud.operations.InactiveUserProcess;
-import com.okstatelibrary.redbud.operations.InfrastructureSetupProcess;
-import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
-import com.okstatelibrary.redbud.operations.UserPatronGroupReportProcess;
-import com.okstatelibrary.redbud.operations.UserPatronGroupUpdateProcess;
-import com.okstatelibrary.redbud.operations.LoanDueDateUpdateProcess;
-import com.okstatelibrary.redbud.operations.MainProcess;
-import com.okstatelibrary.redbud.operations.NullUserPropertyCheckProcess;
-import com.okstatelibrary.redbud.operations.OCLCMetadataProcess;
-import com.okstatelibrary.redbud.operations.UserFieldsUpdateProcess;
-import com.okstatelibrary.redbud.service.CampusService;
-import com.okstatelibrary.redbud.service.CirculationLogService;
-import com.okstatelibrary.redbud.service.GroupService;
-import com.okstatelibrary.redbud.service.InstitutionService;
-import com.okstatelibrary.redbud.service.LibraryService;
-import com.okstatelibrary.redbud.service.LocationService;
-import com.okstatelibrary.redbud.service.ServicePointService;
-import com.okstatelibrary.redbud.service.UserService;
+import com.okstatelibrary.redbud.operations.*;
+import com.okstatelibrary.redbud.service.*;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
 import com.okstatelibrary.redbud.util.CacheMap;
 import com.okstatelibrary.redbud.util.Constants;
@@ -46,9 +24,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.client.RestClientException;
 
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.security.Principal;
 import java.text.DateFormat;
@@ -90,6 +66,36 @@ public class SettingsController {
 
 	@Autowired
 	private CirculationLogService circulationLogService;
+
+	private final DailyJobScheduler dailyJobScheduler;
+
+	public SettingsController() {
+
+		dailyJobScheduler = new DailyJobScheduler();
+
+	}
+
+	@GetMapping("/enableUserIntegration")
+	public String enableUserIntegrationCornJob(Principal principal, Model model) throws IOException {
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		//dailyJobScheduler.enableUserIntegrationCronJob();
+
+		return "operations";
+	}
+
+	@GetMapping("/disableUserIntegration")
+	public String disableUserIntegrationCornJob(Principal principal, Model model) throws IOException {
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		//dailyJobScheduler.disableUserIntegrationCronJob();
+
+		return "operations";
+	}
 
 	@GetMapping("/groups")
 	public String getPatronGroups(Principal principal, Model model) throws IOException {
@@ -346,7 +352,7 @@ public class SettingsController {
 						// 02609d66-4b2a-47f6-988a-cf7b5b2932c7 - OKS-OSU-faculty
 						// e8f2c425-2daa-44fd-a813-7bfd2329e8cc - OKS-OSU-faculty -ret
 
-						oprocess.manipulate("c88e6e42-9544-4e5e-ae94-a50c07b9dfbf");
+						oprocess.manipulate("e8f2c425-2daa-44fd-a813-7bfd2329e8cc");
 
 					} catch (RestClientException | IOException e) {
 						// TODO Auto-generated catch block
@@ -600,9 +606,14 @@ public class SettingsController {
 
 					CacheMap.set("ProcessRunning", CacheMap.running);
 
-					UserPatronGroupUpdateProcess oprocess = new UserPatronGroupUpdateProcess();
+					UserProertiesUpdateProcess oprocess = new UserProertiesUpdateProcess();
 
-					oprocess.manipulate(groupService);
+					try {
+						oprocess.manipulate(groupService);
+					} catch (RestClientException | IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 
 					CacheMap.set("ProcessRunning", CacheMap.idle);
 				}

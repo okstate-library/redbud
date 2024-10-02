@@ -300,7 +300,6 @@ function callOverdueFinesReportAjaxRequest() {
 								title : "User",
 								"targets" : 8
 							},
-
 							{
 								title : "Email",
 								"targets" : 9

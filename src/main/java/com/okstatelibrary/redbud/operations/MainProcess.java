@@ -57,7 +57,6 @@ public class MainProcess {
 
 	public void sendEmaill(String title, String message) {
 		try
-
 		{
 
 			EmailService emailService = new EmailService();

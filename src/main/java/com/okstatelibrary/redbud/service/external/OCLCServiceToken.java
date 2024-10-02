@@ -1,7 +1,5 @@
 package com.okstatelibrary.redbud.service.external;
 
-import org.springframework.web.client.RestTemplate;
-
 import com.okstatelibrary.redbud.util.DateUtil;
 
 import org.apache.http.HttpEntity;
@@ -28,11 +26,11 @@ public class OCLCServiceToken {
 
 	public OCLCServiceToken() throws ClientProtocolException, IOException {
 
-		try {
-			getToken();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
+//		try {
+//			//getToken();
+//		} catch (InterruptedException e) {
+//			Thread.currentThread().interrupt();
+//		}
 	}
 
 	private HttpPost getHttpPost() throws UnsupportedEncodingException {

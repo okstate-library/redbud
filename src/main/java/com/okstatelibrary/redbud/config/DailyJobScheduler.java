@@ -11,12 +11,12 @@ import org.springframework.web.client.RestClientException;
 
 import com.okstatelibrary.redbud.operations.CirculationLogProcess;
 import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
+import com.okstatelibrary.redbud.operations.UserProertiesUpdateProcess;
 import com.okstatelibrary.redbud.service.CirculationLogService;
 import com.okstatelibrary.redbud.service.GroupService;
 import com.okstatelibrary.redbud.util.CacheMap;
 import com.okstatelibrary.redbud.util.Constants;
 import com.okstatelibrary.redbud.util.DateUtil;
-
 
 @Component
 public class DailyJobScheduler {
@@ -30,7 +30,7 @@ public class DailyJobScheduler {
 	private CirculationLogService circulationLogService;
 
 	// Define the cron expression for 1:30 AM every day
-	//@Scheduled(cron = "0 30 1 * * *")
+	// @Scheduled(cron = "0 30 1 * * *")
 	public void runUserIntegrationJob() {
 
 		try {
@@ -51,6 +51,44 @@ public class DailyJobScheduler {
 					oprocess.manipulate(groupService);
 
 					CacheMap.set("UserIntegrationProcess", "stop");
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			LOG.error(e1.getMessage());
+		}
+
+	}
+
+	// Update the user related properties like bar codes and status.
+	@Scheduled(cron = "0 00 2 * * *")
+	public void runUserPropertyChangeJob() {
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set("UserPropertiesUpdateProcess", "true");
+
+					UserProertiesUpdateProcess oprocess = new UserProertiesUpdateProcess();
+
+					oprocess.printScreen("Beeper starts for user integration process " + DateUtil.getTodayDateAndTime(),
+							Constants.ErrorLevel.INFO);
+
+					oprocess.copyFiles();
+
+					try {
+						oprocess.manipulate(groupService);
+					} catch (RestClientException | IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					CacheMap.set("UserPropertiesUpdateProcess", "stop");
 				}
 			});
 
@@ -98,4 +136,5 @@ public class DailyJobScheduler {
 		}
 
 	}
+
 }

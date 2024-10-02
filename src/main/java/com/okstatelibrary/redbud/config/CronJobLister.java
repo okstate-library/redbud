@@ -9,9 +9,7 @@ import org.springframework.stereotype.Service;
 import com.okstatelibrary.redbud.util.SingletonStringList;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 @Service
@@ -49,13 +47,5 @@ public class CronJobLister {
 		singletonList.addValue("Fixed Delay: " + scheduled.fixedDelay());
 		singletonList.addValue("Initial Delay: " + scheduled.initialDelay());
 		singletonList.addValue("-----------------------------------");
-
-//		
-//		System.out.println("Cron Job Method: " + method.getName());
-//		System.out.println("Cron Expression: " + scheduled.cron());
-//		System.out.println("Fixed Rate: " + scheduled.fixedRate());
-//		System.out.println("Fixed Delay: " + scheduled.fixedDelay());
-//		System.out.println("Initial Delay: " + scheduled.initialDelay());
-//		System.out.println("-----------------------------------");
 	}
 }

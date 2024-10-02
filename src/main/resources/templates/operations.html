@@ -302,7 +302,7 @@
 				<form method="get" th:action="@{/settings/changePatronGroup}">
 
 					<div class="row">
-						<div class="col-xs-8">Change patron group depending on the
+						<div class="col-xs-8">Change patron group depending on externally supplied
 							CSV file uploaded.</div>
 
 						<div class="col-xs-2">
@@ -326,13 +326,13 @@
 
 
 			<div class="row top-buffer container-border">
-				<h4>Update User patron group.</h4>
+				<h4>Update User patron group, bar code and status.</h4>
 				<form method="get"
 					th:action="@{/settings/userPatronGroupUpdateProcess}">
 
 					<div class="row">
-						<div class="col-xs-8">Update User patron group based on the
-							CSV file.</div>
+						<div class="col-xs-8">Update User patron group, bar code and status based on the
+							plfeed/noc/pts (main)  CSV file.</div>
 
 						<div class="col-xs-2">
 							<button type="submit" id="executeUserPatronGroupUpdateProcess"
@@ -418,6 +418,7 @@
 					<div class="col-xs-8">
 						<ul>
 							<li th:each="str : ${corn_scheduled_jobs}" th:text="${str}"></li>
+							<li th:text="${corn_scheduled_jobs_status}"></li>
 						</ul>
 					</div>
 

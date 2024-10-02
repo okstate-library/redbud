@@ -35,7 +35,7 @@ public class LoanDueDateUpdateProcess extends MainProcess {
 	public void manipulate(String userGroup) throws JsonParseException, JsonMappingException, RestClientException,
 			IOException, ParseException, InterruptedException {
 
-		System.out.println("Started");
+		System.out.println("Started - LoanDueDateUpdateProcess");
 
 		Root userRoot = folioService.getUsersByPatronGroupIdForLoans(userGroup);
 
@@ -47,12 +47,11 @@ public class LoanDueDateUpdateProcess extends MainProcess {
 
 		System.out.println("userid,email, first and last name , loans count, modified loans");
 
-		
 // 		Code  segment 1 - User details
-		
-//		String str = "c153a535-c255-5aee-8217-9e3f58936522";
-//
-//		List<String> items = Arrays.asList(str.split("\\s*,\\s*"));
+
+		// String str = "0194023a-0025-5f51-baec-e91281d1c4ec";
+
+		// List<String> items = Arrays.asList(str.split("\\s*,\\s*"));
 
 		// for (String userId : items) {
 
@@ -73,14 +72,15 @@ public class LoanDueDateUpdateProcess extends MainProcess {
 
 				// LocalDateTime dateTime = LocalDateTime.parse(loan.getDueDate());
 
-				System.out.println("Loaan due date - " + dateTime);
+//				System.out.println("Loan due date - " + loan.getDueDate() + "  " + user.username + "  "
+//						+ loan.loanPolicyId + "  " + loan.itemEffectiveLocationIdAtCheckOut + loan.item.title);
 
 				if (!loan.item.materialType.name.equals("equipment")
 						&& loan.loanPolicyId.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")//
 						&& !loan.itemEffectiveLocationIdAtCheckOut.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")
-						&& dateTime.equals("2024-09-02")) {
+						&& dateTime.equals("2025-03-01")) {
 
-					// System.out.println("Loaan due date - " + loan.getDueDate());
+					//System.out.println("Loan due date - " + dateTime + "  " + user.username);
 
 					boolean isIn = false;
 
@@ -99,6 +99,8 @@ public class LoanDueDateUpdateProcess extends MainProcess {
 
 					}
 
+				} else {
+					System.out.println("Loan due date - " + dateTime + " " + user.username);
 				}
 
 			}
@@ -142,26 +144,6 @@ public class LoanDueDateUpdateProcess extends MainProcess {
 
 		System.out.println("End");
 
-	}
-
-	// Get the users reading the csv file.
-	public ArrayList<String> getValues(String filePath) throws IOException {
-
-		ArrayList<String> idList = new ArrayList<String>();
-
-		String line = "";
-
-		// parsing a CSV file into BufferedReader class constructor
-		@SuppressWarnings("resource")
-
-		BufferedReader br = new BufferedReader(new FileReader(filePath));
-
-		while ((line = br.readLine()) != null) // returns a Boolean value
-		{
-			idList.add(line);
-		}
-
-		return idList;
 	}
 
 }

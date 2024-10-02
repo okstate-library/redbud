@@ -15,11 +15,8 @@ import com.okstatelibrary.redbud.util.DateUtil;
 
 /**
  * @author Damith
- *
- */
-/**
- * @author Damith
- *
+ * User fields update while reading a different csv format file.
+ * This CSV file is not the normal CSV uploaded to the main feed.
  */
 public class UserFieldsUpdateProcess extends MainProcess {
 
