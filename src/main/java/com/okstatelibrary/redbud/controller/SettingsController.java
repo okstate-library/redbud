@@ -613,6 +613,9 @@ public class SettingsController {
 					} catch (RestClientException | IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
 
 					CacheMap.set("ProcessRunning", CacheMap.idle);
