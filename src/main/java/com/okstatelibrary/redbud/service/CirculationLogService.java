@@ -5,10 +5,11 @@ import java.util.List;
 import com.okstatelibrary.redbud.entity.CirculationLog;
 
 public interface CirculationLogService {
-	
+
 	CirculationLog saveCirculationLog(CirculationLog circulationLog);
 
-	List<CirculationLog> getCirculationLogList(List<String> location, String fromDate, String toDate);
+	List<CirculationLog> getCirculationLogList(List<String> location, String fromDate, String toDate,
+			boolean isEmptyDateWants);
 
 	CirculationLog getCirculationLogByItemId(String itemId);
 }

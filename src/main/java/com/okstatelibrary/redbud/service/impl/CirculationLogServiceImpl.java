@@ -3,6 +3,7 @@ package com.okstatelibrary.redbud.service.impl;
 import com.okstatelibrary.redbud.entity.CirculationLog;
 import com.okstatelibrary.redbud.repository.CirculationLogDao;
 import com.okstatelibrary.redbud.service.CirculationLogService;
+import com.okstatelibrary.redbud.util.Constants;
 import com.okstatelibrary.redbud.util.DateUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,20 +29,25 @@ public class CirculationLogServiceImpl implements CirculationLogService {
 	}
 
 	@Override
-	public List<CirculationLog> getCirculationLogList(List<String> locations, String startDate, String endDate) {
+	public List<CirculationLog> getCirculationLogList(List<String> locations, String startDate, String endDate,
+			boolean isEmptyDateWants) {
 
-		Set<String> acceptableNames = locations.stream().collect(Collectors.toSet());
+		List<CirculationLog> circulationLogs = circulationLogDao.getCirculationLogByLocations(locations);
 
-		return circulationLogDao.findAll().stream().filter(
-				c -> acceptableNames.contains(c.getLocation()) && isBetween(c.getLoanDate(), startDate, endDate))
-				.collect(Collectors.toList());
+		if (!isEmptyDateWants) {
+			circulationLogs = circulationLogs.stream()
+					.filter(c -> !c.getLoanDate().contentEquals(Constants.default_date)
+							& isBetween(c.getLoanDate(), startDate, endDate))
+					.collect(Collectors.toList());
+		}
+
+		return circulationLogs;
 	}
 
 	@Override
 	public CirculationLog getCirculationLogByItemId(String itemId) {
 		return circulationLogDao.getCirculationLogByItemId(itemId);
 	}
-
 
 	// Method to check if a date is between two other dates
 	private static boolean isBetween(String objDate, String startDate, String endDate) {

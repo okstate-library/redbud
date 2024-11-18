@@ -199,5 +199,20 @@ public class DateUtil {
 		// SimpleDateFormat df2 = new SimpleDateFormat("dd/MM/yy");
 		return dateFormat.format(dateFormat.parse(dateString));
 	}
+	
+	public static boolean isValidDate(String dateStr, String format) {
+		
+		
+		
+		
+        SimpleDateFormat sdf = new SimpleDateFormat(format);
+        sdf.setLenient(false);  // Disable lenient parsing
+        try {
+            sdf.parse(dateStr);  // Try parsing the date
+            return true;
+        } catch (ParseException e) {
+            return false;
+        }
+    }
 
 }

@@ -571,7 +571,8 @@ public class ReportController {
 	private @ResponseBody List<CirculationLog> getCirculationLogData(@RequestParam(required = false) String institution,
 			@RequestParam(required = false) String campus, @RequestParam(required = false) String library,
 			@RequestParam(required = false) String location, @RequestParam(required = false) String from_date,
-			@RequestParam(required = false) String to_date) throws RestClientException, IOException {
+			@RequestParam(required = false) String to_date, @RequestParam(required = false) String isEmptyDateWants)
+			throws RestClientException, IOException {
 
 //		System.out.println("institution " + institution);
 //		System.out.println("campus " + campus);
@@ -580,10 +581,11 @@ public class ReportController {
 //		System.out.println("from_date " + from_date);
 //		System.out.println("to_date " + to_date);
 
+		System.out.println("isEmptyDateWants : " + Boolean.parseBoolean(isEmptyDateWants));
+
 		List<String> locations = new ArrayList<String>();
 
 		if (location != null && !location.trim().isEmpty() && !location.equals("0")) {
-
 			System.out.println("Looking for Location");
 			locations.add(location);
 		} else if (library != null && !library.trim().isEmpty() && !library.equals("0")) {
@@ -601,7 +603,7 @@ public class ReportController {
 		}
 
 		List<CirculationLog> circulationLogList = circulationLogService.getCirculationLogList(locations, from_date,
-				to_date);
+				to_date, Boolean.parseBoolean(isEmptyDateWants));
 
 //		for (CirculationLog log : circulationLogList) {
 //			System.out.println(log.getCallNumber());

@@ -67,6 +67,8 @@ public class FolioServiceToken {
 						expireTimeStap = currentTimeStap + 600;
 
 //						System.out.println("Get Token at : " + currentTimeStap);
+//						
+//						System.out.println("Get Token Expires at : " + expireTimeStap);
 //
 //						System.out.println("Token is : " + token);
 

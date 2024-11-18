@@ -1,3 +1,20 @@
+ALTER TABLE `redbuddb`.`circulation_log` 
+ADD COLUMN `staffNote` VARCHAR(100) NULL AFTER `publish_year`;
+
+ALTER TABLE `redbuddb`.`circulation_log` 
+ADD COLUMN `author` VARCHAR(1000) NULL AFTER `title`,
+ADD COLUMN `edition` VARCHAR(500) NULL AFTER `author`,
+ADD COLUMN `publish_year` VARCHAR(100) NULL AFTER `edition`,
+ADD COLUMN `renewal_count` INT NULL AFTER `publish_year`,
+ADD COLUMN `alma_num_loans` INT NULL AFTER `num_loans`,
+CHANGE COLUMN `call_number` `call_number` VARCHAR(100) NULL DEFAULT NULL AFTER `barcode`;
+
+
+update redbuddb.circulation_log
+Set alma_num_loans = 0,
+renewal_count = 0;
+
+
 CREATE TABLE `redbuddb`.`service_point` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `code` VARCHAR(45) NULL,

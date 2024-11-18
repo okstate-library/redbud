@@ -15,13 +15,13 @@ public class Instance {
 //    public ArrayList<Object> childInstances;
 //    public boolean isBoundWith;
 //    public ArrayList<Object> alternativeTitles;
-//    public ArrayList<String> editions;
+	public ArrayList<String> editions;
 //    public ArrayList<Object> series;
 	public ArrayList<Identifier> identifiers;
 //    public ArrayList<Contributor> contributors;
 //    public ArrayList<Subject> subjects;
 //    public ArrayList<Classification> classifications;
-//    public ArrayList<Publication> publication;
+	public ArrayList<Publication> publication;
 //    public ArrayList<Object> publicationFrequency;
 //    public ArrayList<Object> publicationRange;
 //    public ArrayList<Object> electronicAccess;

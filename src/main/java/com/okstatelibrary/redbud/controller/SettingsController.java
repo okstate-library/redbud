@@ -1,7 +1,6 @@
 package com.okstatelibrary.redbud.controller;
 
 import com.okstatelibrary.redbud.config.CronJobLister;
-import com.okstatelibrary.redbud.config.DailyJobScheduler;
 import com.okstatelibrary.redbud.entity.CsvFileModel;
 import com.okstatelibrary.redbud.entity.FileModel;
 import com.okstatelibrary.redbud.entity.User;
@@ -67,21 +66,11 @@ public class SettingsController {
 	@Autowired
 	private CirculationLogService circulationLogService;
 
-	private final DailyJobScheduler dailyJobScheduler;
-
-	public SettingsController() {
-
-		dailyJobScheduler = new DailyJobScheduler();
-
-	}
-
 	@GetMapping("/enableUserIntegration")
 	public String enableUserIntegrationCornJob(Principal principal, Model model) throws IOException {
 		User user = userService.findByUsername(principal.getName());
 
 		model.addAttribute("user", user);
-
-		//dailyJobScheduler.enableUserIntegrationCronJob();
 
 		return "operations";
 	}
@@ -91,8 +80,6 @@ public class SettingsController {
 		User user = userService.findByUsername(principal.getName());
 
 		model.addAttribute("user", user);
-
-		//dailyJobScheduler.disableUserIntegrationCronJob();
 
 		return "operations";
 	}
@@ -613,9 +600,6 @@ public class SettingsController {
 					} catch (RestClientException | IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
 					}
 
 					CacheMap.set("ProcessRunning", CacheMap.idle);
@@ -748,6 +732,50 @@ public class SettingsController {
 			});
 
 			myThread.start();
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+	@GetMapping("/almaLoanCountUpdateProcess")
+	public String almaLoanCountUpdateProcess(Principal principal, Model model) {
+
+		System.out.println("Running the ALMA loan count process");
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_Alma_Loan_Count, CacheMap.running);
+
+					AlmaLoanCountUpdateProcess oprocess = new AlmaLoanCountUpdateProcess();
+
+					try {
+						oprocess.manipulate(circulationLogService);
+					} catch (RestClientException | IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					CacheMap.set(CacheMap.process_Alma_Loan_Count, CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+			model.addAttribute(CacheMap.process_Alma_Loan_Count, CacheMap.get(CacheMap.process_Alma_Loan_Count));
 
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block

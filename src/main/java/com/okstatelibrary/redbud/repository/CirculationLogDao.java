@@ -12,9 +12,12 @@ public interface CirculationLogDao extends CrudRepository<CirculationLog, Intege
 
 	@SuppressWarnings("unchecked")
 	CirculationLog save(CirculationLog circulationLog);
-	
+
 	List<CirculationLog> findAll();
-	
-	@Query(value = "SELECT * FROM redbuddb.circulation_log where item_id= :itemId", nativeQuery = true)
+
+	@Query(value = "SELECT * FROM circulation_log WHERE item_id= :itemId", nativeQuery = true)
 	CirculationLog getCirculationLogByItemId(@Param("itemId") String itemId);
+
+	@Query(value = "SELECT * FROM circulation_log WHERE location IN (:locationIds)", nativeQuery = true)
+	List<CirculationLog> getCirculationLogByLocations(@Param("locationIds") List<String> locationIds);
 }

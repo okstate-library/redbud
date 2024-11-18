@@ -157,6 +157,31 @@
 
 			</div>
 			
+			<div class="row top-buffer container-border">
+				<h4>ALMA loan count update from csv file.</h4>
+				<form method="get" th:action="@{/settings/almaLoanCountUpdateProcess}">
+
+					<div class="row">
+						<div class="col-xs-8">Update the database from the ALMA loan count from csv file .</div>
+
+						<div class="col-xs-2">
+							<button type="submit" id="executealmaLoanCountUpdateProcess"
+								name="executealmaLoanCountUpdateProcess" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executealmaLoanCountUpdateProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_Alma_Loan_Count}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+			
 
 
 

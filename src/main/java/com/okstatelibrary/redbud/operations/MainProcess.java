@@ -1,7 +1,6 @@
 package com.okstatelibrary.redbud.operations;
 
 import java.io.File;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.okstatelibrary.redbud.entity.CsvFileModel;
@@ -14,7 +13,7 @@ import com.okstatelibrary.redbud.util.DateUtil;
 
 public class MainProcess {
 
-	protected FolioService folioService;
+	protected static FolioService folioService;
 
 	public MainProcess() {
 
@@ -43,7 +42,6 @@ public class MainProcess {
 
 		}
 
-		// System.out.println(msg);
 	}
 
 	public boolean isStringNullOrEmpty(String str) {
@@ -56,8 +54,7 @@ public class MainProcess {
 	}
 
 	public void sendEmaill(String title, String message) {
-		try
-		{
+		try {
 
 			EmailService emailService = new EmailService();
 

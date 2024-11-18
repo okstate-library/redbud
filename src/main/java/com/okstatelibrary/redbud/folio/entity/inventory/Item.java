@@ -5,6 +5,7 @@ import java.util.Date;
 
 import com.okstatelibrary.redbud.folio.entity.Metadata;
 import com.okstatelibrary.redbud.folio.entity.Status;
+import com.okstatelibrary.redbud.util.StringHelper;
 
 public class Item {
 	public String itemId;
@@ -48,4 +49,27 @@ public class Item {
 	public boolean isBoundWith;
 	public EffectiveLocation effectiveLocation;
 
+	public String getContributorNames() {
+
+		StringBuilder result = new StringBuilder();
+
+		if (contributorNames != null) {
+
+			for (int i = 0; i < contributorNames.size(); i++) {
+
+				result.append(contributorNames.get(i).name);
+
+				if (i < contributorNames.size() - 1) {
+
+					result.append(", ");
+				}
+
+			}
+
+			return result.toString();
+		}
+
+		return "N/A";
+
+	}
 }

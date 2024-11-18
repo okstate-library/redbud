@@ -183,4 +183,16 @@ public class AppSystemProperties {
 	public String toString() {
 		return "Red Bud App settings";
 	}
+
+	@Value("${almaloancsvfilepath}")
+	private String almaloancsvfilepath;
+
+	public static String Almaloancsvfilepath;
+
+	/**
+	 * @param  alma Sft
+	 */
+	public void setAlmaloancsvfilepath(String almaloancsvfilepath) {
+		Almaloancsvfilepath = almaloancsvfilepath;
+	}
 }

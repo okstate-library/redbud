@@ -19,7 +19,6 @@ public class UserIntegrationProcess extends MainProcess {
 	// Stores the Start time
 	protected String startTime;
 
-	//
 	public void manipulate(GroupService groupService) {
 
 		startTime = DateUtil.getTodayDateAndTime();

@@ -14,6 +14,8 @@ public class CacheMap {
 	public static String process_Execute_Inactive_Users = "Process_Execute_Inactive_Users";
 
 	public static String process_Send_Test_Email = "Process_Send_Test_Email";
+	
+	public static String process_Alma_Loan_Count = "Process_Alma_Loan_Count";
 
 	private static Map<Object, Object> cacheMap = new ConcurrentHashMap<>();
 

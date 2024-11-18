@@ -10,15 +10,20 @@ function formatTitle(d) {
 // Patron BLock report Expanding text for description
 function formatDescription(d) {
 	// `d` is the original data object for the row
-
 	return ('<dl>' + '<dt>Description</dt>' + '<dd>'+ d.desc+'</dd>' + '</dl>');
-	
 }
 
-function  callOverdueOpenLoansReportAjaxRequest()
-{
-	//alert('sdadsd');
-	
+
+function formatAuthorEditionPublishedYear(d) {
+	// `d` is the original data object for the row
+	return ('<dl>' + '<dt>Author</dt>' + '<dd>'+ d.author+'</dd>' + '</dl>' +
+			'<dl>' + '<dt>Edition</dt>' + '<dd>'+ d.edition+'</dd>' + '</dl>' +
+			'<dl>' + '<dt>Published Year</dt>' + '<dd>'+ d.publishYear+'</dd>' + '</dl>'+
+			'<dl>' + '<dt>Staff Note</dt>' + '<dd>'+ d.staffNote+'</dd>' + '</dl>');
+}
+
+function callOverdueOpenLoansReportAjaxRequest()
+{	
 	var e = document.getElementById("servicePointDropDown");
 	var servicepointid = e.value;
 
@@ -563,17 +568,18 @@ function callCirculationLogReportAjaxRequest() {
 	var sDate = $("#datetimepicker_from_date").find("input").val();
 	var eDate = $("#datetimepicker_to_date").find("input").val();
 
-	var institution = document.getElementById("institutionDropDown").value
-	var campus = document.getElementById("campusDropDown").value
-	var library = document.getElementById("libraryDropDown").value
-	var location = document.getElementById("locationDropDown").value
+	var institution = document.getElementById("institutionDropDown").value;
+	var campus = document.getElementById("campusDropDown").value;
+	var library = document.getElementById("libraryDropDown").value;
+	var location = document.getElementById("locationDropDown").value;
 
-	if (Date.parse(sDate) > Date.parse(eDate)) {
-		alert("Start date shouldn't greater than End date");
-
-		return false;
-	}
-
+	var isEmptyDateWants = document.getElementById("is_with_empty_dates").checked;
+		
+	 if (Date.parse(sDate) > Date.parse(eDate)) {
+		 alert("Start date shouldn't greater than End date");
+		 return false;
+	 }
+	 
 	$.ajax({
 		type : "GET",
 		cache : false,
@@ -584,7 +590,8 @@ function callCirculationLogReportAjaxRequest() {
 			"institution" : institution,
 			"campus" : campus,
 			"library" : library,
-			"location" : location
+			"location" : location,
+			"isEmptyDateWants" : isEmptyDateWants
 		},
 		beforeSend : function() {
 			$('#loader').removeClass('hidden') // Loader
@@ -599,38 +606,55 @@ function callCirculationLogReportAjaxRequest() {
 						dom : 'Bfrtip',
 						buttons : [ 'excel', 'print' ],
 						data : data,
-						order : [ [ 4, 'asc' ] ],
+						order : [ [ 5, 'asc' ] ],
 						dom : 'Blfrtip',
 						orderCellsTop : true,
 						fixedHeader : true,
 						autoWidth : false,
-						"columnDefs" : [ {
+						"columnDefs" : [{
+							title : "",
+							"targets" : 0
+						},{
 							"width" : "10px",
 							title : "Barcode",
-							"targets" : 0
-						}, {
+							"targets" : 1
+						},{
 							"width" : "10px",
 							title : "Call Number",
-							"targets" : 1
-						}, {
+							"targets" : 2
+						},{
 							"width" : "10px",
 							title : "Type",
-							"targets" : 2
-						}, {
+							"targets" : 3
+						},{
 							"width" : "50px",
 							title : "Title",
-							"targets" : 3
-						}, {
+							"targets" : 4
+						},{
+							"width" : "10px",
+							title : "Renewal Count",
+							"targets" : 5
+						},{
 							"width" : "10px",
 							title : "Last Loan Date",
-							"targets" : 4
-						}, {
+							"targets" : 6
+						},{
 							"width" : "10px",
 							title : "# of loans",
-							"targets" : 5
-						} ],
+							"targets" : 7
+						} ,
+						{
+							"width" : "10px",
+							title : "# of Alma loans",
+							"targets" : 8
+						}],
 						columns : [
-
+						{
+							className : 'dt-control',
+							orderable : false,
+							data : null,
+							defaultContent : ''
+						},
 						{
 							"data" : "barcode"
 						}, {
@@ -639,17 +663,35 @@ function callCirculationLogReportAjaxRequest() {
 							"data" : "materialType"
 						}, {
 							"data" : "title"
+						},{
+							"data" : "renewalCount"
 						}, {
-							"data" : "loanDate"
+							"data" : "loanDate",
+							render : getLoanDate,
 						}, {
 							"data" : "numLoans"
-						} ],
+						}, {
+							"data" : "almaNumLoans"
+						}],
 
 						"lengthMenu" : [ [ 10, 50, 100, 200, -1 ],
 								[ 10, 50, 100, 200, "All" ] ],
 						"pageLength" : 10,
 					});
 
+			
+			table.on('click', 'td.dt-control', function(e) {
+				let tr = e.target.closest('tr');
+				let row = table.row(tr);
+
+				if (row.child.isShown()) {
+					// This row is already open - close it
+					row.child.hide();
+				} else {
+					// Open this row
+					row.child(formatAuthorEditionPublishedYear(row.data())).show();
+				}
+			});
 		},
 		complete : function() { // Set our complete callback, adding the .hidden
 			// class and hiding the spinner.
@@ -674,4 +716,13 @@ function getShortDate(data) {
 function getFullName(data) {
 
 	return data.firstName + "  " + data.lastName
+}
+
+function getLoanDate(data) {
+
+	if (data == '0001-01-01') {
+		return ''
+	} else {
+		return data;
+	}
 }

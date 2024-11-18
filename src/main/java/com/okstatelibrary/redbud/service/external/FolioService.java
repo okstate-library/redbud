@@ -89,6 +89,72 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
+	public ArrayList<Item> getItembyBarcode(String barcode)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "inventory/items?query=(barcode ==" + barcode + ")";
+
+			ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					ItemRoot.class);
+
+			// System.out.println("Total records- " + response.getBody());
+
+			return response.getBody().items;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public HoldingsRecord getHoldingRecordByHoldingId(String holdingRecordId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "holdings-storage/holdings/" + holdingRecordId;
+
+			ResponseEntity<HoldingsRecord> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					HoldingsRecord.class);
+
+			// System.out.println("Total records- " + response.getBody());
+
+			return response.getBody();
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public ArrayList<Instance> getInstanceByInstanceId(String instanceId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "inventory/instances?query=(id= " + instanceId + ")";
+
+			ResponseEntity<InstanceRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					InstanceRoot.class);
+
+			// System.out.println("Total records- " + response.getBody());
+
+			return response.getBody().instances;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	public Loan getLoansByLoanId(String loadId)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
@@ -449,8 +515,6 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
-	
-
 	public ItemRoot getInventoryItemById(String holdingsRecordId)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
@@ -476,7 +540,7 @@ public class FolioService extends FolioServiceToken {
 			return null;
 		}
 	}
-	
+
 	public Item getItem(String itemId)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
@@ -521,9 +585,7 @@ public class FolioService extends FolioServiceToken {
 			return false;
 		}
 	}
-	
-	
-	
+
 	public boolean updateInventoryItem(Item payload) {
 
 		HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());

@@ -11,6 +11,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.okstatelibrary.redbud.util.DateUtil;
+import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Entity
 @Table(name = "circulation_log")
@@ -36,9 +37,22 @@ public class CirculationLog {
 
 	private String title;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Date loanDate;
 
 	private int numLoans;
+
+	private String author;
+
+	private String edition;
+
+	private String publishYear;
+
+	private String staffNote;
+
+	private int renewalCount;
+
+	private int almaNumLoans;
 
 	public Integer getId() {
 		return id;
@@ -176,6 +190,90 @@ public class CirculationLog {
 	 */
 	public void setCallNumber(String call_number) {
 		this.call_number = call_number;
+	}
+
+	/**
+	 * @return the author
+	 */
+	public String getAuthor() {
+		return author;
+	}
+
+	/**
+	 * @param author the author to set
+	 */
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+
+	/**
+	 * @return the edition
+	 */
+	public String getEdition() {
+		return edition;
+	}
+
+	/**
+	 * @param edition the edition to set
+	 */
+	public void setEdition(String edition) {
+		this.edition = edition;
+	}
+
+	/**
+	 * @return the publishYear
+	 */
+	public String getPublishYear() {
+		return publishYear;
+	}
+
+	/**
+	 * @param publishYear the publishYear to set
+	 */
+	public void setPublishYear(String publishYear) {
+		this.publishYear = publishYear;
+	}
+
+	/**
+	 * @return the renewalCount
+	 */
+	public int getRenewalCount() {
+		return renewalCount;
+	}
+
+	/**
+	 * @param renewalCount the renewalCount to set
+	 */
+	public void setRenewalCount(int renewalCount) {
+		this.renewalCount = renewalCount;
+	}
+
+	/**
+	 * @return the almaNumLoans
+	 */
+	public int getAlmaNumLoans() {
+		return almaNumLoans;
+	}
+
+	/**
+	 * @param almaNumLoans the almaNumLoans to set
+	 */
+	public void setAlmaNumLoans(int almaNumLoans) {
+		this.almaNumLoans = almaNumLoans;
+	}
+
+	/**
+	 * @return the staffNote
+	 */
+	public String getStaffNote() {
+		return staffNote;
+	}
+
+	/**
+	 * @param staffNote the staffNote to set
+	 */
+	public void setStaffNote(String staffNote) {
+		this.staffNote = staffNote;
 	}
 
 }

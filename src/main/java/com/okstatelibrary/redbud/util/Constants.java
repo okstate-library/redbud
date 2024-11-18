@@ -27,5 +27,8 @@ public class Constants {
 	}
 
 	public static String expired_user_cutom_field = "Expired user custom field update";
+	
+	
+	public static String default_date = "0001-01-01";
 
 }
