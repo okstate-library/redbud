@@ -18,6 +18,9 @@ public interface CirculationLogDao extends CrudRepository<CirculationLog, Intege
 	@Query(value = "SELECT * FROM circulation_log WHERE item_id= :itemId", nativeQuery = true)
 	CirculationLog getCirculationLogByItemId(@Param("itemId") String itemId);
 
-	@Query(value = "SELECT * FROM circulation_log WHERE location IN (:locationIds)", nativeQuery = true)
-	List<CirculationLog> getCirculationLogByLocations(@Param("locationIds") List<String> locationIds);
+	@Query(nativeQuery = true, value = "call get_CirculationLogDetails(:locationIds,:fromDate ,:toDate ,:isEmptyDateWants)")
+	List<CirculationLog> getCirculationLogByLocations(@Param("locationIds") String locationIds,
+			@Param("fromDate") String fromDate, @Param("toDate") String toDate,
+			@Param("isEmptyDateWants") boolean isEmptyDateWants);
+
 }
