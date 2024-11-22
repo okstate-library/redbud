@@ -57,17 +57,25 @@
 				class="table table-bordered table-hover table-striped">
 				<thead>
 					<tr>
+						<th>Institution id </th>
 						<th>Institution</th>
+						<th>Campus id</th>
 						<th>Campus</th>
+						<th>Library id</th>
 						<th>Library</th>
+						<th>Location Id</th>
 						<th>Location</th>
 					</tr>
 				</thead>
 				<tbody>
 					<tr data-th-each="location : ${locations}">
+						<td data-th-text="${location.institution_id}">...</td>
 						<td data-th-text="${location.institution}">...</td>
+						<td data-th-text="${location.campus_id}">...</td>
 						<td data-th-text="${location.campus}">...</td>
+						<td data-th-text="${location.library_id}">...</td>
 						<td data-th-text="${location.library}">...</td>
+						<td data-th-text="${location.location_id}">...</td>
 						<td data-th-text="${location.location}">...</td>
 					</tr>
 				</tbody>

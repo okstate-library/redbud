@@ -54,17 +54,26 @@ public class InfrastructureSetupProcess extends MainProcess {
 
 			LocationModel locationModel = new LocationModel();
 
+			locationModel.location_id = location.getLocation_id();
 			locationModel.location = location.getLocation_name();
 
-			locationModel.library = libraries.stream().filter(u -> u.getLibrary_id().equals(location.getLibrary_id()))
-					.findFirst().get().getLibrary_name();
+			Library library = libraries.stream().filter(u -> u.getLibrary_id().equals(location.getLibrary_id()))
+					.findFirst().get();
 
-			locationModel.campus = campuses.stream().filter(u -> u.getCampus_id().equals(location.getCampus_id()))
-					.findFirst().get().getCampus_name();
+			locationModel.library_id = library.getLibrary_id();
+			locationModel.library = library.getLibrary_name();
 
-			locationModel.institution = institutions.stream()
-					.filter(u -> u.getInstitution_id().equals(location.getInstitution_id())).findFirst().get()
-					.getInstitution_name();
+			Campus campus = campuses.stream().filter(u -> u.getCampus_id().equals(location.getCampus_id())).findFirst()
+					.get();
+
+			locationModel.campus_id = campus.getCampus_id();
+			locationModel.campus = campus.getCampus_name();
+
+			Institution institution = institutions.stream()
+					.filter(u -> u.getInstitution_id().equals(location.getInstitution_id())).findFirst().get();
+
+			locationModel.institution_id = institution.getInstitution_id();
+			locationModel.institution = institution.getInstitution_name();
 
 			locationModels.add(locationModel);
 		}
@@ -286,32 +295,6 @@ public class InfrastructureSetupProcess extends MainProcess {
 		} catch (Exception e1) {
 			printScreen("setupInstitution : " + e1.getMessage(), Constants.ErrorLevel.ERROR);
 		}
-	}
-
-	public ArrayList<Root> getFolioUsers(FolioService folioService, GroupService groupService, String instituteCode)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
-
-		ArrayList<Root> userList = new ArrayList<>();
-
-		List<PatronGroup> groups = groupService.getGroupListByInstituteCode(instituteCode);
-
-		for (PatronGroup group : groups) {
-
-			String folioGroupId = group.getFolioGroupId();
-
-			Root root = folioService.getUsersbyPatronGroup(folioGroupId);
-
-			root.folioGroupId = folioGroupId;
-
-			root.folioGroupName = group.getFolioGroupName();
-
-			root.institutionGroup = group.getInstitutionGroup();
-
-			userList.add(root);
-
-		}
-
-		return userList;
 	}
 
 }

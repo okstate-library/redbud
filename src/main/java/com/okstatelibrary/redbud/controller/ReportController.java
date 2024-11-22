@@ -16,6 +16,7 @@ import com.okstatelibrary.redbud.service.CampusService;
 import com.okstatelibrary.redbud.service.CirculationLogService;
 import com.okstatelibrary.redbud.service.GroupService;
 import com.okstatelibrary.redbud.service.InstitutionService;
+import com.okstatelibrary.redbud.service.InstitutionalHoldingsService;
 import com.okstatelibrary.redbud.service.LibraryService;
 import com.okstatelibrary.redbud.service.LocationService;
 import com.okstatelibrary.redbud.service.ServicePointService;
@@ -70,6 +71,9 @@ public class ReportController {
 
 	@Autowired
 	private ServicePointService servicePointService;
+
+	@Autowired
+	private InstitutionalHoldingsService institutionalHoldingsService;
 
 	private String notApplicable = "N/A";
 
@@ -610,6 +614,18 @@ public class ReportController {
 //		}
 
 		return circulationLogList;
+	}
+
+	@GetMapping("/institutionalholdings")
+	private String getInstitutionalholdings(Principal principal, Model model) throws IOException {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("institutionalHoldings", institutionalHoldingsService.findAll());
+
+		model.addAttribute("user", user);
+
+		return "reports/institutionalholdings";
 	}
 
 }

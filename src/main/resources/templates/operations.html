@@ -131,13 +131,15 @@
 				</form>
 
 			</div>
-			
+
 			<div class="row top-buffer container-border">
 				<h4>GOV Docs location operation.</h4>
-				<form method="get" th:action="@{/settings/govDocsLocationUpdateProcess}">
+				<form method="get"
+					th:action="@{/settings/govDocsLocationUpdateProcess}">
 
 					<div class="row">
-						<div class="col-xs-8">Update the location of the selected Gov Doc location.</div>
+						<div class="col-xs-8">Update the location of the selected
+							Gov Doc location.</div>
 
 						<div class="col-xs-2">
 							<button type="submit" id="executegovDocsLocationUpdateProcess"
@@ -156,13 +158,15 @@
 				</form>
 
 			</div>
-			
+
 			<div class="row top-buffer container-border">
 				<h4>ALMA loan count update from csv file.</h4>
-				<form method="get" th:action="@{/settings/almaLoanCountUpdateProcess}">
+				<form method="get"
+					th:action="@{/settings/almaLoanCountUpdateProcess}">
 
 					<div class="row">
-						<div class="col-xs-8">Update the database from the ALMA loan count from csv file .</div>
+						<div class="col-xs-8">Update the database from the ALMA loan
+							count from csv file .</div>
 
 						<div class="col-xs-2">
 							<button type="submit" id="executealmaLoanCountUpdateProcess"
@@ -181,7 +185,35 @@
 				</form>
 
 			</div>
-			
+
+			<div class="row top-buffer container-border">
+				<h4>Collecting inventory holdings count based on institutes.</h4>
+				<form method="get"
+					th:action="@{/settings/institutionalHoldingsRecordsProcess}">
+
+					<div class="row">
+						<div class="col-xs-8">Get the relevant record count of
+							Holdings related to each institutes.</div>
+
+						<div class="col-xs-2">
+							<button type="submit"
+								id="executeinstitutionalHoldingsRecordsProcess"
+								name="executeinstitutionalHoldingsRecordsProcess" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeinstitutionalHoldingsRecordsProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Institutional_Holdings_Records_Process}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+
 
 
 
@@ -327,8 +359,8 @@
 				<form method="get" th:action="@{/settings/changePatronGroup}">
 
 					<div class="row">
-						<div class="col-xs-8">Change patron group depending on externally supplied
-							CSV file uploaded.</div>
+						<div class="col-xs-8">Change patron group depending on
+							externally supplied CSV file uploaded.</div>
 
 						<div class="col-xs-2">
 							<button type="submit" id="executeChangePatrons"
@@ -356,8 +388,8 @@
 					th:action="@{/settings/userPatronGroupUpdateProcess}">
 
 					<div class="row">
-						<div class="col-xs-8">Update User patron group, bar code and status based on the
-							plfeed/noc/pts (main)  CSV file.</div>
+						<div class="col-xs-8">Update User patron group, bar code and
+							status based on the plfeed/noc/pts (main) CSV file.</div>
 
 						<div class="col-xs-2">
 							<button type="submit" id="executeUserPatronGroupUpdateProcess"

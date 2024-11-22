@@ -16,6 +16,8 @@ public class CacheMap {
 	public static String process_Send_Test_Email = "Process_Send_Test_Email";
 	
 	public static String process_Alma_Loan_Count = "Process_Alma_Loan_Count";
+	
+	public static String process_Institutional_Holdings_Records_Process= "Institutional_Holdings_Records_Process";
 
 	private static Map<Object, Object> cacheMap = new ConcurrentHashMap<>();
 

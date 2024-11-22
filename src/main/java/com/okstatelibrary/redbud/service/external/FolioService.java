@@ -356,6 +356,26 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
+	public int getInventoryHoldingsCount(String locationID)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+		try {
+			String url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId= "
+					+ locationID + ")&limit=1";
+
+			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					HoldingRoot.class);
+
+			return response.getBody().totalRecords;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return 0;
+		}
+
+	}
+
 	public ArrayList<HoldingsRecord> getInventoryHoldings(String locationID, String startDateTime, String endDateTime)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 		try {

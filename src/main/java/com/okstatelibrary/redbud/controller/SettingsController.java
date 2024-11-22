@@ -61,6 +61,9 @@ public class SettingsController {
 	private ServicePointService servicePointService;
 
 	@Autowired
+	private InstitutionalHoldingsService institutionalHoldingsService;
+
+	@Autowired
 	private LocationService locationService;
 
 	@Autowired
@@ -776,6 +779,52 @@ public class SettingsController {
 			myThread.start();
 
 			model.addAttribute(CacheMap.process_Alma_Loan_Count, CacheMap.get(CacheMap.process_Alma_Loan_Count));
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+	@GetMapping("/institutionalHoldingsRecordsProcess")
+	public String institutionalHoldingsRecordsProcess(Principal principal, Model model) {
+
+		System.out.println("Running the ALMA loan count process");
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_Institutional_Holdings_Records_Process, CacheMap.running);
+
+					InstitutionalHoldingsRecordsProcess oprocess = new InstitutionalHoldingsRecordsProcess();
+
+					try {
+						oprocess.manipulate(institutionService, campusService, libraryService, locationService,
+								servicePointService, institutionalHoldingsService);
+					} catch (RestClientException | IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					CacheMap.set(CacheMap.process_Institutional_Holdings_Records_Process, CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+			model.addAttribute(CacheMap.process_Institutional_Holdings_Records_Process,
+					CacheMap.get(CacheMap.process_Institutional_Holdings_Records_Process));
 
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block

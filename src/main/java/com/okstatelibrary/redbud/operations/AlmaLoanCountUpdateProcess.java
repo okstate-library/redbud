@@ -6,12 +6,9 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-
-import org.springframework.beans.factory.annotation.Autowired;
 
 import com.okstatelibrary.redbud.entity.CirculationLog;
 import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord;
