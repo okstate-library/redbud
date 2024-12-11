@@ -31,7 +31,6 @@ $(document).ready(function() {
 	$('#datetimepicker_from_date').datetimepicker({
 		format : 'yyyy-mm-dd',
 		autoclose : true,
-		startDate : new Date('2023-12-15'),
 		endDate : end,
 		minView : 2,
 		pickTime : false,
@@ -41,7 +40,6 @@ $(document).ready(function() {
 	$('#datetimepicker_to_date').datetimepicker({
 		format : 'yyyy-mm-dd',
 		autoclose : true,
-		startDate : new Date('2023-12-16'),
 		endDate : end,
 		minView : 2,
 		pickTime : false,

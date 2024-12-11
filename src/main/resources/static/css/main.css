@@ -598,3 +598,9 @@ Data Table styling
   border: 1px solid #73AD21;
   padding: 20px;
 }
+
+
+#circulationLogTable th {
+    text-align: center;
+    vertical-align: middle; /* Optional: centers content vertically */
+}

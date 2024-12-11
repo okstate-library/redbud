@@ -144,6 +144,8 @@ public class ReportController {
 
 		model.addAttribute("locationList", locationService.getLocationList());
 
+		model.addAttribute("materialTypeList", circulationLogService.getDistinctMaterialTypes());
+
 		return "reports/circulationlog";
 
 	}
@@ -575,14 +577,15 @@ public class ReportController {
 	private @ResponseBody List<CirculationLog> getCirculationLogData(@RequestParam(required = false) String institution,
 			@RequestParam(required = false) String campus, @RequestParam(required = false) String library,
 			@RequestParam(required = false) String location, @RequestParam(required = false) String from_date,
-			@RequestParam(required = false) String to_date, @RequestParam(required = false) String isEmptyDateWants)
+			@RequestParam(required = false) String to_date, @RequestParam(required = false) String isEmptyDateWants,
+			@RequestParam(required = false) String isOpenLoans, @RequestParam(required = false) String materialType)
 			throws RestClientException, IOException {
 
 //		System.out.println("institution " + institution);
 //		System.out.println("campus " + campus);
 //		System.out.println("library " + library);
 //		System.out.println("location " + location);
-//		System.out.println("from_date " + from_date);
+//		System.out.println("from_date " + from_date);4241320158837339
 //		System.out.println("to_date " + to_date);
 
 		System.out.println("isEmptyDateWants : " + Boolean.parseBoolean(isEmptyDateWants));
@@ -607,10 +610,10 @@ public class ReportController {
 		}
 
 		List<CirculationLog> circulationLogList = circulationLogService.getCirculationLogList(locations, from_date,
-				to_date, Boolean.parseBoolean(isEmptyDateWants));
+				to_date, Boolean.parseBoolean(isEmptyDateWants), Boolean.parseBoolean(isOpenLoans), materialType);
 
 //		for (CirculationLog log : circulationLogList) {
-//			System.out.println(log.getCallNumber());
+//			System.out.println(log.getItemId());
 //		}
 
 		return circulationLogList;

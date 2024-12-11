@@ -69,6 +69,27 @@ public class SettingsController {
 	@Autowired
 	private CirculationLogService circulationLogService;
 
+	@GetMapping("/operations")
+	public String operations(Principal principal, Model model) throws IOException {
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		model.addAttribute(CacheMap.process_Execute_Inactive_Users,
+				CacheMap.get(CacheMap.process_Execute_Inactive_Users));
+
+		model.addAttribute(CacheMap.process_Send_Test_Email, CacheMap.get(CacheMap.process_Send_Test_Email));
+
+		lister.listCronJobs();
+
+		model.addAttribute("corn_scheduled_jobs", lister.singletonList.getList());
+
+		model.addAttribute(CacheMap.process_StaffNote_Update_Process,
+				CacheMap.get(CacheMap.process_StaffNote_Update_Process));
+
+		return "operations";
+	}
+
 	@GetMapping("/enableUserIntegration")
 	public String enableUserIntegrationCornJob(Principal principal, Model model) throws IOException {
 		User user = userService.findByUsername(principal.getName());
@@ -123,24 +144,6 @@ public class SettingsController {
 				infra.getLocations(institutionService, campusService, libraryService, locationService));
 
 		return "infrastructure";
-	}
-
-	@GetMapping("/operations")
-	public String operations(Principal principal, Model model) throws IOException {
-		User user = userService.findByUsername(principal.getName());
-
-		model.addAttribute("user", user);
-
-		model.addAttribute(CacheMap.process_Execute_Inactive_Users,
-				CacheMap.get(CacheMap.process_Execute_Inactive_Users));
-
-		model.addAttribute(CacheMap.process_Send_Test_Email, CacheMap.get(CacheMap.process_Send_Test_Email));
-
-		lister.listCronJobs();
-
-		model.addAttribute("corn_scheduled_jobs", lister.singletonList.getList());
-
-		return "operations";
 	}
 
 	@GetMapping("files")
@@ -825,6 +828,58 @@ public class SettingsController {
 
 			model.addAttribute(CacheMap.process_Institutional_Holdings_Records_Process,
 					CacheMap.get(CacheMap.process_Institutional_Holdings_Records_Process));
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+	@GetMapping("/updateStaffNoteInHolidings")
+	public String updateStaffNoteInHolidings(Principal principal, Model model) {
+
+		System.out.println("Running updateStaffNoteInHolidings");
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_StaffNote_Update_Process, CacheMap.running);
+
+					model.addAttribute(CacheMap.process_StaffNote_Update_Process, CacheMap.running);
+
+					UpdateCirculationLogRecordsProcess oprocess = new UpdateCirculationLogRecordsProcess();
+
+					try {
+						oprocess.manipulate(institutionService, campusService, libraryService, locationService,
+								servicePointService, circulationLogService);
+
+						CacheMap.set(CacheMap.process_StaffNote_Update_Process, CacheMap.idle);
+
+					} catch (RestClientException | IOException e) {
+
+						CacheMap.set(CacheMap.process_StaffNote_Update_Process, CacheMap.error + e.getMessage());
+
+						e.printStackTrace();
+					}
+
+				}
+			});
+
+			myThread.start();
+
+			model.addAttribute(CacheMap.process_StaffNote_Update_Process,
+					CacheMap.get(CacheMap.process_StaffNote_Update_Process));
 
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block

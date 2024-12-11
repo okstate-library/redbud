@@ -213,6 +213,33 @@
 				</form>
 
 			</div>
+			
+			<div class="row top-buffer container-border">
+				<h4>Update staff note.</h4>
+				<form method="get"
+					th:action="@{/settings/updateStaffNoteInHolidings}">
+
+					<div class="row">
+						<div class="col-xs-8">Update staff note</div>
+
+						<div class="col-xs-2">
+							<button type="submit"
+								id="executeUpdateStaffNoteInHolidings"
+								name="executeUpdateStaffNoteInHolidings" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeUpdateStaffNoteInHolidings').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${StaffNote_Update_Process}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
 
 
 

@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.okstatelibrary.redbud.folio.entity.*;
 import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord;
+import com.okstatelibrary.redbud.folio.entity.holding.HoldingsStatement;
 import com.okstatelibrary.redbud.folio.entity.instance.Identifier;
 import com.okstatelibrary.redbud.folio.entity.instance.Instance;
 import com.okstatelibrary.redbud.folio.entity.inventory.Inventory;
@@ -33,6 +34,7 @@ import com.okstatelibrary.redbud.folio.entity.manualblock.ManualBlock;
 import com.okstatelibrary.redbud.folio.entity.request.Request;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
 import com.okstatelibrary.redbud.util.Constants;
+import com.okstatelibrary.redbud.util.StringHelper;
 
 @Service
 public class FolioService extends FolioServiceToken {
@@ -102,6 +104,29 @@ public class FolioService extends FolioServiceToken {
 			// System.out.println("Total records- " + response.getBody());
 
 			return response.getBody().items;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public ItemRoot getItemByHoldingRecordId(String holdingRecordId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "inventory/items?query=(holdingsRecordId == " + holdingRecordId
+					+ " )";
+
+			// System.out.println("url - " + url);
+
+			ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					ItemRoot.class);
+
+			return response.getBody();
 
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -241,6 +266,49 @@ public class FolioService extends FolioServiceToken {
 			e.getMessage();
 			e.printStackTrace();
 			return 0;
+		}
+	}
+
+	public ArrayList<Loan> getOpenedLoans()
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"open\")&limit=1";
+
+			System.out.println("url- " + url);
+
+			ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					CirculationRoot.class);
+
+			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+			System.out.println("totalIterations" + totalIterations);
+			
+			ArrayList<Loan> loans = new ArrayList<>();
+
+			for (int iterations = 0; iterations < totalIterations; iterations++) {
+
+				int offset = iterations * apiRecordlimit;
+
+				url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"open\")&limit="
+						+ apiRecordlimit + "&offset=" + offset;
+
+				System.out.println("url- " + url);
+				
+				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
+
+				// Collections.addAll(folioUsers, response.getBody());
+
+				loans.addAll(response.getBody().loans);
+			}
+
+			return loans;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
 		}
 	}
 
@@ -630,6 +698,93 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
+	public ArrayList<HoldingsRecord> getHoldingsStorageByLocationIdAndHoldingStaement(String permanentLocationId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL
+					+ "holdings-storage/holdings?limit=1&query=(holdingsStatements <> [] AND permanentLocationId =="
+					+ permanentLocationId + ")";
+
+			// System.out.println("url- " + url);
+
+			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					HoldingRoot.class);
+
+			// System.out.println("response.getBody().totalRecords- " +
+			// response.getBody().totalRecords);
+
+			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+
+			ArrayList<HoldingsRecord> holdings = new ArrayList<>();
+
+			// System.out.println("totalIterations - " + totalIterations);
+
+			for (int iterations = 0; iterations < totalIterations; iterations++) {
+
+				int offset = iterations * apiRecordlimit;
+
+				url = AppSystemProperties.FolioURL + "holdings-storage/holdings?limit=" + apiRecordlimit
+						+ "&query=(holdingsStatements <> []  AND permanentLocationId ==" + permanentLocationId
+						+ ")& offset=" + offset;
+
+				// System.out.println("url- " + url);
+
+				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), HoldingRoot.class);
+
+				ArrayList<HoldingsRecord> instances = response.getBody().holdingsRecords;
+
+				for (HoldingsRecord holdingRecord : instances) {
+
+					if (holdingRecord.holdingsStatements != null && holdingRecord.holdingsStatements.size() > 0) {
+
+						HoldingsStatement holdingsStatement = holdingRecord.holdingsStatements.get(0);
+
+//						if (!StringHelper.isStringNullOrEmpty(holdingsStatement.statement)
+//								|| !StringHelper.isStringNullOrEmpty(holdingsStatement.staffNote)) {
+
+						// System.out.println("holdingRecord.id " + holdingRecord.id);
+
+						holdings.add(holdingRecord);
+						// }
+					}
+
+				}
+			}
+
+			return holdings;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+	public HoldingsRecord getHoldingsByHoldingsId(String holdingInstanceId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "holdings-storage/holdings/" + holdingInstanceId;
+
+			ResponseEntity<HoldingsRecord> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					HoldingsRecord.class);
+
+			return response.getBody();
+
+		} catch (Exception e) {
+
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	public HoldingRoot getHoldingsStorageByLocationId(String permanentLocationId)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
@@ -637,6 +792,28 @@ public class FolioService extends FolioServiceToken {
 
 			String url = AppSystemProperties.FolioURL
 					+ "holdings-storage/holdings?limit=10000&query=(permanentLocationId==" + permanentLocationId + ")";
+
+			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					HoldingRoot.class);
+
+			return response.getBody();
+
+		} catch (Exception e) {
+
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public HoldingRoot getHoldingsStorageWithHoldingsStatemxents()
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL
+					+ "holdings-storage/holdings?limit=10000&query=(permanentLocationId==)";
 
 			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					HoldingRoot.class);

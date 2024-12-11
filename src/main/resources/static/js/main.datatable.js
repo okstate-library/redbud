@@ -16,10 +16,11 @@ function formatDescription(d) {
 
 function formatAuthorEditionPublishedYear(d) {
 	// `d` is the original data object for the row
-	return ('<dl>' + '<dt>Author</dt>' + '<dd>'+ d.author+'</dd>' + '</dl>' +
-			'<dl>' + '<dt>Edition</dt>' + '<dd>'+ d.edition+'</dd>' + '</dl>' +
-			'<dl>' + '<dt>Published Year</dt>' + '<dd>'+ d.publishYear+'</dd>' + '</dl>'+
-			'<dl>' + '<dt>Staff Note</dt>' + '<dd>'+ d.staffNote+'</dd>' + '</dl>');
+	return ( ( d.author != null ? '<dl>' + '<dt>Author</dt>' + '<dd>'+ d.author+'</dd>' + '</dl>' : '' ) +
+			( d.edition != null ? '<dl>' + '<dt>Edition</dt>' + '<dd>'+ d.edition+'</dd>' + '</dl>' : '' )+
+			( d.publishYear != null ? '<dl>' + '<dt>Published Year</dt>' + '<dd>'+ d.publishYear+'</dd>' + '</dl>': '' )+
+			( d.staffNote != null ? '<dl>' + '<dt>Staff Note</dt>' + '<dd>'+ d.staffNote+'</dd>' + '</dl>': '' ) +
+			( d.statement != null ? '<dl>' + '<dt>Statement</dt>' + '<dd>'+ d.statement+'</dd>' + '</dl>': '' ));
 }
 
 function callOverdueOpenLoansReportAjaxRequest()
@@ -574,7 +575,11 @@ function callCirculationLogReportAjaxRequest() {
 	var location = document.getElementById("locationDropDown").value;
 
 	var isEmptyDateWants = document.getElementById("is_with_empty_dates").checked;
-		
+	
+	var isOpenLoans = document.getElementById("is_only_open_loans").checked;
+	
+	var materialType = document.getElementById("materialTypeDropDown").value;
+	
 	 if (Date.parse(sDate) > Date.parse(eDate)) {
 		 alert("Start date shouldn't greater than End date");
 		 return false;
@@ -591,7 +596,9 @@ function callCirculationLogReportAjaxRequest() {
 			"campus" : campus,
 			"library" : library,
 			"location" : location,
-			"isEmptyDateWants" : isEmptyDateWants
+			"isEmptyDateWants" : isEmptyDateWants,
+			"isOpenLoans" : isOpenLoans,
+			"materialType" : materialType
 		},
 		beforeSend : function() {
 			$('#loader').removeClass('hidden') // Loader
@@ -614,46 +621,85 @@ function callCirculationLogReportAjaxRequest() {
 						"columnDefs" : [{
 							title : "",
 							"targets" : 0
-						},{
-							"width" : "10px",
-							title : "Barcode",
+						},
+						{
+							title : "Location",
+							 width: "30%",
 							"targets" : 1
-						},{
-							"width" : "10px",
-							title : "Call Number",
+						},
+						{
+							title : "Barcode",
+							 width: "5%",
 							"targets" : 2
 						},{
-							"width" : "10px",
-							title : "Type",
+							title : "Call Number",
+							 width: "5%",
 							"targets" : 3
 						},{
-							"width" : "50px",
-							title : "Title",
+							title : "Type",
+							 width: "5%",
 							"targets" : 4
 						},{
-							"width" : "10px",
-							title : "Renewal Count",
+							title : "Title",
+							 width: "30%",
 							"targets" : 5
 						},{
-							"width" : "10px",
 							title : "Last Loan Date",
+							 width: "10%",
 							"targets" : 6
 						},{
-							"width" : "10px",
-							title : "# of loans",
+							title : "Renewal Count",
+							 width: "5%",
 							"targets" : 7
+						},{
+							title : "# of loans",
+							 width: "5%",
+							"targets" : 8
 						} ,
 						{
-							"width" : "10px",
 							title : "# of Alma loans",
-							"targets" : 8
-						}],
+							 width: "5%",
+							"targets" : 9
+						},
+						{
+							title : "Author",
+							visible: false,
+				            searchable: false,
+							"targets" : 10
+						},
+						{
+							title : "Edition",
+							visible: false,
+				            searchable: false,
+							"targets" : 11
+						},
+						{
+							title : "Published Year",
+							visible: false,
+				            searchable: false,
+							"targets" : 12
+						},
+						{
+							title : "Statemet",
+							visible: false,
+				            searchable: false,
+							"targets" : 13
+						},
+						{
+							title : "Staff Note",
+							visible: false,
+				            searchable: false,
+							"targets" : 14
+						}
+						],
 						columns : [
 						{
 							className : 'dt-control',
 							orderable : false,
 							data : null,
 							defaultContent : ''
+						},{
+							"data" : "location"
 						},
 						{
 							"data" : "barcode"
@@ -663,17 +709,32 @@ function callCirculationLogReportAjaxRequest() {
 							"data" : "materialType"
 						}, {
 							"data" : "title"
-						},{
-							"data" : "renewalCount"
 						}, {
 							"data" : "loanDate",
 							render : getLoanDate,
 						}, {
+							"data" : "renewalCount"
+						}, {
 							"data" : "numLoans"
 						}, {
 							"data" : "almaNumLoans"
-						}],
-
+						},
+						{
+							"data" : "author"
+						},
+						{
+							"data" : "edition"
+						},
+						{
+							"data" : "publishYear"
+						},
+						{
+							"data" : "statement"
+						},{
+							"data" : "staffNote"
+						}
+						],
+										
 						"lengthMenu" : [ [ 10, 50, 100, 200, -1 ],
 								[ 10, 50, 100, 200, "All" ] ],
 						"pageLength" : 10,

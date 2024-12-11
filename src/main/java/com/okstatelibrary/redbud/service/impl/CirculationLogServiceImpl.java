@@ -26,18 +26,30 @@ public class CirculationLogServiceImpl implements CirculationLogService {
 
 	@Override
 	public List<CirculationLog> getCirculationLogList(List<String> locations, String startDate, String endDate,
-			boolean isEmptyDateWants) {
+			boolean isEmptyDateWants, boolean isOpenLoans, String materialType) {
 
-		String guidList = locations.stream()
-                .map(guid -> "'" + guid + "'") // Add single quotes
-                .collect(Collectors.joining(","));
+		String guidList = locations.stream().map(guid -> "'" + guid + "'") // Add single quotes
+				.collect(Collectors.joining(","));
+
+		System.out.println("materialType " + materialType);
 		
-		return circulationLogDao.getCirculationLogByLocations(guidList, startDate, endDate, isEmptyDateWants);
+		return circulationLogDao.getCirculationLogByLocations(guidList, startDate, endDate, isEmptyDateWants,
+				isOpenLoans, materialType);
 	}
 
 	@Override
 	public CirculationLog getCirculationLogByItemId(String itemId) {
 		return circulationLogDao.getCirculationLogByItemId(itemId);
+	}
+
+	@Override
+	public List<CirculationLog> getCirculationLogListByLocation(String location_id) {
+		return circulationLogDao.getCirculationLogListByLocation(location_id);
+	}
+
+	@Override
+	public List<CirculationLog> getDistinctMaterialTypes() {
+		return circulationLogDao.getDistinctMaterialTypes();
 	}
 
 }

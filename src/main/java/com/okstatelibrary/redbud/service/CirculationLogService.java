@@ -9,7 +9,11 @@ public interface CirculationLogService {
 	CirculationLog saveCirculationLog(CirculationLog circulationLog);
 
 	List<CirculationLog> getCirculationLogList(List<String> location, String fromDate, String toDate,
-			boolean isEmptyDateWants);
+			boolean isEmptyDateWants, boolean isOpenLoans, String materialType);
 
 	CirculationLog getCirculationLogByItemId(String itemId);
+
+	List<CirculationLog> getCirculationLogListByLocation(String location_id);
+
+	List<CirculationLog> getDistinctMaterialTypes();
 }

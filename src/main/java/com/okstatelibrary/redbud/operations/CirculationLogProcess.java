@@ -22,6 +22,8 @@ public class CirculationLogProcess extends MainProcess {
 
 	protected String startTime;
 
+	protected int numberClosedLoans;
+
 	private CirculationLogService circulationLogService;
 
 	public CirculationLogProcess(CirculationLogService circulationLogService) {
@@ -35,9 +37,22 @@ public class CirculationLogProcess extends MainProcess {
 
 		printScreen(timePersiod, Constants.ErrorLevel.INFO);
 
+		int cloasedLoans = processClosedLoans();
+
+		int openLoans = processOpenLoans();
+
+		printScreen("Total circulationLogsByItems- " + cloasedLoans, Constants.ErrorLevel.INFO);
+
+		sendEmaill("Circulation log daily data migration " + timePersiod, "Loan record count - " + numberClosedLoans
+				+ " unique records - " + cloasedLoans + " open loans-" + openLoans);
+	}
+
+	private int processClosedLoans() throws JsonParseException, JsonMappingException, RestClientException, IOException {
 		// Get all the records from yesterday.
 		ArrayList<Loan> loans = folioService.getClosedLoansCountByDate(DateUtil.getYesterdayDate(true),
 				DateUtil.getYesterdayDate(false));
+
+		numberClosedLoans = loans.size();
 
 		printScreen("Loan size " + loans.size(), Constants.ErrorLevel.INFO);
 
@@ -117,10 +132,76 @@ public class CirculationLogProcess extends MainProcess {
 
 		}
 
-		printScreen("Total circulationLogsByItems- " + circulationLogsByItems.size(), Constants.ErrorLevel.INFO);
+		return circulationLogsByItems.size();
+	}
 
-		sendEmaill("Circulation log daily data migration " + timePersiod,
-				"Loan record count - " + loans.size() + " unique records - " + circulationLogsByItems.size());
+	private int processOpenLoans() throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		ArrayList<Loan> openLoans = folioService.getOpenedLoans();
+
+		printScreen("openLoans.size() " + openLoans.size(), Constants.ErrorLevel.ERROR);
+
+		int number = 0;
+
+		for (Loan loan : openLoans) {
+
+			number++;
+
+			printScreen(" Loan ID " + loan.id, Constants.ErrorLevel.ERROR);
+
+			CirculationLog selectedCirculationLog = circulationLogService.getCirculationLogByItemId(loan.itemId);
+
+			if (selectedCirculationLog != null) {
+
+				selectedCirculationLog.setOpen(true);
+				selectedCirculationLog.setLoanDate(DateUtil.getShortDate2(loan.getLoanDate()));
+
+				this.circulationLogService.saveCirculationLog(selectedCirculationLog);
+
+				printScreen(" Update open loan in existing record" + selectedCirculationLog.getId(),
+						Constants.ErrorLevel.ERROR);
+
+			} else {
+
+				Loan specificLoan = folioService.getLoansByLoanId(loan.id);
+
+				if (specificLoan.item != null) {
+
+					printScreen(" Circulation entry" + loan.itemId, Constants.ErrorLevel.ERROR);
+
+					selectedCirculationLog = new CirculationLog();
+
+					selectedCirculationLog.setLocation(loan.itemEffectiveLocationIdAtCheckOut);
+					selectedCirculationLog.setItemId(loan.itemId);
+					selectedCirculationLog.setBarcode(specificLoan.item.barcode);
+					selectedCirculationLog.setCallNumber(specificLoan.item.callNumber);
+
+					selectedCirculationLog.setMaterialType(specificLoan.item.materialType.name);
+					selectedCirculationLog.setTitle(specificLoan.item.title);
+					selectedCirculationLog.setLoanDate(DateUtil.getShortDate2(specificLoan.getLoanDate()));
+
+					selectedCirculationLog.setOpen(true);
+
+					this.circulationLogService.saveCirculationLog(selectedCirculationLog);
+
+					printScreen(" Update item in Circulation Log id " + selectedCirculationLog.getId(),
+							Constants.ErrorLevel.ERROR);
+
+				} else {
+					printScreen(" Loan not found " + loan.id, Constants.ErrorLevel.ERROR);
+				}
+
+			}
+
+			if (number % 1000 == 0) {
+				System.out.println(" number  " + number);
+			}
+
+		}
+
+		System.out.println(" number  " + number);
+		
+		return openLoans.size();
 	}
 
 	public void initialManipulate() throws JsonParseException, JsonMappingException, RestClientException, IOException {

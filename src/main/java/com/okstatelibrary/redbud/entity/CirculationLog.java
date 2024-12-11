@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -48,7 +50,19 @@ public class CirculationLog {
 
 	private String publishYear;
 
+	private String statement;
+
 	private String staffNote;
+
+	private boolean isOpen;
+	
+	public boolean isOpen() {
+		return isOpen;
+	}
+
+	public void setOpen(boolean isOpen) {
+		this.isOpen = isOpen;
+	}
 
 	private int renewalCount;
 
@@ -274,6 +288,32 @@ public class CirculationLog {
 	 */
 	public void setStaffNote(String staffNote) {
 		this.staffNote = staffNote;
+	}
+//
+//	@ManyToOne
+//	@JoinColumn(name = "location", referencedColumnName = "location_id", insertable = false, updatable = false)
+//	private Location locationObj;
+//
+//	public Location getLocationObj() {
+//		return locationObj;
+//	}
+//
+//	public void setLocationObj(Location locationObj) {
+//		this.locationObj = locationObj;
+//	}
+
+	/**
+	 * @return the statement
+	 */
+	public String getStatement() {
+		return statement;
+	}
+
+	/**
+	 * @param statement the statement to set
+	 */
+	public void setStatement(String statement) {
+		this.statement = statement;
 	}
 
 }
