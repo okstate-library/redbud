@@ -1,12 +1,8 @@
 package com.okstatelibrary.redbud.operations;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -49,11 +45,8 @@ public class LoanDueDateUpdateProcess extends MainProcess {
 
 // 		Code  segment 1 - User details
 
-		// String str = "0194023a-0025-5f51-baec-e91281d1c4ec";
-
-		// List<String> items = Arrays.asList(str.split("\\s*,\\s*"));
-
-		// for (String userId : items) {
+		// String userId = "38aee6d1-15a0-41ae-be50-d4286634770e"; User Magen Test with
+		// this ID
 
 		for (FolioUser user : userRoot.users) {
 
@@ -78,9 +71,9 @@ public class LoanDueDateUpdateProcess extends MainProcess {
 				if (!loan.item.materialType.name.equals("equipment")
 						&& loan.loanPolicyId.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")//
 						&& !loan.itemEffectiveLocationIdAtCheckOut.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")
-						&& dateTime.equals("2025-03-01")) {
+						&& dateTime.equals("2025-03-01")) { // 2025/02/28
 
-					//System.out.println("Loan due date - " + dateTime + "  " + user.username);
+					// System.out.println("Loan due date - " + dateTime + " " + user.username);
 
 					boolean isIn = false;
 
@@ -100,44 +93,49 @@ public class LoanDueDateUpdateProcess extends MainProcess {
 					}
 
 				} else {
-					System.out.println("Loan due date - " + dateTime + " " + user.username);
+					// System.out.println("Loan due date - " + dateTime + " " + user.username);
 				}
 
 			}
 
-//  Sending the email with replacing to a lib-dls and after sending add the replace to old email.
-
 			if (sortedLoans.size() > 0) {
+
+				// Task 3. Get the list of users having loan detais.
+				System.out.println(user.id + "," + user.personal.email + "," + user.personal.firstName + " "
+						+ user.personal.lastName + "," + loans.size() + "," + +sortedLoans.size());
+
+				// Sending the email with replacing to a lib-dls and after sending add the
+				// replace to old email.
+				// Task 4. To remove the comments before running.
 
 				String userEmail = user.personal.email;
 
-//  Task 4. To remove the comments before running.
+				user.personal.email = "lib-dls@okstate.edu";
 
-//				user.personal.email = "lib-dls@okstate.edu";
-//
-//				folioService.updateUser(user);
-//
-//				Thread.sleep(30000);
-//
-//				for (Loan loan : sortedLoans) {
-//
-//					// System.out.println("loan " + loan.id + " - due Date - " + loan.getDueDate());
-//
-//					loan.actionComment = "faculty auto-renewal spring 2024";
-//					loan.setDueDate("2025-03-01T04:59:59.000+00:00");
-//
-//					loan.loanPolicyId = "7abd2943-08a0-4ca1-8cc8-6a1f116e8763";
-//					folioService.updateLoan(loan);
-//				}
-//
-//				Thread.sleep(30000);
-//
-//				user.personal.email = userEmail;
-//				folioService.updateUser(user);
-//
-//				System.out.println(user.id + "," + user.personal.email + "," + user.personal.firstName + " "
-//						+ user.personal.lastName + "," + loans.size() + "," + +sortedLoans.size());
+				folioService.updateUser(user);
 
+				Thread.sleep(30000);
+
+				for (Loan loan : sortedLoans) {
+
+					// System.out.println("loan " + loan.id + " - due Date - " + loan.getDueDate());
+
+					loan.actionComment = "faculty auto-renewal spring 2025";
+					// loan.setDueDate("2025-03-01T04:59:59.000+00:00"); // Fed 28,
+					loan.setDueDate("2025-09-02T04:59:59.000+00:00"); // September 1,
+
+					loan.loanPolicyId = "7abd2943-08a0-4ca1-8cc8-6a1f116e8763";
+					folioService.updateLoan(loan);
+
+					// break;
+				}
+
+				Thread.sleep(30000);
+
+				user.personal.email = userEmail;
+				folioService.updateUser(user);
+
+				// End of Task 4.
 			}
 
 		}

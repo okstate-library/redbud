@@ -2,6 +2,7 @@ package com.okstatelibrary.redbud.controller;
 
 import com.okstatelibrary.redbud.entity.CirculationLog;
 import com.okstatelibrary.redbud.entity.Institution;
+import com.okstatelibrary.redbud.entity.InstitutionRecord;
 import com.okstatelibrary.redbud.entity.Location;
 import com.okstatelibrary.redbud.entity.PatronGroup;
 import com.okstatelibrary.redbud.entity.User;
@@ -16,7 +17,7 @@ import com.okstatelibrary.redbud.service.CampusService;
 import com.okstatelibrary.redbud.service.CirculationLogService;
 import com.okstatelibrary.redbud.service.GroupService;
 import com.okstatelibrary.redbud.service.InstitutionService;
-import com.okstatelibrary.redbud.service.InstitutionalHoldingsService;
+import com.okstatelibrary.redbud.service.InstitutionRecordService;
 import com.okstatelibrary.redbud.service.LibraryService;
 import com.okstatelibrary.redbud.service.LocationService;
 import com.okstatelibrary.redbud.service.ServicePointService;
@@ -73,7 +74,7 @@ public class ReportController {
 	private ServicePointService servicePointService;
 
 	@Autowired
-	private InstitutionalHoldingsService institutionalHoldingsService;
+	private InstitutionRecordService institutionRecordService;
 
 	private String notApplicable = "N/A";
 
@@ -175,11 +176,11 @@ public class ReportController {
 
 		List<FineAndFeesObject> returnObjects = null;
 
-		List<FolioUser> filteredUserList = new ArrayList<FolioUser>();
-
-		List<PatronBlockRoot> filteredPatronBlockRootList = new ArrayList<PatronBlockRoot>();
-
 		if (loans != null && loans.size() > 0) {
+
+			List<FolioUser> filteredUserList = new ArrayList<FolioUser>();
+
+			List<PatronBlockRoot> filteredPatronBlockRootList = new ArrayList<PatronBlockRoot>();
 
 			returnObjects = new ArrayList<FineAndFeesObject>();
 
@@ -612,23 +613,58 @@ public class ReportController {
 		List<CirculationLog> circulationLogList = circulationLogService.getCirculationLogList(locations, from_date,
 				to_date, Boolean.parseBoolean(isEmptyDateWants), Boolean.parseBoolean(isOpenLoans), materialType);
 
-//		for (CirculationLog log : circulationLogList) {
-//			System.out.println(log.getItemId());
-//		}
-
 		return circulationLogList;
 	}
 
-	@GetMapping("/institutionalholdings")
-	private String getInstitutionalholdings(Principal principal, Model model) throws IOException {
+	@GetMapping("/institutionRecords")
+	private String getInstitutionRecords(Principal principal, Model model) throws IOException {
 
 		User user = userService.findByUsername(principal.getName());
 
-		model.addAttribute("institutionalHoldings", institutionalHoldingsService.findAll());
+		model.addAttribute("institutionList", institutionService.getInstitutionList());
 
 		model.addAttribute("user", user);
 
-		return "reports/institutionalholdings";
+		return "reports/institutionRecords";
+	}
+
+	@RequestMapping(value = "/institutionRecords/data", method = RequestMethod.GET)
+	private @ResponseBody List<InstitutionRecord> getInstitutionalholdings(
+			@RequestParam(required = false) String institution) throws RestClientException, IOException {
+
+		// User user = userService.findByUsername(principal.getName());
+
+		System.out.print("institution -- " + institution);
+
+		List<Location> locations = locationService.getLocationList();
+
+		List<Institution> institutions = institutionService.getInstitutionList();
+
+		List<InstitutionRecord> records = institutionRecordService.findAllbyInstitutionId(institution);
+
+		for (InstitutionRecord record : records) {
+
+			Optional<Location> selectedLocation = Optional.ofNullable(locations.parallelStream()
+					.filter(l -> l.getLocation_id().equals(record.getLocationId())).findAny().orElse(null));
+
+			if (selectedLocation.isPresent()) {
+				record.location = selectedLocation.get().getLocation_name();
+			}
+
+			Optional<Institution> selectedInstitution = Optional.ofNullable(institutions.parallelStream()
+					.filter(l -> l.getInstitution_id().equals(record.getInstitutionId())).findAny().orElse(null));
+
+			if (selectedInstitution.isPresent()) {
+				record.institution = selectedInstitution.get().getInstitution_name();
+			}
+
+		}
+
+//		model.addAttribute("institutionalRecordCounts", records);
+//
+//		model.addAttribute("user", user);
+
+		return records; // "reports/institutionRecords";
 	}
 
 }

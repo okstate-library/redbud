@@ -8,7 +8,11 @@
 
 	<div class="row">
 		<div class="col-lg-12">
-			<h1 class="page-header">Circulation Log</h1>
+			<h1 class="page-header">
+				Circulation Log
+				<button type="button" class="btn btn-info" data-bs-toggle="modal"
+					id="helpButton" data-bs-target="#exampleModal">?</button>
+			</h1>
 		</div>
 
 		<div class="modal fade" id="exampleModal" tabindex="-1"
@@ -16,13 +20,15 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h3 class="modal-title" id="exampleModalLabel">- Help</h3>
+						<h3 class="modal-title" id="exampleModalLabel">Circulation
+							Log - Help</h3>
 					</div>
 					<div class="modal-body">
 
 						<ul>
-							<li>Displays creative studios and laptop inventory loans.
-								Please select the location from the drop down.</li>
+							<li>Displays circulation loan records with relevant to the
+								library items.Please select the relevant location from the drop
+								downs and select from and to date (last loan date duration) to proceed.</li>
 						</ul>
 					</div>
 
@@ -120,7 +126,7 @@
 				<div class="form-group">
 					<div class="form-group">
 						<label for="firstName" class="cols-sm-2 control-label">
-							Location </label>
+							Location (*)</label>
 						<div class="cols-sm-10">
 							<div class="input-group">
 
@@ -145,10 +151,9 @@
 		</div>
 
 		<div class="row top-buffer"></div>
-
 		<div class="row">
 
-			<div class="col-xs-3 form-inline">
+			<div class="col-xs-3 form-inline" >
 
 				<div class="form-group">
 					<div class="form-group">
@@ -191,6 +196,31 @@
 						</div>
 					</div>
 
+				</div>
+			</div>
+
+		</div>
+		<div class="row top-buffer"></div>
+
+		<div class="row">
+
+			<div class="col-xs-3 form-inline">
+				<label class="cols-sm-2 control-label">Material Type</label>
+				<div class="cols-sm-10">
+					<div class="input-group">
+
+						<select class="form-control" id="materialTypeDropDown"
+							th:name="materialTypeDropDown">
+							<option th:value="0">Select Material Type</option>
+
+							<option th:each="material: ${materialTypeList}"
+								th:value="${material.materialType}"
+								th:text="${material.materialType}"></option>
+						</select>
+
+
+
+					</div>
 				</div>
 			</div>
 			<div class="col-xs-3 form-inline">
@@ -239,33 +269,6 @@
 				</div>
 
 			</div>
-
-
-		</div>
-
-		<div class="row">
-
-			<div class="col-xs-3 form-inline">
-				<label class="cols-sm-2 control-label">Material Type</label>
-				<div class="cols-sm-10">
-					<div class="input-group">
-
-						<select class="form-control" id="materialTypeDropDown"
-							th:name="materialTypeDropDown">
-							<option th:value="0">Select Material Type</option>
-
-							<option th:each="material: ${materialTypeList}"
-								th:value="${material.materialType}"
-								th:text="${material.materialType}"></option>
-						</select>
-
-
-
-					</div>
-				</div>
-			</div>
-			<div class="col-xs-3 form-inline"></div>
-			<div class="col-xs-3 form-inline"></div>
 			<div class="col-xs-3 form-inline">
 				<div class="form-group">
 					<div class="form-group">
@@ -305,11 +308,11 @@
 						<th></th>
 						<th></th>
 						<th></th>
-						<th style="display:none;"></th>
-						<th style="display:none;"></th>
-						<th style="display:none;"></th>
-						<th style="display:none;"></th>
-						<th style="display:none;"></th>
+						<th style="display: none;"></th>
+						<th style="display: none;"></th>
+						<th style="display: none;"></th>
+						<th style="display: none;"></th>
+						<th style="display: none;"></th>
 					</tr>
 				</thead>
 			</table>
@@ -321,18 +324,21 @@
 <div th:replace="common/footer :: footer"></div>
 <div th:replace="common/header :: body-bottom-scripts"></div>
 <script>
-	$("#load-dt").click(function() {
+	$("#load-dt").click(
+			function() {
 
-		if (institutionDropDown.value == 0 && campusDropDown.value == 0 && libraryDropDown.value == 0 && locationDropDown.value == 0) {
-			alert("Please select a value from at least one dropdown.");   
-	    }
-		else if ($('#start_date').val() == '' || $('#end_date').val() == '') {
-			alert("Select From and To Date")
-		} else {
-			callCirculationLogReportAjaxRequest();
-		}
+				if (institutionDropDown.value == 0 && campusDropDown.value == 0
+						&& libraryDropDown.value == 0
+						&& locationDropDown.value == 0) {
+					alert("Please select a value from at least one dropdown.");
+				} else if ($('#start_date').val() == ''
+						|| $('#end_date').val() == '') {
+					alert("Select From and To Date")
+				} else {
+					callCirculationLogReportAjaxRequest();
+				}
 
-	});
+			});
 </script>
 </body>
 </html>

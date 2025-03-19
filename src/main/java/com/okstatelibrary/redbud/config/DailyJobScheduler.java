@@ -10,10 +10,13 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
 import com.okstatelibrary.redbud.operations.CirculationLogProcess;
+import com.okstatelibrary.redbud.operations.InstitutionRecordCountProcess;
 import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
 import com.okstatelibrary.redbud.operations.UserProertiesUpdateProcess;
 import com.okstatelibrary.redbud.service.CirculationLogService;
 import com.okstatelibrary.redbud.service.GroupService;
+import com.okstatelibrary.redbud.service.InstitutionRecordService;
+import com.okstatelibrary.redbud.service.LocationService;
 import com.okstatelibrary.redbud.util.CacheMap;
 import com.okstatelibrary.redbud.util.Constants;
 import com.okstatelibrary.redbud.util.DateUtil;
@@ -27,7 +30,49 @@ public class DailyJobScheduler {
 	private GroupService groupService;
 
 	@Autowired
+	private LocationService locationService;
+
+	@Autowired
+	private InstitutionRecordService institutionalHoldingsService;
+
+	@Autowired
 	private CirculationLogService circulationLogService;
+
+	// Define the cron expression for 1:00 AM every day
+	//@Scheduled(cron = "0 00 1 * * ?")
+	public void runInstitutionalResourcesCounting() {
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set("UserIntegrationProcess", "true");
+
+					InstitutionRecordCountProcess oprocess = new InstitutionRecordCountProcess();
+
+					oprocess.printScreen("Beeper starts for user integration process " + DateUtil.getTodayDateAndTime(),
+							Constants.ErrorLevel.INFO);
+
+					try {
+						oprocess.manipulate(locationService, institutionalHoldingsService);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					CacheMap.set("UserIntegrationProcess", "stop");
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			LOG.error(e1.getMessage());
+		}
+
+	}
 
 	// Define the cron expression for 1:30 AM every day
 	// @Scheduled(cron = "0 30 1 * * *")
@@ -63,7 +108,7 @@ public class DailyJobScheduler {
 	}
 
 	// Update the user related properties like bar codes and status.
-	@Scheduled(cron = "0 00 2 * * *")
+	//@Scheduled(cron = "0 00 2 * * *")
 	public void runUserPropertyChangeJob() {
 
 		try {
@@ -101,7 +146,7 @@ public class DailyJobScheduler {
 	}
 
 	// Define the cron expression for 3:00 AM every day
-	@Scheduled(cron = "0 00 3 * * *")
+	//@Scheduled(cron = "0 00 3 * * *")
 	public void runCirculationJob() {
 
 		try {
@@ -119,7 +164,7 @@ public class DailyJobScheduler {
 							Constants.ErrorLevel.INFO);
 
 					try {
-						oprocess.manipulate();
+						oprocess.manipulate(locationService, true, "0");
 					} catch (RestClientException | IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

@@ -3,11 +3,15 @@ package com.okstatelibrary.redbud.operations;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.okstatelibrary.redbud.entity.CirculationLog;
+import com.okstatelibrary.redbud.entity.Location;
 import com.okstatelibrary.redbud.entity.LocationModel;
 import com.okstatelibrary.redbud.folio.entity.ItemRoot;
 import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord;
@@ -22,7 +26,7 @@ import com.okstatelibrary.redbud.service.ServicePointService;
 import com.okstatelibrary.redbud.util.DateUtil;
 import com.okstatelibrary.redbud.util.StringHelper;
 
-public class UpdateCirculationLogRecordsProcess extends MainProcess {
+public class NeverCirculatedItemsSearchProces extends MainProcess {
 
 	protected String startTime;
 
@@ -39,9 +43,44 @@ public class UpdateCirculationLogRecordsProcess extends MainProcess {
 			ArrayList<LocationModel> locations = infra.getLocations(institutionService, campusService, libraryService,
 					locationService);
 
-			setCirculationProperties(locations, circulationLogService);
+			List<LocationModel> selLocations = locations.stream()
+					.filter(l -> l.library_id.contentEquals("90fd1e1d-dc88-4751-aa50-70b35a594360"))
+					.filter(item -> item.location_id.equals("912064a8-6296-4d35-8c91-48722c5ddc59")) // Exclude OKS-OSU Main Stacks
+					.collect(Collectors.toList());
 
-			System.out.println("end" + DateUtil.getTodayDateAndTime());
+			int i = 1;
+
+			for (LocationModel location : selLocations) {
+				// {912064a8-6296-4d35-8c91-48722c5ddc59 OKS-OSU Main Stacks
+				// "222f991f-ad0f-43ac-98bd-342c16c39588
+
+				ArrayList<Item> items = folioService.getItemsByLocationId(location.location_id);
+
+				System.out.println("location " + i + " ## " + location.location_id + " ## " + location.location
+						+ " items count " + items.size());
+
+				int itemCount = 0;
+
+				for (Item item : items) {
+
+					int loanCount = folioService.getLoanCountByItemId(item.id);
+
+					if (loanCount == 0) {
+						System.out.println(item.id + "##" + item.barcode + "##" + item.title);
+					}
+
+//					if (itemCount % 1000 == 0) {
+//						System.out.println("Item count " + itemCount);
+//					}
+//
+//					itemCount++;
+
+				}
+
+				System.out.println("Done");
+
+				i++;
+			}
 
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
@@ -51,53 +90,4 @@ public class UpdateCirculationLogRecordsProcess extends MainProcess {
 
 	}
 
-	private void setCirculationProperties(ArrayList<LocationModel> locations,
-			CirculationLogService circulationLogService)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException, InterruptedException {
-
-		for (LocationModel location : locations) {
-
-			ArrayList<HoldingsRecord> holdings = folioService
-					.getHoldingsStorageByLocationIdAndHoldingStaement(location.location_id);
-
-			for (HoldingsRecord holdingRecord : holdings) {
-
-				ItemRoot items = folioService.getItemByHoldingRecordId(holdingRecord.id);
-
-				for (Item item : items.items) {
-
-					if (item != null) {
-
-						CirculationLog circulationLog = circulationLogService.getCirculationLogByItemId(item.id);
-
-						if (circulationLog != null) {
-
-							System.out.println("circulationLog.getId() " + circulationLog.getId());
-
-							HoldingsStatement holdingsStatement = holdingRecord.holdingsStatements.get(0);
-
-							circulationLog.setStatement(holdingsStatement.statement);
-
-							circulationLog.setStaffNote(!StringHelper.isStringNullOrEmpty(holdingsStatement.staffNote)
-									? holdingsStatement.staffNote
-									: null);
-
-							circulationLogService.saveCirculationLog(circulationLog);
-
-						} else {
-
-							System.out.println("  No circulationLog and itemid-" + item.id + " holdingRecord.id-"
-									+ holdingRecord.id);
-						}
-					}
-				}
-
-			}
-
-			Thread.sleep(3000);
-
-		}
-
-	}
-
-}
+};

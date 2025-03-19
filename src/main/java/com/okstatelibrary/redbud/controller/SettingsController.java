@@ -21,6 +21,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClientException;
 
 import java.io.File;
@@ -61,7 +62,7 @@ public class SettingsController {
 	private ServicePointService servicePointService;
 
 	@Autowired
-	private InstitutionalHoldingsService institutionalHoldingsService;
+	private InstitutionRecordService institutionalHoldingsService;
 
 	@Autowired
 	private LocationService locationService;
@@ -75,19 +76,42 @@ public class SettingsController {
 
 		model.addAttribute("user", user);
 
-		model.addAttribute(CacheMap.process_Execute_Inactive_Users,
-				CacheMap.get(CacheMap.process_Execute_Inactive_Users));
-
-		model.addAttribute(CacheMap.process_Send_Test_Email, CacheMap.get(CacheMap.process_Send_Test_Email));
+		updateCacheMapValues(model);
 
 		lister.listCronJobs();
 
 		model.addAttribute("corn_scheduled_jobs", lister.singletonList.getList());
 
+		model.addAttribute("institutionList", institutionService.getInstitutionList());
+
+		model.addAttribute("campusList", campusService.getCampusList());
+
+		model.addAttribute("libraryList", libraryService.getLibraryList());
+
+		model.addAttribute("locationList", locationService.getLocationList());
+
+		return "operations";
+	}
+
+	private void updateCacheMapValues(Model model) {
+
+		model.addAttribute(CacheMap.process_Execute_Inactive_Users,
+				CacheMap.get(CacheMap.process_Execute_Inactive_Users));
+
+		model.addAttribute(CacheMap.process_Send_Test_Email, CacheMap.get(CacheMap.process_Send_Test_Email));
+
+		model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction,
+				CacheMap.get(CacheMap.process_CirculationLog_API_Data_Extraction));
+
 		model.addAttribute(CacheMap.process_StaffNote_Update_Process,
 				CacheMap.get(CacheMap.process_StaffNote_Update_Process));
 
-		return "operations";
+		model.addAttribute(CacheMap.process_StaffNote_Update_Process,
+				CacheMap.get(CacheMap.process_StaffNote_Update_Process));
+				
+		model.addAttribute(CacheMap.process_Never_Circulated_Items_Seacrh_Process,
+				CacheMap.get(CacheMap.process_Never_Circulated_Items_Seacrh_Process));
+		
 	}
 
 	@GetMapping("/enableUserIntegration")
@@ -232,10 +256,10 @@ public class SettingsController {
 			LOG.error(e1.getMessage());
 		}
 
-		return "redirect:/settings/files";
+		return "operations";
 	}
 
-	@GetMapping("/executeinactiveusers")
+	@GetMapping("/executechangeexpirationdates")
 	public String executeInactiveUsers(Principal principal, Model model) {
 		User user = userService.findByUsername(principal.getName());
 
@@ -249,12 +273,10 @@ public class SettingsController {
 
 					CacheMap.set(CacheMap.process_Execute_Inactive_Users, CacheMap.running);
 
-					InactiveUserProcess oprocess = new InactiveUserProcess();
+					ChangeExpirationDateOfActiveUsers oprocess = new ChangeExpirationDateOfActiveUsers();
 
 					oprocess.printScreen("Beeper starts for inactive user process" + DateUtil.getTodayDateAndTime(),
 							Constants.ErrorLevel.INFO);
-
-					oprocess.copyFiles();
 
 					oprocess.manipulate(groupService);
 
@@ -271,7 +293,7 @@ public class SettingsController {
 			LOG.error(e1.getMessage());
 		}
 
-		return "redirect:/settings/files";
+		return "operations";
 	}
 
 	@GetMapping("/convertinactiveusers")
@@ -286,7 +308,7 @@ public class SettingsController {
 
 				public void run() {
 
-					InactiveUserProcess oprocess = new InactiveUserProcess();
+					ChangeExpirationDateOfActiveUsers oprocess = new ChangeExpirationDateOfActiveUsers();
 
 					oprocess.printScreen("Beeper starts for convert inactive users " + DateUtil.getTodayDateAndTime(),
 							Constants.ErrorLevel.INFO);
@@ -371,8 +393,8 @@ public class SettingsController {
 		return "operations";
 	}
 
-	@GetMapping("/circulationDataStore")
-	public String circulationDataStore(Principal principal, Model model) throws IOException {
+	@GetMapping("/circulationDataStorseAutoProcess")
+	public String circulationDataStorseAutoProcess(Principal principal, Model model) throws IOException {
 
 		User user = userService.findByUsername(principal.getName());
 
@@ -384,28 +406,80 @@ public class SettingsController {
 
 				public void run() {
 
-					CacheMap.set("Process_CirculationLog_API_Data_Extraction", CacheMap.running);
+					CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction_Auto_Process, CacheMap.running);
+
+					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction_Auto_Process,
+							CacheMap.running);
 
 					CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
 
-					oprocess.printScreen(
-							"Beeper starts for initiall Circulation data extraction. " + DateUtil.getTodayDateAndTime(),
-							Constants.ErrorLevel.INFO);
-
 					try {
 
-						oprocess.manipulate();
+						oprocess.manipulate(locationService, true, "0");
+
+						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction_Auto_Process, CacheMap.idle);
 
 					} catch (RestClientException | IOException e) {
-						// TODO Auto-generated catch block
+
+						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction_Auto_Process,
+								CacheMap.error + e.getMessage());
+
 						e.printStackTrace();
 					}
 
-					oprocess.printScreen(
-							"Beeper ends for initiall Circulation data extraction. " + DateUtil.getTodayDateAndTime(),
-							Constants.ErrorLevel.INFO);
+					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction_Auto_Process,
+							CacheMap.get(CacheMap.process_CirculationLog_API_Data_Extraction_Auto_Process));
+				}
+			});
 
-					CacheMap.set("Process_CirculationLog_API_Data_Extraction", CacheMap.idle);
+			myThread.start();
+
+		} catch (Exception e1) {
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+	@GetMapping("/circulationDataStore")
+	public String circulationDataStore(Principal principal, Model model,
+			@RequestParam(value = "locationDropDown", required = false, defaultValue = "0") String locationDropDown)
+			throws IOException {
+
+		System.out.print("locationDropDown -- " + locationDropDown);
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.running);
+
+					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.running);
+
+					CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
+
+					try {
+
+						oprocess.manipulate(locationService, false, locationDropDown);
+
+						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.idle);
+
+					} catch (RestClientException | IOException e) {
+
+						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction,
+								CacheMap.error + e.getMessage());
+
+						e.printStackTrace();
+					}
+
+					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction,
+							CacheMap.get(CacheMap.process_CirculationLog_API_Data_Extraction));
 				}
 			});
 
@@ -796,8 +870,6 @@ public class SettingsController {
 	@GetMapping("/institutionalHoldingsRecordsProcess")
 	public String institutionalHoldingsRecordsProcess(Principal principal, Model model) {
 
-		System.out.println("Running the ALMA loan count process");
-
 		User user = userService.findByUsername(principal.getName());
 
 		model.addAttribute("user", user);
@@ -810,11 +882,10 @@ public class SettingsController {
 
 					CacheMap.set(CacheMap.process_Institutional_Holdings_Records_Process, CacheMap.running);
 
-					InstitutionalHoldingsRecordsProcess oprocess = new InstitutionalHoldingsRecordsProcess();
+					InstitutionRecordCountProcess oprocess = new InstitutionRecordCountProcess();
 
 					try {
-						oprocess.manipulate(institutionService, campusService, libraryService, locationService,
-								servicePointService, institutionalHoldingsService);
+						oprocess.manipulate(locationService, institutionalHoldingsService);
 					} catch (RestClientException | IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -838,9 +909,9 @@ public class SettingsController {
 
 		return "operations";
 	}
-
-	@GetMapping("/updateStaffNoteInHolidings")
-	public String updateStaffNoteInHolidings(Principal principal, Model model) {
+	
+	@GetMapping("/updateCirculationLogRecordProperties")
+	public String updateCirculationLogRecordProperties(Principal principal, Model model) {
 
 		System.out.println("Running updateStaffNoteInHolidings");
 
@@ -890,4 +961,57 @@ public class SettingsController {
 
 		return "operations";
 	}
+	
+	@GetMapping("/neverCirculatedItemsSearchProcess")
+	public String neverCirculatedItemsSearchProcess(Principal principal, Model model) {
+
+		System.out.println("Running neverCirculatedItemsProcess");
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_Never_Circulated_Items_Seacrh_Process, CacheMap.running);
+
+					model.addAttribute(CacheMap.process_Never_Circulated_Items_Seacrh_Process, CacheMap.running);
+
+					NeverCirculatedItemsSearchProces oprocess = new NeverCirculatedItemsSearchProces();
+
+					try {
+						oprocess.manipulate(institutionService, campusService, libraryService, locationService,
+								servicePointService, circulationLogService);
+
+						CacheMap.set(CacheMap.process_Never_Circulated_Items_Seacrh_Process, CacheMap.idle);
+
+					} catch (RestClientException | IOException e) {
+
+						CacheMap.set(CacheMap.process_Never_Circulated_Items_Seacrh_Process, CacheMap.error + e.getMessage());
+
+						e.printStackTrace();
+					}
+
+				}
+			});
+
+			myThread.start();
+
+			model.addAttribute(CacheMap.process_Never_Circulated_Items_Seacrh_Process,
+					CacheMap.get(CacheMap.process_Never_Circulated_Items_Seacrh_Process));
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+	
 }

@@ -23,6 +23,193 @@ function formatAuthorEditionPublishedYear(d) {
 			( d.statement != null ? '<dl>' + '<dt>Statement</dt>' + '<dd>'+ d.statement+'</dd>' + '</dl>': '' ));
 }
 
+
+function callInstitutionRecordsReportAjaxRequest()
+{
+	var e = document.getElementById("institutionDropDown");
+	var institution = e.value;
+
+	if (institution != 0) {
+		
+		$.ajax({
+		type : "GET",
+		cache : false,
+		url : '/reports/institutionRecords/data',
+		data : {
+			"institution" : institution
+		},
+		beforeSend : function() {
+			$('#loader').removeClass('hidden') // Loader
+		},
+		success : function(data) {
+
+			console.log('Damithsssss');
+			
+			$('#institutionalRecordDataTable').dataTable().fnDestroy();
+
+			var table = $('#institutionalRecordDataTable').DataTable(
+					{
+						dom : 'Bfrtip',
+						buttons : [ 'excel', 'print' ],
+						data : data,
+						order : [ [ 1, 'asc' ] ],
+						orderCellsTop : true,
+						fixedHeader : true,
+						autoWidth : false,
+						
+						"columnDefs" : [ {
+							title : "Institution",
+							"targets" : 0,
+							width : '15px'
+						}, {
+							title : "Location",
+							"targets" : 1,
+							width : '15px'
+						}, {
+							title : "Instance Count",
+							"targets" : 2,
+							width : '5px'
+						}, {
+							title : "Holdings Count",
+							"targets" : 3,
+							width : '5px'
+						}, {
+							title : "Item Count",
+							"targets" : 4,
+							width : '5px'
+						},],
+						columns : [{
+							"data" : "institution"
+						}, {
+							"data" : "location"
+						}, {
+							"data" : "instanceCount"
+						}, {
+							"data" : "holdingCount",
+						}, {
+							"data" : "itemCount"
+						} ],
+
+					
+						"pageLength" : 1000,
+						"displayLength" : 1000,
+						"drawCallback" : function(settings) {
+							var api = this.api();
+							var rows = api.rows({
+								page : 'current'
+							}).nodes();
+							var last = null;
+							var subTotal = new Array();
+							var groupID = -1;
+							var aData = new Array();
+							var index = 0;
+
+							api
+									.column(0, {
+										page : 'current'
+									})
+									.data()
+									.each(
+											function(group,
+													i) {
+
+												//console.log(group+"-----"+i);
+
+												var vals = api
+														.row(api.row($(rows).eq(i)).index())
+														.data();
+												
+												//console.log(group +">>>"+ vals.instanceCount);
+												
+												var instanceCount = vals.instanceCount; 
+												var holdingCount = vals.holdingCount; 
+												var itemCount = vals.itemCount;
+
+												if (typeof aData[group] == 'undefined') {
+													aData[group] = new Array();
+													aData[group].rows = [];
+													aData[group].instanceCount = [];
+													aData[group].itemCount = [];
+													aData[group].holdingCount = [];
+												}
+
+												aData[group].rows
+														.push(i);
+												aData[group].instanceCount
+														.push(instanceCount);
+												aData[group].holdingCount
+														.push(holdingCount);
+												aData[group].itemCount
+														.push(itemCount);
+											});
+
+							var idx = 0;
+
+							for ( var office in aData) {
+
+								idx = Math.max.apply(Math,
+										aData[office].rows);
+
+								var sumInstanceCount = 0;
+								var sumHoldingCount = 0;
+								var sumItemCount = 0;
+
+								$
+										.each(
+												aData[office].instanceCount,
+												function(k,
+														v) {
+													sumInstanceCount = sumInstanceCount
+															+ v;
+												});
+
+								$
+										.each(
+												aData[office].itemCount,
+												function(k,
+														v) {
+													sumItemCount = sumItemCount
+															+ v;
+												});
+
+								$
+										.each(
+												aData[office].holdingCount,
+												function(k,
+														v) {
+													sumHoldingCount = sumHoldingCount
+															+ v;
+												});
+
+								$(rows)
+										.eq(idx)
+										.after(
+												'<tr class="group" style="background-color: #c1c1c1;"><td colspan="2"> Total count of '
+														+ office
+														+ '  </td>'
+														+ '<td>'
+														+ sumInstanceCount
+														+ '</td><td>'
+														+ sumHoldingCount
+														+ '</td><td>'
+														+ sumItemCount
+														+ '</td></tr>');
+
+							}
+							;
+
+						}
+					});
+
+		},
+		complete : function() {
+			// class and hiding the spinner.
+			$('#loader').addClass('hidden')
+		},
+	});
+	}
+}
+
 function callOverdueOpenLoansReportAjaxRequest()
 {	
 	var e = document.getElementById("servicePointDropDown");
@@ -636,7 +823,7 @@ function callCirculationLogReportAjaxRequest() {
 							 width: "5%",
 							"targets" : 3
 						},{
-							title : "Type",
+							title : "Material Type",
 							 width: "5%",
 							"targets" : 4
 						},{

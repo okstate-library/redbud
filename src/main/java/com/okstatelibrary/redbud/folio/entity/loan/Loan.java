@@ -14,6 +14,7 @@ public class Loan {
 	private String loanDate;
 	public String dueDate;
 	public String action;
+	public int renewalCount;
 	public String actionComment;
 	public String loanPolicyId;
 	public String checkoutServicePointId;

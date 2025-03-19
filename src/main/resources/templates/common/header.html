@@ -87,14 +87,31 @@
 						<li th:if="${user != null &&  user.authorized.contains(1)}"
 							class="dropdown"><a href="#" class="dropdown-toggle"
 							data-toggle="dropdown" role="button" aria-haspopup="true"
-							aria-expanded="false">Settings <span class="caret"></span>
+							aria-expanded="false">Infrastructure <span class="caret"></span>
 						</a>
 							<ul class="dropdown-menu">
 								<li><a th:href="@{/settings/infrastructure}">Infrastructure</a></li>
 								<li><a th:href="@{/settings/groups}">Patron Groups</a></li>
 								<li><a th:href="@{/settings/files}">Files </a></li>
-								<li><a th:href="@{/settings/operations}">Operations</a></li>
 							</ul></li>
+
+					</ul>
+
+					<ul class="nav navbar-nav">
+						<!-- Hidden li included to remove active class from about link when scrolled up past about section -->
+						<!-- <li class="hidden"><a class="page-scroll" href="#page-top"></a>
+						</li> -->
+
+						<li th:if="${user != null &&  user.authorized.contains(1)}">
+
+							<a th:href="@{/settings/operations}">Operations</a> <!-- <a href="#" class="dropdown-toggle"
+							data-toggle="dropdown" role="button" aria-haspopup="true"
+							aria-expanded="false">Operations <span class="caret"></span>
+						</a> --> <!-- <ul class="dropdown-menu">
+								<li><a th:href="@{/settings/operations}">Operations</a></li>
+							</ul> -->
+
+						</li>
 
 					</ul>
 
@@ -121,8 +138,8 @@
 
 								<li><a th:href="@{/reports/circulationlog}">Circulation
 										Log </a></li>
-								<li><a th:href="@{/reports/institutionalholdings}">Institutional
-										Holdings</a></li>
+								<li><a th:href="@{/reports/institutionRecords}">Institution
+										Records </a></li>
 
 
 
@@ -145,6 +162,8 @@
 									<ul class="dropdown-menu">
 										<li><a th:href="@{/users}">Users</a></li>
 										<li><a th:href="@{/sessions}">Sessions</a></li>
+										<li><a th:href="@{/actuator/logfile}">Log file</a></li>
+
 									</ul></li>
 								<li th:if="${user != null && user.authorized.contains(1)}"
 									class="divider"></li>
@@ -162,6 +181,9 @@
 			</div>
 			<!-- /.container -->
 		</nav>
+		<div class="ribbonclass" th:if="${notification_message}"
+			th:classappend="${notification_type}"
+			th:text="${notification_message}"></div>
 
 		<div id="message-box" class="p-3 mb-2 bg-success text-white show"
 			th:if="${errorMessage}">

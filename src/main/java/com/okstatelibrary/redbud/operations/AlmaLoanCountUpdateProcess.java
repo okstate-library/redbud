@@ -82,7 +82,7 @@ public class AlmaLoanCountUpdateProcess extends MainProcess {
 								if (holdingRecord != null) {
 
 									ArrayList<Instance> instances = folioService
-											.getInstanceByInstanceId(holdingRecord.instanceId);
+											.getInstanceByInstanceId(holdingRecord.getInstanceId());
 
 									if (instances != null && instances.size() > 0) {
 

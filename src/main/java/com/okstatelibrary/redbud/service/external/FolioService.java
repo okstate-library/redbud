@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import com.okstatelibrary.redbud.folio.entity.*;
 import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord;
+import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord2;
 import com.okstatelibrary.redbud.folio.entity.holding.HoldingsStatement;
 import com.okstatelibrary.redbud.folio.entity.instance.Identifier;
 import com.okstatelibrary.redbud.folio.entity.instance.Instance;
@@ -34,7 +35,6 @@ import com.okstatelibrary.redbud.folio.entity.manualblock.ManualBlock;
 import com.okstatelibrary.redbud.folio.entity.request.Request;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
 import com.okstatelibrary.redbud.util.Constants;
-import com.okstatelibrary.redbud.util.StringHelper;
 
 @Service
 public class FolioService extends FolioServiceToken {
@@ -113,6 +113,72 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
+	public ArrayList<Item> getItemsByLocationId(String locationID)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String mainUrl = AppSystemProperties.FolioURL + "inventory/items?query=(effectiveLocationId==" + locationID
+					+ ")&limit=";
+
+			ResponseEntity<ItemRoot> response = restTemplate.exchange(mainUrl + "0", HttpMethod.GET, getHttpRequest(),
+					ItemRoot.class);
+
+			apiRecordlimit = 100;
+
+			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+
+			System.out.println("totalIterations" + totalIterations);
+
+			ArrayList<Item> items = new ArrayList<>();
+
+			for (int iterations = 0; iterations < totalIterations; iterations++) {
+
+				int offset = iterations * apiRecordlimit;
+
+				String url = mainUrl + apiRecordlimit + "&offset=" + offset;
+
+				// System.out.println("url- " + url);
+
+				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), ItemRoot.class);
+
+				items.addAll(response.getBody().items);
+
+				// break;
+
+			}
+
+			return items;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+	public int getItemCountByLocationId(String locationID)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+		try {
+			String url = AppSystemProperties.FolioURL + "inventory/items?query=(effectiveLocationId=" + locationID
+					+ ")&limit=0";
+
+			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					HoldingRoot.class);
+
+			return response.getBody().totalRecords;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return 0;
+		}
+
+	}
+
 	public ItemRoot getItemByHoldingRecordId(String holdingRecordId)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
@@ -177,6 +243,30 @@ public class FolioService extends FolioServiceToken {
 			e.getMessage();
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	public int getLoanCountByItemId(String itemId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "circulation/loans?limit=0&query=(itemId==\"" + itemId + "\")";
+
+			// System.out.println("url " + url);
+
+			ResponseEntity<LoanRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					LoanRoot.class);
+
+			// System.out.println("Total records- " + response.getBody());
+
+			return response.getBody().totalRecords;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return 0;
 		}
 	}
 
@@ -274,30 +364,26 @@ public class FolioService extends FolioServiceToken {
 
 		try {
 
-			String url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"open\")&limit=1";
+			String mainUrl = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"open\")&limit=";
 
-			System.out.println("url- " + url);
-
-			ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					CirculationRoot.class);
+			ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + "1", HttpMethod.GET,
+					getHttpRequest(), CirculationRoot.class);
 
 			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+
 			System.out.println("totalIterations" + totalIterations);
-			
+
 			ArrayList<Loan> loans = new ArrayList<>();
 
 			for (int iterations = 0; iterations < totalIterations; iterations++) {
 
 				int offset = iterations * apiRecordlimit;
 
-				url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"open\")&limit="
-						+ apiRecordlimit + "&offset=" + offset;
+				String url = mainUrl + apiRecordlimit + "&offset=" + offset;
 
-				System.out.println("url- " + url);
-				
+				// System.out.println("url- " + url);
+
 				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
-
-				// Collections.addAll(folioUsers, response.getBody());
 
 				loans.addAll(response.getBody().loans);
 			}
@@ -312,41 +398,47 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
-	public ArrayList<Loan> getClosedLoansCountByDate(String startDateTime, String endDateTime)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+	public ArrayList<Loan> getClosedLoansByLocation(String locationId, String startDateTime, String endDateTime,
+			boolean isDailyProcess) throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
 		try {
+			String mainUrl = "";
 
-//			String url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"closed\" and returnDate>=" + startDateTime
-//					+ " AND returnDate<=" + endDateTime + ")&limit=1";
-//
-//			ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-//					CirculationRoot.class);
-//
-//			System.out.println("Total records- " + response.getBody().totalRecords);
-//
-//			return response.getBody().totalRecords;
+			if (isDailyProcess) {
 
-			String url = AppSystemProperties.FolioURL
-					+ "loan-storage/loans?query=(status.name==\"closed\" and returnDate>=" + startDateTime
-					+ " AND returnDate<=" + endDateTime + ")&limit=1";
+				mainUrl = AppSystemProperties.FolioURL
+						+ "loan-storage/loans?query=(status.name==\"closed\" and returnDate>=" + startDateTime
+						+ " AND returnDate<=" + endDateTime + " and itemEffectiveLocationIdAtCheckOut==" + locationId
+						+ ")&limit=";
 
-			System.out.println("url- " + url);
+			} else {
+				mainUrl = AppSystemProperties.FolioURL
+						+ "loan-storage/loans?query=(status.name==\"closed\" and itemEffectiveLocationIdAtCheckOut=="
+						+ locationId + ")&limit=";
+			}
 
-			ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					CirculationRoot.class);
+			System.out.println("url- " + mainUrl);
+
+			ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + "0", HttpMethod.GET,
+					getHttpRequest(), CirculationRoot.class);
+
+			System.out.println("TotalRecords - " + response.getBody().totalRecords);
 
 			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
+			// System.out.println("ClosedLoans totalIterations- " + totalIterations);
+
 			ArrayList<Loan> loans = new ArrayList<>();
 
+			apiRecordlimit = 10000;
+			
 			for (int iterations = 0; iterations < totalIterations; iterations++) {
 
 				int offset = iterations * apiRecordlimit;
 
-				url = AppSystemProperties.FolioURL
-						+ "loan-storage/loans?query=(status.name==\"closed\" and returnDate>=" + startDateTime
-						+ " AND returnDate<=" + endDateTime + ")&limit=" + apiRecordlimit + "& offset=" + offset;
+				String url = mainUrl + apiRecordlimit + "&offset=" + offset;
+
+				// System.out.println("url- " + url);
 
 				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
 
@@ -424,11 +516,52 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
+	public ArrayList<HoldingsRecord2> getInventoryHoldingsByLocation(String locationID)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+			String url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId="
+					+ locationID + ")&limit=0";
+
+			ResponseEntity<HoldingRoot2> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					HoldingRoot2.class);
+
+			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+
+			ArrayList<HoldingsRecord2> pairList = new ArrayList<>();
+
+			System.out.println("totalIterations - " + totalIterations);
+
+			// totalIterations = 20;
+
+			for (int iterations = 0; iterations < totalIterations; iterations++) {
+
+				int offset = iterations * apiRecordlimit;
+
+				url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId="
+						+ locationID + ")&limit=" + apiRecordlimit + "&offset=" + offset;
+
+				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), HoldingRoot2.class);
+
+				pairList.addAll(response.getBody().holdingsRecords);
+			}
+
+			return pairList;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
 	public int getInventoryHoldingsCount(String locationID)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 		try {
 			String url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId= "
-					+ locationID + ")&limit=1";
+					+ locationID + ")&limit=0";
 
 			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					HoldingRoot.class);

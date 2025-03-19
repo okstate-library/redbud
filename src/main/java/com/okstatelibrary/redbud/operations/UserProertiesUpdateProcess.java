@@ -27,13 +27,16 @@ public class UserProertiesUpdateProcess extends MainProcess {
 	public void manipulate(GroupService groupService)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
+		
+		System.out.println("UserProertiesUpdateProcess is start running");
+		
 		messageList = new ArrayList<>();
 
 		messageList.add("User properties Update Process" + "<br/>");
 
 		messageList.add("Start Time " + DateUtil.getTodayDateAndTime() + "<br/>");
 
-		// Remove comments in order to run the patron group changes 
+		// Remove comments in order to run the patron group changes
 //		FolioPatronGroup foliGroups = null;
 //
 //		try {
@@ -67,6 +70,7 @@ public class UserProertiesUpdateProcess extends MainProcess {
 
 				if (count % 500 == 0) {
 					messageList.add("record count " + count);
+					System.out.println("record count " + count);
 				}
 
 //					
@@ -74,7 +78,7 @@ public class UserProertiesUpdateProcess extends MainProcess {
 
 				String currentUserGroup = customFields[0];
 
-				// Remove comments in order to run the patron group changes 
+				// Remove comments in order to run the patron group changes
 //				Usergroup futureUserGroup = foliGroups.usergroups.stream()
 //						.filter(selGroup -> selGroup.group.toLowerCase().equals(currentUserGroup.toLowerCase()))
 //						.findFirst().get();
@@ -89,8 +93,8 @@ public class UserProertiesUpdateProcess extends MainProcess {
 					try {
 
 						boolean isUserStatusChanged = false;
-						
-						// Remove comments in order to run the patron group changes 
+
+						// Remove comments in order to run the patron group changes
 						// Checking the patron group and if there is an difference updating the Folio.
 
 //						if (!futureUserGroup.id.equals(folioUser.patronGroup)) {
@@ -196,6 +200,8 @@ public class UserProertiesUpdateProcess extends MainProcess {
 
 		} else {
 
+			System.out.println(folioUser.barcode + folioUser.expirationDate + folioUser.externalSystemId);
+			
 			messageList.add(csvUserModel.getBannerId() + ", " + csvUserModel.getFirstName() + " "
 					+ csvUserModel.getLastName() + updateCriteria);
 		}

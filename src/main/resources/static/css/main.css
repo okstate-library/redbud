@@ -604,3 +604,20 @@ Data Table styling
     text-align: center;
     vertical-align: middle; /* Optional: centers content vertically */
 }
+
+.ribbonclass {
+	/* display: none; */
+	width: 100%;
+	text-align: center;
+	height: 5%;
+	padding: 10px;
+	font-size: 1.3em;
+}
+
+.ribbon-warn {
+	background-color: red;
+}
+
+.ribbon-info {
+	background-color: orange;
+}

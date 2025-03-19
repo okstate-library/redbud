@@ -82,12 +82,12 @@ public class OCLCMetadataProcess extends MainProcess {
 
 			for (HoldingsRecord selectedHolding : holdingList) {
 
-				Set<String> oclcNumbers = folioService.getInventoryInstance(selectedHolding.instanceId);
+				Set<String> oclcNumbers = folioService.getInventoryInstance(selectedHolding.getInstanceId());
 
 				count++;
 
 				if (oclcNumbers.size() > 1) {
-					System.out.println("oclcNumbers.size() > 1" + " Folio id " + selectedHolding.instanceId);
+					System.out.println("oclcNumbers.size() > 1" + " Folio id " + selectedHolding.getInstanceId());
 				}
 
 				for (String oclcNumber : oclcNumbers) {
@@ -104,7 +104,7 @@ public class OCLCMetadataProcess extends MainProcess {
 
 								System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
 										+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
-										+ " Folio id " + selectedHolding.instanceId);
+										+ " Folio id " + selectedHolding.getInstanceId());
 
 								setHoldigsList.add(holding);
 
@@ -112,7 +112,7 @@ public class OCLCMetadataProcess extends MainProcess {
 
 								System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
 										+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
-										+ " Folio id " + selectedHolding.instanceId);
+										+ " Folio id " + selectedHolding.getInstanceId());
 
 								unSetHoldigsList.add(holding);
 							}

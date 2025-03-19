@@ -41,11 +41,11 @@ public class CronJobLister {
 
 		System.out.println("Adding values to the list");
 		
-		singletonList.addValue("Cron Job Method: " + method.getName());
+		singletonList.addValue("Cron Job Name : " + method.getName());
 		singletonList.addValue("Cron Expression: " + scheduled.cron());
-		singletonList.addValue("Fixed Rate: " + scheduled.fixedRate());
-		singletonList.addValue("Fixed Delay: " + scheduled.fixedDelay());
-		singletonList.addValue("Initial Delay: " + scheduled.initialDelay());
+//		singletonList.addValue("Fixed Rate: " + scheduled.fixedRate());
+//		singletonList.addValue("Fixed Delay: " + scheduled.fixedDelay());
+//		singletonList.addValue("Initial Delay: " + scheduled.initialDelay());
 		singletonList.addValue("-----------------------------------");
 	}
 }
