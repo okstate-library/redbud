@@ -190,9 +190,19 @@ public class AppSystemProperties {
 	public static String Almaloancsvfilepath;
 
 	/**
-	 * @param  alma Sft
+	 * @param alma Sft
 	 */
 	public void setAlmaloancsvfilepath(String almaloancsvfilepath) {
 		Almaloancsvfilepath = almaloancsvfilepath;
+	}
+
+	@Value("${scheduleCornJobsRunStatus}")
+
+	private boolean scheduleCornJobsRunStatus;
+
+	public static boolean ScheduleCornJobsRunStatus;
+
+	public void SetScheduleCornJobsRunStatus(boolean scheduleCornJobsRunStatus) {
+		ScheduleCornJobsRunStatus = scheduleCornJobsRunStatus;
 	}
 }

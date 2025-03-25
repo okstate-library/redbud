@@ -1,5 +1,6 @@
 package com.okstatelibrary.redbud.service.external;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.*;
@@ -118,11 +119,13 @@ public class FolioService extends FolioServiceToken {
 
 		try {
 
-			String mainUrl = AppSystemProperties.FolioURL + "inventory/items?query=(effectiveLocationId==" + locationID
-					+ ")&limit=";
+			String mainUrl = AppSystemProperties.FolioURL + "inventory/items?limit=%s&query=(effectiveLocationId=="
+					+ locationID + ")sortby id";
 
-			ResponseEntity<ItemRoot> response = restTemplate.exchange(mainUrl + "0", HttpMethod.GET, getHttpRequest(),
-					ItemRoot.class);
+			// System.out.println("mainUrl - " + String.format(mainUrl, "0"));
+
+			ResponseEntity<ItemRoot> response = restTemplate.exchange(String.format(mainUrl, "0"), HttpMethod.GET,
+					getHttpRequest(), ItemRoot.class);
 
 			apiRecordlimit = 100;
 
@@ -132,23 +135,73 @@ public class FolioService extends FolioServiceToken {
 
 			ArrayList<Item> items = new ArrayList<>();
 
-			for (int iterations = 0; iterations < totalIterations; iterations++) {
+			String fileName = "output.csv";
 
-				int offset = iterations * apiRecordlimit;
+			try (FileWriter writer = new FileWriter(fileName)) {
 
-				String url = mainUrl + apiRecordlimit + "&offset=" + offset;
+				writer.append("ID##CallNUmber##BarCode##Title");
 
-				// System.out.println("url- " + url);
+				for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), ItemRoot.class);
+					int offset = iterations * apiRecordlimit;
 
-				items.addAll(response.getBody().items);
+					String url = String.format(mainUrl, "100") + "&offset=" + offset;
 
-				// break;
+					// System.out.println("url - " + url);
 
+					System.out.println("iterations - " + iterations);
+
+					response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), ItemRoot.class);
+
+					// items.addAll(response.getBody().items);
+
+					for (Item item : response.getBody().items) {
+
+						int loanCount = this.getLoanCountByItemId(item.id);
+
+						if (loanCount == 0 && item.lastCheckIn == null) {
+
+							// Item item folioService.getItemByItemId(item.id);
+
+							writer.append(
+									item.id + "##" + item.callNumber + "##" + item.barcode + "##" + item.title + "\n");
+
+						}
+
+//					if (itemCount % 1000 == 0) {
+//						System.out.println("Item count " + itemCount);
+//					}
+//
+//					itemCount++;
+
+					}
+
+					Thread.sleep(5000);
+
+				}
+
+			} catch (IOException e) {
+				e.printStackTrace();
 			}
+			return null;
 
-			return items;
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+	public Item getItemByItemId(String itemId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+		try {
+			String url = AppSystemProperties.FolioURL + "item-storage/items/" + itemId + ")";
+
+			ResponseEntity<Item> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Item.class);
+
+			return response.getBody();
 
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -431,7 +484,7 @@ public class FolioService extends FolioServiceToken {
 			ArrayList<Loan> loans = new ArrayList<>();
 
 			apiRecordlimit = 10000;
-			
+
 			for (int iterations = 0; iterations < totalIterations; iterations++) {
 
 				int offset = iterations * apiRecordlimit;

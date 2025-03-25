@@ -26,7 +26,6 @@ public class DailyJobScheduler {
 
 	private static final Logger LOG = LoggerFactory.getLogger(DailyJobScheduler.class);
 
-	@Autowired
 	private GroupService groupService;
 
 	@Autowired

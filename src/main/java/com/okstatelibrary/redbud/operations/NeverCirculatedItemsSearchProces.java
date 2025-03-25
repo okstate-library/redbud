@@ -45,7 +45,8 @@ public class NeverCirculatedItemsSearchProces extends MainProcess {
 
 			List<LocationModel> selLocations = locations.stream()
 					.filter(l -> l.library_id.contentEquals("90fd1e1d-dc88-4751-aa50-70b35a594360"))
-					.filter(item -> item.location_id.equals("912064a8-6296-4d35-8c91-48722c5ddc59")) // Exclude OKS-OSU Main Stacks
+					.filter(item -> item.location_id.equals("912064a8-6296-4d35-8c91-48722c5ddc59")) // Exclude OKS-OSU
+																										// Main Stacks
 					.collect(Collectors.toList());
 
 			int i = 1;
@@ -54,33 +55,39 @@ public class NeverCirculatedItemsSearchProces extends MainProcess {
 				// {912064a8-6296-4d35-8c91-48722c5ddc59 OKS-OSU Main Stacks
 				// "222f991f-ad0f-43ac-98bd-342c16c39588
 
+				System.out.println("location " + i + " ## " + location.location_id + " ## " + location.location);
+				// + " items count " + items.size());
+
 				ArrayList<Item> items = folioService.getItemsByLocationId(location.location_id);
 
-				System.out.println("location " + i + " ## " + location.location_id + " ## " + location.location
-						+ " items count " + items.size());
-
-				int itemCount = 0;
-
-				for (Item item : items) {
-
-					int loanCount = folioService.getLoanCountByItemId(item.id);
-
-					if (loanCount == 0) {
-						System.out.println(item.id + "##" + item.barcode + "##" + item.title);
-					}
-
-//					if (itemCount % 1000 == 0) {
-//						System.out.println("Item count " + itemCount);
+//				int itemCount = 0;
+//
+//				for (Item item : items) {
+//
+//					int loanCount = folioService.getLoanCountByItemId(item.id);
+//
+//					if (loanCount == 0 && item.lastCheckIn == null) {
+//						
+//						//Item item	folioService.getItemByItemId(item.id);
+//						
+//						System.out.println(item.id + "##" + item.barcode + "##" + item.title);
+//						
 //					}
 //
-//					itemCount++;
+////					if (itemCount % 1000 == 0) {
+////						System.out.println("Item count " + itemCount);
+////					}
+////
+////					itemCount++;
+//
+//				}
+//
 
-				}
-
-				System.out.println("Done");
-
-				i++;
+//
+//				i++;
 			}
+
+			System.out.println("Done");
 
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
