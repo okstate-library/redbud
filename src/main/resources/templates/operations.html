@@ -231,8 +231,9 @@
 
 					<div class="row">
 
-						<div class="col-xs-8">Get all 'open' and 'closed' circulation
-							log details from the API and stored in DB for reporting purposes. This operation not depend on any time frame.</div>
+						<div class="col-xs-8">Get all 'open' and 'closed'
+							circulation log details from the API and stored in DB for
+							reporting purposes. This operation not depend on any time frame.</div>
 						<div class="col-xs-2">
 							<button type="submit" id="executeCirculationLog" disabled
 								class="btn btn-success btn-md btn-block">Execute</button>
@@ -722,19 +723,38 @@
 			</div>
 
 			<div class="row top-buffer container-border">
-				<h4>Schedule jobs</h4>
-				<!-- <form method="get" th:action="@{/settings/sendTestEmail}"> -->
+				<h4>
+					<b>Schedule jobs.</b>
+				</h4>
 
 				<div class="row">
 					<div class="col-xs-8">
 						<ul>
 							<li th:each="str : ${corn_scheduled_jobs}" th:text="${str}"></li>
-							<li th:text="${corn_scheduled_jobs_status}"></li>
+							<!-- <li th:text="${corn_scheduled_jobs_status}"></li> -->
 						</ul>
 					</div>
 
 				</div>
-				<!-- </form> -->
+
+
+			</div>
+
+			<div class="row top-buffer container-border">
+				<h4>
+					<b>Application Properties.</b>
+				</h4>
+
+				<div class="row">
+					<div class="col-xs-8">
+						<ul>
+							<li th:each="str : ${application_properties}" th:text="${str}"></li>
+							<!-- <li th:text="${corn_scheduled_jobs_status}"></li> -->
+						</ul>
+					</div>
+
+				</div>
+
 
 			</div>
 		</div>
@@ -747,5 +767,14 @@
 
 <div th:replace="common/footer :: footer"></div>
 <div th:replace="common/header :: body-bottom-scripts"></div>
+<script>
+	$("#executeCirculationLogByLocation").click(function() {
+
+		if (libraryDropDown.value == 0 || locationDropDown.value == 0) {
+			alert("Please select a value from at least one dropdown.");
+		}
+
+	});
+</script>
 </body>
 </html>

@@ -114,7 +114,7 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
-	public ArrayList<Item> getItemsByLocationId(String locationID)
+	public ArrayList<Item> getItemsByLocationId(String locationID, String locationName)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
 		try {
@@ -135,7 +135,7 @@ public class FolioService extends FolioServiceToken {
 
 			ArrayList<Item> items = new ArrayList<>();
 
-			String fileName = "output.csv";
+			String fileName = locationName + ".csv";
 
 			try (FileWriter writer = new FileWriter(fileName)) {
 
@@ -634,21 +634,18 @@ public class FolioService extends FolioServiceToken {
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 		try {
 			String url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId= "
-					+ locationID + ")&limit=1";
+					+ locationID + ")&limit=0";
 
 			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					HoldingRoot.class);
 
-			// System.out.println("response.getBody().totalRecords- " +
-			// response.getBody().totalRecords);
+			System.out.print("" + response.getBody().totalRecords);
 
 			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
 			ArrayList<HoldingsRecord> pairList = new ArrayList<>();
 
 			System.out.println("totalIterations - " + totalIterations);
-
-			// totalIterations = 20;
 
 			for (int iterations = 0; iterations < totalIterations; iterations++) {
 

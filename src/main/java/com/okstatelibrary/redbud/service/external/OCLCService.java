@@ -3,6 +3,10 @@ package com.okstatelibrary.redbud.service.external;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -35,12 +39,14 @@ public class OCLCService extends OCLCServiceToken {
 	 */
 	private static final Logger LOG = LoggerFactory.getLogger(OCLCService.class);
 
+	private static final String mainOCLCUrl = "https://metadata.api.oclc.org/worldcat/manage/institution/holdings/";
+
 	private HttpGet getHttpGet(String url) throws ClientProtocolException, IOException, InterruptedException {
 
 		// Create HTTP POST request to obtain token
 		HttpGet httpGet = new HttpGet(url);
 
-		httpGet.addHeader("Authorization", "Bearer " + getToken());
+		httpGet.addHeader("Authorization", "Bearer " + OCLCServiceToken.authToken);
 
 		httpGet.addHeader("Accept", "application/json");
 
@@ -53,7 +59,7 @@ public class OCLCService extends OCLCServiceToken {
 		// Create HTTP POST request to obtain token
 		HttpPost httpPost = new HttpPost(url);
 
-		httpPost.addHeader("Authorization", "Bearer " + getToken());
+		httpPost.addHeader("Authorization", "Bearer " + OCLCServiceToken.authToken);
 
 		httpPost.addHeader("Accept", "application/json");
 
@@ -68,8 +74,7 @@ public class OCLCService extends OCLCServiceToken {
 
 			String queryString = "?oclcNumbers=" + oclcNumbers;
 
-			String url = "https://metadata.api.oclc.org/worldcat/manage/institution/holdings/current"
-					+ queryString.trim();
+			String url = mainOCLCUrl + "current" + queryString.trim();
 
 			// Execute the request
 			HttpResponse response = httpClient.execute(getHttpGet(url));
@@ -86,9 +91,7 @@ public class OCLCService extends OCLCServiceToken {
 					StringBuilder result = new StringBuilder();
 
 					while ((line = bufferedReader.readLine()) != null) {
-
 						result.append(line);
-
 					}
 
 					Gson gson = new Gson();
@@ -122,7 +125,7 @@ public class OCLCService extends OCLCServiceToken {
 
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 
-			String url = "https://metadata.api.oclc.org/worldcat/manage/institution/holdings/" + oclcNumber + "/set";
+			String url = mainOCLCUrl + oclcNumber + "/set";
 
 			// Create a POST request
 			HttpPost httpPost = getHttpPost(url);
@@ -151,7 +154,7 @@ public class OCLCService extends OCLCServiceToken {
 
 		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 
-			String url = "https://metadata.api.oclc.org/worldcat/manage/institution/holdings/" + oclcNumber + "/unset";
+			String url = mainOCLCUrl + oclcNumber + "/unset";
 
 			// Create a POST request
 			HttpPost httpPost = getHttpPost(url);
@@ -172,5 +175,7 @@ public class OCLCService extends OCLCServiceToken {
 		return null;
 
 	}
+
+
 
 }

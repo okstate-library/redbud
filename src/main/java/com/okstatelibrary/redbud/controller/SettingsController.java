@@ -82,6 +82,8 @@ public class SettingsController {
 
 		model.addAttribute("corn_scheduled_jobs", lister.singletonList.getList());
 
+		model.addAttribute("application_properties", AppSystemProperties.getProperties());
+
 		model.addAttribute("institutionList", institutionService.getInstitutionList());
 
 		model.addAttribute("campusList", campusService.getCampusList());
@@ -108,10 +110,10 @@ public class SettingsController {
 
 		model.addAttribute(CacheMap.process_StaffNote_Update_Process,
 				CacheMap.get(CacheMap.process_StaffNote_Update_Process));
-				
+
 		model.addAttribute(CacheMap.process_Never_Circulated_Items_Seacrh_Process,
 				CacheMap.get(CacheMap.process_Never_Circulated_Items_Seacrh_Process));
-		
+
 	}
 
 	@GetMapping("/enableUserIntegration")
@@ -443,50 +445,57 @@ public class SettingsController {
 
 	@GetMapping("/circulationDataStore")
 	public String circulationDataStore(Principal principal, Model model,
+			@RequestParam(value = "libraryDropDown", required = false, defaultValue = "0") String libraryDropDown,
 			@RequestParam(value = "locationDropDown", required = false, defaultValue = "0") String locationDropDown)
 			throws IOException {
 
-		System.out.print("locationDropDown -- " + locationDropDown);
+		System.out.println("libraryDropDown -- " + libraryDropDown);
+		System.out.println("locationDropDown -- " + locationDropDown);
 
 		User user = userService.findByUsername(principal.getName());
-
 		model.addAttribute("user", user);
 
-		try {
+		if (libraryDropDown != "0" || locationDropDown != "0") {
 
-			Thread myThread = new Thread(new Runnable() {
+			try {
 
-				public void run() {
+				Thread myThread = new Thread(new Runnable() {
 
-					CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.running);
+					public void run() {
 
-					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.running);
+						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.running);
 
-					CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
+						model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.running);
 
-					try {
+						CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
 
-						oprocess.manipulate(locationService, false, locationDropDown);
+						try {
 
-						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.idle);
+							oprocess.manipulate(locationService, false, locationDropDown);
 
-					} catch (RestClientException | IOException e) {
+							CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.idle);
 
-						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction,
-								CacheMap.error + e.getMessage());
+						} catch (RestClientException | IOException e) {
 
-						e.printStackTrace();
+							CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction,
+									CacheMap.error + e.getMessage());
+
+							e.printStackTrace();
+						}
+
+						model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction,
+								CacheMap.get(CacheMap.process_CirculationLog_API_Data_Extraction));
 					}
+				});
 
-					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction,
-							CacheMap.get(CacheMap.process_CirculationLog_API_Data_Extraction));
-				}
-			});
+				myThread.start();
 
-			myThread.start();
-
-		} catch (Exception e1) {
-			LOG.error(e1.getMessage());
+			} catch (Exception e1) {
+				LOG.error(e1.getMessage());
+			}
+		} else {
+			System.out.println("libraryDropDown -- " + libraryDropDown);
+			System.out.println("locationDropDown -- " + locationDropDown);
 		}
 
 		return "operations";
@@ -557,7 +566,9 @@ public class SettingsController {
 					try {
 						OCLCMetadataProcess oprocess = new OCLCMetadataProcess();
 
-						oprocess.getOCLCItems("");
+						// Oklahoma State University, Stillwater
+						oprocess.manipulate(institutionService, campusService, libraryService, locationService,
+								"b3439a37-ec18-4d3f-a1a0-88a404b8062c"); //
 
 					} catch (OAuthSystemException | OAuthProblemException e) {
 						// TODO Auto-generated catch block
@@ -566,6 +577,12 @@ public class SettingsController {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (RestClientException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
@@ -909,7 +926,7 @@ public class SettingsController {
 
 		return "operations";
 	}
-	
+
 	@GetMapping("/updateCirculationLogRecordProperties")
 	public String updateCirculationLogRecordProperties(Principal principal, Model model) {
 
@@ -961,7 +978,7 @@ public class SettingsController {
 
 		return "operations";
 	}
-	
+
 	@GetMapping("/neverCirculatedItemsSearchProcess")
 	public String neverCirculatedItemsSearchProcess(Principal principal, Model model) {
 
@@ -991,7 +1008,8 @@ public class SettingsController {
 
 					} catch (RestClientException | IOException e) {
 
-						CacheMap.set(CacheMap.process_Never_Circulated_Items_Seacrh_Process, CacheMap.error + e.getMessage());
+						CacheMap.set(CacheMap.process_Never_Circulated_Items_Seacrh_Process,
+								CacheMap.error + e.getMessage());
 
 						e.printStackTrace();
 					}
@@ -1013,5 +1031,5 @@ public class SettingsController {
 
 		return "operations";
 	}
-	
+
 }

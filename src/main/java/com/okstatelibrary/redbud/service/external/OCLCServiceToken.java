@@ -13,27 +13,41 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import com.okstatelibrary.redbud.util.AppSystemProperties;
 
 public class OCLCServiceToken {
 
-	private static long currentTimeStap;
+	public static String authToken;
 
-	private static long expireTimeStap;
-
-	private static String authToken;
+	ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
 	public OCLCServiceToken() throws ClientProtocolException, IOException {
 
-//		try {
-//			//getToken();
-//		} catch (InterruptedException e) {
-//			Thread.currentThread().interrupt();
-//		}
 	}
 
-	private HttpPost getHttpPost() throws UnsupportedEncodingException {
+	public void setToken() {
+
+		scheduler.scheduleAtFixedRate(() -> {
+			try {
+				getToken();
+			} catch (IOException | InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}, 0, 18, TimeUnit.MINUTES);
+	}
+
+	public void dropToken() {
+		scheduler.shutdown();
+
+		System.out.println("Scheduler shutdown " + DateUtil.getTodayDateAndTime());
+	}
+
+	private static HttpPost getHttpPost() throws UnsupportedEncodingException {
 
 		// OCLC OAuth 2.0 token endpoint
 		String tokenEndpoint = AppSystemProperties.OclcTokenEndpoint;
@@ -61,75 +75,56 @@ public class OCLCServiceToken {
 		return httpPost;
 	}
 
-	public String getToken() throws ClientProtocolException, IOException, InterruptedException {
+	public static void getToken() throws ClientProtocolException, IOException, InterruptedException {
 
-		if (authToken == null || DateUtil.getCurretTimeStamp() > expireTimeStap) {
+		System.out.println("Get OCLC Token at : " + DateUtil.getTodayDateAndTime());
 
-			Thread.sleep(2000);
+		// Create HTTP client
+		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
 
-			System.out.println("Get OCLC Token at : " + DateUtil.getTodayDateAndTime());
+			// Execute the request
+			HttpResponse response = httpClient.execute(getHttpPost());
 
-			// Create HTTP client
-			try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+			// Parse the response
+			HttpEntity entity = response.getEntity();
 
-				// Execute the request
-				HttpResponse response = httpClient.execute(getHttpPost());
+			if (entity != null) {
 
-				// Parse the response
-				HttpEntity entity = response.getEntity();
+				try (BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(entity.getContent()))) {
+					String line;
 
-				if (entity != null) {
+					StringBuilder result = new StringBuilder();
 
-					try (BufferedReader bufferedReader = new BufferedReader(
-							new InputStreamReader(entity.getContent()))) {
-						String line;
+					while ((line = bufferedReader.readLine()) != null) {
+						result.append(line);
 
-						StringBuilder result = new StringBuilder();
-
-						while ((line = bufferedReader.readLine()) != null) {
-							result.append(line);
-
-							// System.out.println("Response: " + line);
-						}
-
-						// System.out.println("Response: " + result.toString());
-
-						String[] vavlues = result.toString().split(",");
-
-						for (String value : vavlues) {
-
-							if (value.contains("access_token")) {
-
-								String token = value.split(":")[1];
-
-								String replaceToken = token.replace("\"", "");
-
-								// System.out.println("Get Token at : " + replaceToken);
-
-								authToken = replaceToken;
-
-								currentTimeStap = DateUtil.getCurretTimeStamp();
-
-								expireTimeStap = currentTimeStap + 1200;
-
-//								System.out.println("Get Token at : " + currentTimeStap);
-//
-//								System.out.println("Token is : " + token);
-
-							} else {
-								return null;
-							}
-
-						}
+						// System.out.println("Response: " + line);
 					}
-				} else {
-					return null;
-				}
 
+					// System.out.println("Response: " + result.toString());
+
+					String[] vavlues = result.toString().split(",");
+
+					for (String value : vavlues) {
+
+						if (value.contains("access_token")) {
+
+							String token = value.split(":")[1];
+
+							String replaceToken = token.replace("\"", "");
+
+							authToken = replaceToken;
+
+							System.out.println("Token is : " + authToken + DateUtil.getTodayDateAndTime());
+
+						}
+
+					}
+				}
 			}
+
 		}
 
-		return authToken;
 	}
 
 }
