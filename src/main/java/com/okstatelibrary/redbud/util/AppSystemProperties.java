@@ -5,10 +5,24 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Component
 @ConfigurationProperties
 @PropertySource("classpath:application.properties")
 public class AppSystemProperties {
+
+	public static List<String> getProperties() {
+		List<String> list = new ArrayList<>();
+
+		list.add("CvsFilePath" + " - " + CvsFilePath);
+		list.add("SftpFilePath" + " - " + SftpFilePath);
+		list.add("ScheduleCornJobsRunStatus" + " - " + ScheduleCornJobsRunStatus);
+
+		return list;
+
+	}
 
 	@Value("${cvsfilepath}")
 	private String cvsfilepath;
@@ -197,12 +211,12 @@ public class AppSystemProperties {
 	}
 
 	@Value("${scheduleCornJobsRunStatus}")
-
 	private boolean scheduleCornJobsRunStatus;
 
 	public static boolean ScheduleCornJobsRunStatus;
 
-	public void SetScheduleCornJobsRunStatus(boolean scheduleCornJobsRunStatus) {
+	public void setScheduleCornJobsRunStatus(boolean scheduleCornJobsRunStatus) {
+		
 		ScheduleCornJobsRunStatus = scheduleCornJobsRunStatus;
 	}
 }
