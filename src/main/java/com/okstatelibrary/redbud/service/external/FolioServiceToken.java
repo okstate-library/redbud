@@ -1,5 +1,9 @@
 package com.okstatelibrary.redbud.service.external;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -13,14 +17,19 @@ public class FolioServiceToken {
 
 	private RestTemplate restTemplate = new RestTemplate();
 
-	private static long currentTimeStap;
-
-	private static long expireTimeStap;
-
 	public static String authToken;
 
 	public FolioServiceToken() {
-		getToken();
+		setToken();
+	}
+
+	ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
+
+	public void setToken() {
+
+		scheduler.scheduleAtFixedRate(() -> {
+			setTokens();
+		}, 0, 18, TimeUnit.MINUTES);
 	}
 
 	private HttpHeaders getHttpHeaders() {
@@ -33,8 +42,10 @@ public class FolioServiceToken {
 
 	}
 
-	public String getToken() {
+	public void setTokens() {
 
+		System.out.println("Get FOLIO Token at : " + DateUtil.getTodayDateAndTime());
+		
 		com.okstatelibrary.redbud.folio.entity.User user = new com.okstatelibrary.redbud.folio.entity.User();
 
 		user.username = AppSystemProperties.FolioUsername;
@@ -45,56 +56,28 @@ public class FolioServiceToken {
 
 		try {
 
-			if (authToken == null || DateUtil.getCurretTimeStamp() > expireTimeStap) {
+			String url = AppSystemProperties.FolioURL + "authn/login-with-expiry";
 
-				String url = AppSystemProperties.FolioURL + "authn/login-with-expiry";
+			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
 
-				ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.POST, request,
-						String.class);
+			String[] vavlues = responseEntity.getHeaders().get("Set-Cookie").toString().split(";");
 
-				String[] vavlues = responseEntity.getHeaders().get("Set-Cookie").toString().split(";");
+			for (String value : vavlues) {
 
-				for (String value : vavlues) {
+				if (value.contains("[folioAccessToken=")) {
 
-					if (value.contains("[folioAccessToken=")) {
+					String token = value.split("=")[1];
 
-						String token = value.split("=")[1];
+					authToken = token;
 
-						authToken = token;
-
-						currentTimeStap = DateUtil.getCurretTimeStamp();
-
-						expireTimeStap = currentTimeStap + 600;
-
-//						System.out.println("Get Token at : " + currentTimeStap);
-//						
-//						System.out.println("Get Token Expires at : " + expireTimeStap);
-//
-//						System.out.println("Token is : " + token);
-
-						return authToken;
-					}
 				}
-
 			}
 
-			return authToken;
-
 		} catch (Exception e) {
-
-			// System.out.println("updateLoan - " + payload.id);
 
 			e.getMessage();
 			e.printStackTrace();
 
-			// printScreen("Folio Update User - " + payload.externalSystemId,
-			// Constants.ErrorLevel.ERROR);
-
-			// printScreen(e.getMessage(), Constants.ErrorLevel.ERROR);
-//
-			// System.out.println(e.getMessage());
-
-			return null;
 		}
 	}
 

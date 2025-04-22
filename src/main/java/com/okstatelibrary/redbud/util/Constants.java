@@ -17,7 +17,7 @@ public class Constants {
 			add(new CsvFileModel("plfeed", new String[] { "OKS-OSU", "OTL-OSUIT", "OUH-CHS", "OK1-NEO", "OLR-CSC",
 					"OUJ-OKC", "PS1-OPSU", "OTU-TUL" }));
 			add(new CsvFileModel("noc", new String[] { "ONN-NOC" }));
-			add(new CsvFileModel("pts", new String[] { "OKG-PTS" }));
+			//add(new CsvFileModel("pts", new String[] { "OKG-PTS" }));
 		}
 
 	};

@@ -105,6 +105,9 @@ public class SettingsController {
 		model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction,
 				CacheMap.get(CacheMap.process_CirculationLog_API_Data_Extraction));
 
+		model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location,
+				CacheMap.get(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location));
+
 		model.addAttribute(CacheMap.process_StaffNote_Update_Process,
 				CacheMap.get(CacheMap.process_StaffNote_Update_Process));
 
@@ -445,17 +448,15 @@ public class SettingsController {
 
 	@GetMapping("/circulationDataStore")
 	public String circulationDataStore(Principal principal, Model model,
-			@RequestParam(value = "libraryDropDown", required = false, defaultValue = "0") String libraryDropDown,
-			@RequestParam(value = "locationDropDown", required = false, defaultValue = "0") String locationDropDown)
+			@RequestParam(value = "libraryDropDown", required = false, defaultValue = "0") String libraryDropDown)
 			throws IOException {
 
 		System.out.println("libraryDropDown -- " + libraryDropDown);
-		System.out.println("locationDropDown -- " + locationDropDown);
 
 		User user = userService.findByUsername(principal.getName());
 		model.addAttribute("user", user);
 
-		if (libraryDropDown != "0" || locationDropDown != "0") {
+		if (libraryDropDown != "0" || libraryDropDown != "0") {
 
 			try {
 
@@ -463,15 +464,16 @@ public class SettingsController {
 
 					public void run() {
 
-						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.running);
+						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location, CacheMap.running);
 
-						model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.running);
+						model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location,
+								CacheMap.running);
 
 						CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
 
 						try {
 
-							oprocess.manipulate(locationService, false, locationDropDown);
+							oprocess.manipulate(locationService, false, libraryDropDown);
 
 							CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.idle);
 
@@ -483,8 +485,8 @@ public class SettingsController {
 							e.printStackTrace();
 						}
 
-						model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction,
-								CacheMap.get(CacheMap.process_CirculationLog_API_Data_Extraction));
+						model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location,
+								CacheMap.get(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location));
 					}
 				});
 
@@ -495,7 +497,6 @@ public class SettingsController {
 			}
 		} else {
 			System.out.println("libraryDropDown -- " + libraryDropDown);
-			System.out.println("locationDropDown -- " + locationDropDown);
 		}
 
 		return "operations";

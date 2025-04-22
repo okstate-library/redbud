@@ -12,6 +12,9 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Map;
 
+/*
+ * 
+ */
 @Service
 public class CronJobLister {
 
@@ -23,7 +26,7 @@ public class CronJobLister {
 	public void listCronJobs() {
 
 		singletonList = SingletonStringList.getInstance();
-		
+
 		Map<String, Object> beans = applicationContext.getBeansWithAnnotation(Component.class);
 
 		beans.forEach((name, bean) -> {
@@ -40,12 +43,12 @@ public class CronJobLister {
 		Scheduled scheduled = method.getAnnotation(Scheduled.class);
 
 		System.out.println("Adding values to the list");
-		
+
 		singletonList.addValue("Cron Job Name : " + method.getName());
 		singletonList.addValue("Cron Expression: " + scheduled.cron());
-//		singletonList.addValue("Fixed Rate: " + scheduled.fixedRate());
-//		singletonList.addValue("Fixed Delay: " + scheduled.fixedDelay());
-//		singletonList.addValue("Initial Delay: " + scheduled.initialDelay());
+		singletonList.addValue("Fixed Rate: " + scheduled.fixedRate());
+		singletonList.addValue("Fixed Delay: " + scheduled.fixedDelay());
+		singletonList.addValue("Initial Delay: " + scheduled.initialDelay());
 		singletonList.addValue("-----------------------------------");
 	}
 }

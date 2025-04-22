@@ -302,14 +302,14 @@
 							</select>
 						</div>
 						<div class="col-xs-2">
-							<select class="form-control" id="locationDropDown"
+							<!-- <select class="form-control" id="locationDropDown"
 								th:name="locationDropDown">
 								<option th:value="0">Select Location</option>
 
 								<option th:each="location : ${locationList}"
 									th:value="${location.location_id}"
 									th:text="${location.location_name}"></option>
-							</select>
+							</select> -->
 						</div>
 						<div class="col-xs-2">
 							<button type="submit" id="executeCirculationLogByLocation"
@@ -321,7 +321,7 @@
 								onchange="document.getElementById('executeCirculationLogByLocation').disabled = !this.checked;" />
 						</div>
 						<div class="col-xs-1">
-							<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
+							<h5 th:text="${Process_CirculationLog_API_Data_Extraction_By_Location}"></h5>
 						</div>
 
 					</div>

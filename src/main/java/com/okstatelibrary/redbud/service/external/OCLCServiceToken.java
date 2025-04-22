@@ -19,6 +19,9 @@ import java.util.concurrent.TimeUnit;
 
 import com.okstatelibrary.redbud.util.AppSystemProperties;
 
+/*
+ * 
+ */
 public class OCLCServiceToken {
 
 	public static String authToken;
@@ -43,8 +46,6 @@ public class OCLCServiceToken {
 
 	public void dropToken() {
 		scheduler.shutdown();
-
-		System.out.println("Scheduler shutdown " + DateUtil.getTodayDateAndTime());
 	}
 
 	private static HttpPost getHttpPost() throws UnsupportedEncodingException {
@@ -75,6 +76,9 @@ public class OCLCServiceToken {
 		return httpPost;
 	}
 
+	/*
+	 * 
+	 */
 	public static void getToken() throws ClientProtocolException, IOException, InterruptedException {
 
 		System.out.println("Get OCLC Token at : " + DateUtil.getTodayDateAndTime());
@@ -97,11 +101,7 @@ public class OCLCServiceToken {
 
 					while ((line = bufferedReader.readLine()) != null) {
 						result.append(line);
-
-						// System.out.println("Response: " + line);
 					}
-
-					// System.out.println("Response: " + result.toString());
 
 					String[] vavlues = result.toString().split(",");
 
@@ -114,8 +114,6 @@ public class OCLCServiceToken {
 							String replaceToken = token.replace("\"", "");
 
 							authToken = replaceToken;
-
-							System.out.println("Token is : " + authToken + DateUtil.getTodayDateAndTime());
 
 						}
 

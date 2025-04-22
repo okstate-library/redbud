@@ -20,12 +20,12 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h3 class="modal-title" id="exampleModalLabel">Users - Help</h3>
+						<h3 class="modal-title" id="exampleModalLabel">Folio - Infrastructure - Help</h3>
 					</div>
 					<div class="modal-body">
 
 						<ul>
-							<li>Displays all the users in the system.</li>
+							<li>Displays all institutions, campuses, libraries, and locations.</li>
 						</ul>
 					</div>
 
@@ -42,7 +42,12 @@
 
 				<div class="col-xs-8">Get all the institutions, Campuses,
 					Libraries , and Location to Redbud application.</div>
-				<div class="col-xs-4">
+				<div class="col-xs-2">
+					<label><input type="checkbox" class="toggle-vis">
+						Show Id's</label>
+				</div>
+
+				<div class="col-xs-2">
 					<button type="submit" id="executeButton"
 						class="btn btn-success btn-md btn-block">Execute</button>
 				</div>
@@ -53,11 +58,11 @@
 
 	<div class="row top-buffer">
 		<div class="table-responsive">
-			<table id="example"
+			<table id="example" style="width: 100%"
 				class="table table-bordered table-hover table-striped">
 				<thead>
 					<tr>
-						<th>Institution id </th>
+						<th>Institution id</th>
 						<th>Institution</th>
 						<th>Campus id</th>
 						<th>Campus</th>
@@ -88,7 +93,22 @@
 <div th:replace="common/header :: body-bottom-scripts"></div>
 <script>
 	$(document).ready(function() {
-		$('#example').DataTable();
+		var table = $('#example').DataTable({
+			columnDefs : [ {
+				targets : [ 0, 2, 4, 6 ],
+				visible : false
+			} ]
+		});
+
+		// Toggle column visibility on checkbox change
+		$('input.toggle-vis').on('change', function(e) {
+
+			for (let i = 0; i < 7; i += 2) {
+				let column = table.column(i);
+				column.visible(!column.visible());
+			}
+
+		});
 	});
 </script>
 </body>

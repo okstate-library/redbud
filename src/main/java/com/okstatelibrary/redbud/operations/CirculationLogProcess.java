@@ -32,7 +32,7 @@ public class CirculationLogProcess extends MainProcess {
 		this.circulationLogService = circulationLogService;
 	}
 
-	public void manipulate(LocationService locationService, boolean isDailyProcess, String locationId)
+	public void manipulate(LocationService locationService, boolean isDailyProcess, String libraryId)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
 		String timePeriod = "Time period - " + DateUtil.getYesterdayDate(true) + "  -   "
@@ -57,7 +57,7 @@ public class CirculationLogProcess extends MainProcess {
 		lines.append("Location").append(tab).append("Close Loan record count").append(tab).append("unique records")
 				.append(tab).append(" open loans").append("<br/>");
 
-		if (locationId.equals("0")) {
+		if (libraryId.equals("0")) {
 
 			// Run the loan execution for all locations.
 
@@ -70,13 +70,17 @@ public class CirculationLogProcess extends MainProcess {
 
 		} else {
 
-			// Selecting a specific location send from the UI.
+			// Selecting a specific locations from related to library id and do the
+			// operations.
 
-			printScreen(" Location is selcted " + locationId , Constants.ErrorLevel.INFO);
+			locations = locationService.getLocationListByLibraryId(libraryId);
 
-			Location location = locations.stream().filter(l -> l.getLocation_id().equals(locationId)).findFirst().get();
+			for (Location location : locations) {
+				printScreen(" Location  " + location.getLocation_name(), Constants.ErrorLevel.INFO);
 
-			executeLoans(endDateTime, startDateTime, openLoans, location, isDailyProcess);
+				executeLoans(endDateTime, startDateTime, openLoans, location, isDailyProcess);
+			}
+
 		}
 
 		lines.append("End time:" + DateUtil.getTodayDateAndTime() + "<br/>");
@@ -109,8 +113,9 @@ public class CirculationLogProcess extends MainProcess {
 
 		int openLoansCount = processOpenLoans(openLocationLoans);
 
-		printScreen("Closed loan size " + cloasedLoansCount + " open loans size - " + openLoansCount, Constants.ErrorLevel.INFO);
-		
+		printScreen("Closed loan size " + cloasedLoansCount + " open loans size - " + openLoansCount,
+				Constants.ErrorLevel.INFO);
+
 		lines.append(location.getLocation_name()).append(tab).append(closedLocationLoans.size()).append(tab)
 				.append(cloasedLoansCount).append(tab).append(openLoansCount).append("<br/>");
 	}
@@ -227,12 +232,8 @@ public class CirculationLogProcess extends MainProcess {
 	private int processOpenLoans(ArrayList<Loan> openLoans)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		int number = 0;
-
 		for (Loan loan : openLoans) {
-
-			number++;
-
+			
 			// printScreen(" Loan ID " + loan.id, Constants.ErrorLevel.ERROR);
 
 			CirculationLog selectedCirculationLog = circulationLogService.getCirculationLogByItemId(loan.itemId);
@@ -283,15 +284,9 @@ public class CirculationLogProcess extends MainProcess {
 
 			}
 
-//			if (number % 1000 == 0) {
-//				System.out.println(" number  " + number);
-//			}
-
-			// printScreen("------------------------------", Constants.ErrorLevel.INFO);
-
 		}
 
-		//System.out.println(" number  " + number);
+		// System.out.println(" number " + number);
 
 		return openLoans.size();
 	}

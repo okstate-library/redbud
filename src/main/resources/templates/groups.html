@@ -8,24 +8,24 @@
 	<div class="row">
 		<div class="col-lg-12">
 			<h1 class="page-header">
-				Groups
+				Folio - Patron Group
 				<button type="button" class="btn btn-info" data-bs-toggle="modal"
 					id="helpButton" data-bs-target="#exampleModal">?</button>
 			</h1>
-		</div>
-
+		</div> 
 		<div class="modal fade" id="exampleModal" tabindex="-1"
 			aria-labelledby="exampleModalLabel" aria-hidden="true">
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h3 class="modal-title" id="exampleModalLabel">Files - Help</h3>
+						<h3 class="modal-title" id="exampleModalLabel">Folio - Patron
+							Groups - Help</h3>
 					</div>
 					<div class="modal-body">
 
 						<ul>
-							<li>Displays list of system users. Only administrators can
-								view or modify.</li>
+							<li>Displays patron groups in Folio relevant user group
+								mapping.</li>
 						</ul>
 					</div>
 
@@ -34,6 +34,19 @@
 		</div>
 	</div>
 
+	<div id="container-border" class="row top-buffer">
+
+
+		<div class="row">
+
+			<div class="col-xs-10"></div>
+			<div class="col-xs-2">
+				<label><input type="checkbox" class="toggle-vis">
+					Show Id's</label>
+			</div>
+
+		</div>
+	</div>
 	<div class="row">
 		<div class="table-responsive">
 			<table id="example"
@@ -60,13 +73,26 @@
 			</table>
 		</div>
 	</div>
-	
+
 </div>
 <div th:replace="common/footer :: footer"></div>
 <div th:replace="common/header :: body-bottom-scripts"></div>
 <script>
 	$(document).ready(function() {
-		$('#example').DataTable();
+		var table = $('#example').DataTable({
+			columnDefs : [ {
+				targets : [ 0 ],
+				visible : false
+			} ]
+		});
+
+		// Toggle column visibility on checkbox change
+		$('input.toggle-vis').on('change', function(e) {
+
+			let column = table.column(0);
+			column.visible(!column.visible());
+
+		});
 	});
 </script>
 </body>

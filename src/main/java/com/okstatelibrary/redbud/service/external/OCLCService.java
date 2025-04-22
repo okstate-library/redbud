@@ -3,10 +3,6 @@ package com.okstatelibrary.redbud.service.external;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
@@ -15,9 +11,6 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -33,11 +26,6 @@ public class OCLCService extends OCLCServiceToken {
 		super();
 		// TODO Auto-generated constructor stub
 	}
-
-	/**
-	 * Logger
-	 */
-	private static final Logger LOG = LoggerFactory.getLogger(OCLCService.class);
 
 	private static final String mainOCLCUrl = "https://metadata.api.oclc.org/worldcat/manage/institution/holdings/";
 

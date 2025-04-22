@@ -10,6 +10,8 @@ public class CacheMap {
 	public static String idle = "Idle";
 
 	public static String running = "Running";
+	
+	public static final String process_CirculationLog_API_Data_Extraction_By_Location = "Process_CirculationLog_API_Data_Extraction_By_Location";
 
 	public static final String process_CirculationLog_API_Data_Extraction = "Process_CirculationLog_API_Data_Extraction";
 	

@@ -55,7 +55,7 @@ public class FolioService extends FolioServiceToken {
 
 		headers.add("x-okapi-tenant", AppSystemProperties.FolioTenant);
 
-		headers.add("x-okapi-token", this.getToken());
+		headers.add("x-okapi-token", FolioServiceToken.authToken);
 
 		return headers;
 
