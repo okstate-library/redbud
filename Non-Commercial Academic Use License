@@ -1,0 +1,65 @@
+Redbud : FOLIO Assistant Tool
+
+OKLAHOMA STATE UNIVERSITY ACADEMIC LICENSE (SOURCE CODE)
+
+Oklahoma State University (OSU) has developed certain software and documentation that it desires to make available without charge to anyone for academic, research, experimental or personal use. This license is designed to guarantee freedom to use the software for these purposes. If you wish to distribute or make other use of the software such as commercial use, you may purchase a license to do so from Oklahoma State University. 
+
+The accompanying source code is made available to you under the terms of this OSU Software License (this “OAL”). By clicking the “ACCEPT” button, or by installing or using the code, you are consenting to be bound by this OAL. If you do not agree to the terms and conditions of this license, do not click the “ACCEPT” button, and do not install or use any part of the code. 
+
+The terms and conditions in this OAL not only apply to the source code made available by OSU, but also to any improvements to, or derivative works of, that source code made by you and to any object code compiled from such source code, improvements or derivative works. 
+
+1. DEFINITIONS. 
+
+1.1 “Commercial Use” shall mean use of Software or Documentation by Licensee for direct or indirect financial, commercial or strategic gain or advantage, including without limitation: (a) bundling or integrating the Software with any hardware product or another software product for transfer, sale or license to a third party (even if distributing the Software on separate media and not charging for the Software); (b) providing customers with a link to the Software or a copy of the Software for use with hardware or another software product purchased by that customer; or (c) use in connection with the performance of services for which Licensee is compensated. 
+
+1.2 “Derivative Products” means any improvements to, or other derivative works of, the Software made by Licensee. 
+
+1.3 “Documentation” shall mean all manuals, user documentation, and other related materials pertaining to the Software that are made available to Licensee in connection with the Software. 
+
+1.4 “Licensor” shall mean the Board of Regents for the Oklahoma Agricultural and Mechanical Colleges, acting for and on behalf of Oklahoma State University. 
+
+1.5 “Licensee” shall mean the person or entity that has agreed to the terms hereof and is exercising rights granted hereunder. 
+
+1.6 “Software” shall mean the computer program(s) referred to as “Redbud : FOLIO Assistant Tool” made available under this OAL in source code form, including any error corrections, bug fixes, patches, updates or other modifications that Licensor may in its sole discretion make available to Licensee from time to time, and any object code compiled from such source code. 
+
+2. GRANT OF RIGHTS. 
+
+Subject to the terms and conditions hereunder, Licensor hereby grants to Licensee a worldwide, non-transferable, non-sublicenseable, non-exclusive license to (a) install, use and reproduce the Software for academic, research, experimental, and personal use (but specifically excluding Commercial Use); (b) use and modify the Software to create Derivative Products, subject to Section 3.2; and (c) use the Documentation, if any, solely in connection with Licensee’s authorized use of the Software. 
+
+3. RESTRICTIONS; COVENANTS. 
+
+3.1 Licensee may not: (a) distribute, sub-license, assign, or otherwise transfer copies or rights to the Software (or any portion thereof) or the Documentation to any third party; (b) use the Software (or any portion thereof) or Documentation for Commercial Use, or for any other use except as described in Section 2; (c) copy the Software or Documentation other than for archival and backup purposes; or (d) remove any product identification, copyright, proprietary notices or labels from the Software and Documentation. This OAL confers no rights upon Licensee except those expressly granted herein. 
+
+3.2 Licensee hereby agrees that it will provide a copy of all Derivative Products to Licensor and that its use of the Derivative Products will be subject to all of the same terms, conditions, restrictions and limitations on use imposed on the Software under this OAL. Licensee hereby grants Licensor a worldwide, non-exclusive, royalty-free license to reproduce, prepare derivative works of, publicly display, publicly perform, sublicense, and distribute Derivative Products for any purpose. Licensee also hereby grants Licensor a worldwide, non-exclusive, royalty-free patent license to make, have made, use, offer to sell, sell, import and otherwise transfer the Derivative Products under those patent claims licensable by Licensee that are necessarily infringed by the Derivative Products. 
+
+4. PROTECTION OF SOFTWARE. 
+
+4.1 Confidentiality. The Software and Documentation are the confidential and proprietary information of Licensor. Licensee agrees to take adequate steps to protect the Software and Documentation from unauthorized disclosure or use. Licensee agrees that it will not disclose the Software or Documentation to any third party. 
+
+4.2 Proprietary Notices. Licensee shall maintain and place on any copy of Software or Documentation that it reproduces for internal use all notices as are authorized and/or required hereunder. Licensee shall include a copy of this OAL and the following notice, on each copy of the Software and Documentation. Such license and notice shall be embedded in each copy of the Software, in the video screen display, on the physical medium embodying the Software copy and on any Documentation: 
+
+Copyright © 2023, Board of Regents for the Oklahoma Agricultural and Mechanical Colleges. All rights reserved. THE BOARD OF REGENTS AND OKLAHOMA STATE UNIVERSITY EXPRESSLY DISCLAIM ANY AND ALL WARRANTIES CONCERNING THIS SOFTWARE AND DOCUMENTATION, INCLUDING ANY WARRANTIES OF MERCHANTABILITY, FITNESS FOR ANY PARTICULAR PURPOSE, NON-INFRINGEMENT AND WARRANTIES OF PERFORMANCE, AND ANY WARRANTY THAT MIGHT OTHERWISE ARISE FROM COURSE OF DEALING OR USAGE OF TRADE. NO WARRANTY IS EITHER EXPRESSED OR IMPLIED WITH RESPECT TO THE USE OF THE SOFTWARE OR DOCUMENTATION. Under no circumstances shall the Board of Regents or Oklahoma State University be liable for incidental, special, indirect, direct or consequential damages or loss of profits, interruption of business, or related expenses which may arise from use of Software or Documentation, including but not limited to those resulting from defects in Software and/or Documentation, or loss or inaccuracy of data of any kind. 
+
+5. WARRANTIES. 
+
+5.1 Disclaimer of Warranties. THE SOFTWARE AND DOCUMENTATION ARE PROVIDED "AS IS" AND LICENSOR HEREBY DISCLAIMS ALL WARRANTIES, WHETHER EXPRESS, IMPLIED, STATUTORY, OR OTHERWISE. LICENSOR SPECIFICALLY DISCLAIMS ALL IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, TITLE AND NON-INFRINGEMENT, AND ALL WARRANTIES ARISING FROM COURSE OF DEALING, USAGE, OR TRADE PRACTICE. LICENSOR MAKES NO WARRANTY OF ANY KIND THAT THE SOFTWARE AND DOCUMENTATION, OR ANY PRODUCTS OR RESULTS OF THE USE THEREOF, WILL MEET LICENSEE'S OR ANY OTHER PERSON'S REQUIREMENTS, OPERATE WITHOUT INTERRUPTION, ACHIEVE ANY INTENDED RESULT, BE COMPATIBLE OR WORK WITH ANY SOFTWARE, SYSTEM OR OTHER SERVICES, OR BE SECURE, ACCURATE, COMPLETE, FREE OF HARMFUL CODE, OR ERROR FREE.
+
+5.2 Limitation of Liability. IN NO EVENT WILL LICENSOR OR OKLAHOMA STATE UNIVERSITY BE LIABLE UNDER OR IN CONNECTION WITH THIS AGREEMENT UNDER ANY LEGAL OR EQUITABLE THEORY, INCLUDING BREACH OF CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, AND OTHERWISE, FOR ANY: (a) CONSEQUENTIAL, INCIDENTAL, INDIRECT, EXEMPLARY, SPECIAL, ENHANCED, OR PUNITIVE DAMAGES; (b) INCREASED COSTS, DIMINUTION IN VALUE OR LOST BUSINESS, PRODUCTION, REVENUES, OR PROFITS; (c) LOSS OF GOODWILL OR REPUTATION; (d) USE, INABILITY TO USE, LOSS, INTERRUPTION, DELAY OR RECOVERY OF ANY DATA, OR BREACH OF DATA OR SYSTEM SECURITY; OR (e) COST OF REPLACEMENT GOODS OR SERVICES, IN EACH CASE REGARDLESS OF WHETHER LICENSEE WAS ADVISED OF THE POSSIBILITY OF SUCH LOSSES OR DAMAGES OR SUCH LOSSES OR DAMAGES WERE OTHERWISE FORESEEABLE.
+
+6. INDEMNIFICATION. 
+To the extent permitted by law, Licensee shall indemnify, hold harmless, and, at Licensor's option, defend Licensor and Oklahoma State University from and against any losses resulting from any third-party claim based on Licensee's, or any user's: (i) negligence or willful misconduct; (ii) use of the Software or Documentation in a manner not authorized or contemplated by this Agreement; (iii) use of the Software in combination with data, software, hardware, equipment or technology not provided by Licensor or authorized by Licensor in writing; or (iv) modifications to the Software not made by Licensor, provided that Licensee may not settle any third-party claim against Licensor or Oklahoma State University unless such settlement completely and forever releases Licensor and Oklahoma State University from all liability with respect to such third-party claim or unless Licensor consents to such settlement, and further provided that Licensor will have the right, at its option, to defend itself against any such third-party claim or to participate in the defense thereof by counsel of its own choice.
+
+7. TERMINATION. 
+If Licensee breaches this OAL, Licensee’s right to use the Software and Documentation will terminate immediately without notice, but all provisions of this OAL except Section 2 will survive termination and continue in effect. Upon termination, Licensee must destroy all copies of the Software and Documentation. 
+
+8. GOVERNING LAW. 
+The validity, interpretation, construction and performance of this OAL shall be governed by the laws of Oklahoma, without regard to its conflict of law rules.  
+
+9. EXPORT CONTROLS. 
+This license is subject to all applicable export restrictions. Licensee shall comply with all applicable federal laws, regulations, and rules, and complete all required undertakings (including obtaining any necessary export license or other governmental approval), prior to exporting, re-exporting, releasing, or otherwise making the Software available outside the US.
+
+10. U.S. GOVERNMENT LICENSEES. 
+The Software is a “commercial item,” as that term is defined in 48 C.F.R. 2.101, consisting of “commercial computer software” and “commercial computer software documentation,” as such terms are used in 48 C.F.R. 12.212 (Sept. 1995) and 48 C.F.R. 227.7202 (June 1995). Consistent with 48 C.F.R. 12.212, 48 C.F.R. 27.405(b)(2) (June 1998) and 48 C.F.R. 227.7202, all U.S. Government Licensees acquire the Software with only those rights as set forth herein. 
+
+11. MISCELLANEOUS 
+If any provision hereof shall be held illegal, invalid or unenforceable, in whole or in part, such provision shall be modified to the minimum extent necessary to make it legal, valid and enforceable, and the legality, validity and enforceability of all other provisions of this OAL shall not be affected thereby. Licensee may not assign or sublicense this OAL in whole or in part, without Licensor’s prior written consent. Any attempt to assign this OAL without such consent will be null and void. This OAL is the complete and exclusive statement between Licensee and Licensor relating to the subject matter hereof and supersedes all prior oral and written and all contemporaneous oral negotiations, commitments and understandings of the parties, if any. Any waiver by either party of any default or breach hereunder shall not constitute a waiver of any provision of this OAL or of any subsequent default or breach of the same or a different kind. 
