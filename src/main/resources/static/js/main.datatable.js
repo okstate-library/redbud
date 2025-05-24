@@ -113,13 +113,14 @@ function callInstitutionRecordsReportAjaxRequest()
 											function(group,
 													i) {
 
-												//console.log(group+"-----"+i);
+												// console.log(group+"-----"+i);
 
 												var vals = api
 														.row(api.row($(rows).eq(i)).index())
 														.data();
 												
-												//console.log(group +">>>"+ vals.instanceCount);
+												// console.log(group +">>>"+
+												// vals.instanceCount);
 												
 												var instanceCount = vals.instanceCount; 
 												var holdingCount = vals.holdingCount; 
@@ -668,13 +669,17 @@ function callInventoryLoansReportAjaxRequest() {
 
 	var e = document.getElementById("locationDropDownList");
 	var location = e.value;
-
+	
+	var e2 = document.getElementById("yearDropDown");
+	var year = e2.value;
+	
 	$.ajax({
 		type : "GET",
 		cache : false,
 		url : '/reports/inventoryloans/data',
 		data : {
-			"location" : location
+			"location" : location,
+			"year" : year
 		},
 		beforeSend : function() {
 			$('#loader').removeClass('hidden') // Loader

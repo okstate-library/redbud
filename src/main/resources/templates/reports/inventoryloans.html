@@ -34,44 +34,81 @@
 		</div>
 	</div>
 
-	<div  class="row container-border">
+	<div class="container-border">
 
-		<div class="col-xs-3 form-inline">
+		<div class="row">
+			<div class="col-xs-3 form-inline">
 
-			<div class="form-group">
 				<div class="form-group">
-					<label for="firstName" class="cols-sm-2 control-label">
-						Location </label>
-					<div class="cols-sm-10">
-						<div class="input-group">
-
-							<!-- <select class="form-control" id="locationDropDown"
-								th:name="locationDropDown" onchange="callInventoryLoansReportAjaxRequest()">
-								<option th:value="0">Select Location</option>
-
-								<option th:each="location : ${locationList}"
-									th:value="${location.location_id}"
-									th:text="${location.location_name}"></option>
-							</select> -->
-
-							<select name="locationDropDownList" id="locationDropDownList"
-								class="pull-right"
-								onchange="callInventoryLoansReportAjaxRequest()">
-								<option th:value="0">Select Location</option>
-								<option value="creative_studio">Creative Studios</option>
-								<option value="laptops">Laptops</option>
-							</select>
+					<div class="form-group">
+						<label for="firstName" class="cols-sm-2 control-label">
+							Location </label>
+						<div class="cols-sm-10">
+							<div class="input-group">
 
 
+								<select class="form-control" name="locationDropDownList"
+									id="locationDropDownList">
+									<option th:value="0">Select Location</option>
+									<option value="creative_studio">Creative Studios</option>
+									<option value="laptops">Laptops</option>
+								</select>
+
+
+
+							</div>
 						</div>
 					</div>
+
+				</div>
+
+
+			</div>
+
+			<div class="col-xs-3 form-inline">
+
+				<div class="form-group">
+					<div class="form-group">
+						<label for="firstName" class="cols-sm-2 control-label">
+							Year </label>
+						<div class="cols-sm-10">
+							<div class="input-group">
+
+								<select class="form-control" id="yearDropDown">
+									<option th:value="0">Select Year</option>
+									<option value="2023">2023</option>
+									<option value="2024">2024</option>
+									<option value="2025">2025</option>
+								</select>
+
+
+							</div>
+						</div>
+					</div>
+
+				</div>
+
+
+			</div>
+			<div class="col-xs-3 form-inline"></div>
+			<div class="col-xs-3 form-inline">
+				<div class="form-group">
+					<div class="form-group">
+						<label class="cols-sm-2 control-label"> </label>
+						<div class="cols-sm-10">
+							<div class="input-group">
+								<button type="button" id="load-dt" class="btn btn-primary">Submit</button>
+
+
+							</div>
+						</div>
+					</div>
+
 				</div>
 
 			</div>
 
-
 		</div>
-
 	</div>
 
 	<div class="row top-buffer"></div>
@@ -100,7 +137,16 @@
 <div th:replace="common/footer :: footer"></div>
 <div th:replace="common/header :: body-bottom-scripts"></div>
 <script>
-	callInventoryLoansReportAjaxRequest();
+	$("#load-dt").click(function() {
+
+		if (locationDropDownList.value == 0 && yearDropDown.value == 0) {
+			alert("Please select values from both dropdowns.");
+		} else {
+			callInventoryLoansReportAjaxRequest();
+
+		}
+
+	});
 </script>
 </body>
 </html>

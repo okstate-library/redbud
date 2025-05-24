@@ -84,9 +84,7 @@ public class FolioService extends FolioServiceToken {
 
 			System.out.println("updateLoan - " + payload.id);
 
-			e.getMessage();
-
-			e.printStackTrace();
+			System.err.println("Error: FolioService : updateLoan " + e.getMessage());
 
 			return false;
 		}
@@ -107,9 +105,9 @@ public class FolioService extends FolioServiceToken {
 			return response.getBody().items;
 
 		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
+
+			System.err.println("Error: FolioService : getItembyBarcode " + e.getMessage());
+
 			return null;
 		}
 	}
@@ -186,9 +184,9 @@ public class FolioService extends FolioServiceToken {
 			return null;
 
 		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
+
+			System.err.println("Error: FolioService : getItemsByLocationId " + e.getMessage());
+
 			return null;
 		}
 
@@ -204,9 +202,9 @@ public class FolioService extends FolioServiceToken {
 			return response.getBody();
 
 		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
+
+			System.err.println("Error: FolioService : getItemByItemId " + e.getMessage());
+
 			return null;
 		}
 
@@ -224,14 +222,24 @@ public class FolioService extends FolioServiceToken {
 			return response.getBody().totalRecords;
 
 		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
+
+			System.err.println("Error: FolioService : getItemCountByLocationId " + e.getMessage());
+
 			return 0;
 		}
 
 	}
 
+	/**
+	 * Reads from the inventory items FOLIO API relevant holdings record
+	 * 
+	 * @param holdingRecordId
+	 * @return relevant holding record
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws RestClientException
+	 * @throws IOException
+	 */
 	public ItemRoot getItemByHoldingRecordId(String holdingRecordId)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
@@ -240,21 +248,29 @@ public class FolioService extends FolioServiceToken {
 			String url = AppSystemProperties.FolioURL + "inventory/items?query=(holdingsRecordId == " + holdingRecordId
 					+ " )";
 
-			// System.out.println("url - " + url);
-
 			ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					ItemRoot.class);
 
 			return response.getBody();
 
 		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
+
+			System.err.println("Error: FolioService : getItemByHoldingRecordId " + e.getMessage());
+
 			return null;
 		}
 	}
 
+	/**
+	 * finds the relevant holding records relevant to the holding record id
+	 * 
+	 * @param holdingRecordId
+	 * @return relevant holding record
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws RestClientException
+	 * @throws IOException
+	 */
 	public HoldingsRecord getHoldingRecordByHoldingId(String holdingRecordId)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
@@ -265,18 +281,25 @@ public class FolioService extends FolioServiceToken {
 			ResponseEntity<HoldingsRecord> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					HoldingsRecord.class);
 
-			// System.out.println("Total records- " + response.getBody());
-
 			return response.getBody();
 
 		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
+
+			System.err.println("Error: FolioService : getHoldingRecordByHoldingId " + e.getMessage());
+
 			return null;
 		}
 	}
 
+	/**
+	 * 
+	 * @param instanceId
+	 * @return
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws RestClientException
+	 * @throws IOException
+	 */
 	public ArrayList<Instance> getInstanceByInstanceId(String instanceId)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
@@ -292,9 +315,9 @@ public class FolioService extends FolioServiceToken {
 			return response.getBody().instances;
 
 		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
+
+			System.err.println("Error: FolioService : getHoldingRecordByHoldingId " + e.getMessage());
+			
 			return null;
 		}
 	}
@@ -1041,9 +1064,6 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
-	// https://okapi-okstate.folio.ebsco.com/groups?query=(group
-	// =="OKS-OSU-STUDENT-grad")
-
 	///
 	// Get Patron Group By name
 	///
@@ -1442,12 +1462,16 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
-	public Inventory getInventoryLoanDetails(String location)
+	///
+	// Get loans based on the location and the year
+	///
+	public Inventory getInventoryLoanDetails(String location, String year)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 		try {
 
-			String url = "https://okapi-okstate.folio.ebsco.com/circulation/loans?limit=1000&query=(status.name==\"open\" and "
-					+ "itemEffectiveLocationIdAtCheckOut==\"" + location + "\")";
+			String url = AppSystemProperties.FolioURL + "circulation/loans?limit=1000&query=(status.name==\"open\" and "
+					+ "itemEffectiveLocationIdAtCheckOut==\"" + location + "\" AND dueDate >= '" + year + "-01-01' \n"
+					+ "AND dueDate < '" + year + "-12-31')";
 
 			ResponseEntity<Inventory> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					Inventory.class);

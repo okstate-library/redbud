@@ -15,7 +15,7 @@ import com.okstatelibrary.redbud.util.DateUtil;
 /**
  * @author Damith
  * 
- *         // Tasks run the code // 1. Get some sample user details from Megan
+ *         // Tasks run the code // 1. Get some sample user details from Supervisor
  *         relevant to the User group // 2. Use of the user id try to get the
  *         loan records from FOLIO // 3. Get the relevant due date and and put
  *         in the relevant format to get the records // 4. Run the code with the
