@@ -1,5 +1,6 @@
 package com.okstatelibrary.redbud.service.external;
 
+import java.net.URI;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -38,13 +39,13 @@ public class FolioServiceToken {
 	ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
 	/**
-	 *  set the token and check every 18  minutes 
+	 *  set the token and check every 9  minutes 
 	 */
 	public void setToken() {
 
 		scheduler.scheduleAtFixedRate(() -> {
 			setTokens();
-		}, 0, 18, TimeUnit.MINUTES);
+		}, 0, 9, TimeUnit.MINUTES);
 	}
 
 	/**
@@ -79,9 +80,9 @@ public class FolioServiceToken {
 
 		try {
 
-			String url = AppSystemProperties.FolioURL + "authn/login-with-expiry";
-
-			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.POST, request, String.class);
+			URI uri = new URI(AppSystemProperties.FolioURL + "authn/login-with-expiry");
+						
+			ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, request, String.class);
 
 			String[] vavlues = responseEntity.getHeaders().get("Set-Cookie").toString().split(";");
 

@@ -70,6 +70,9 @@ public class SettingsController {
 	@Autowired
 	private CirculationLogService circulationLogService;
 
+	@Autowired
+	private CirculationLoanService circulationLoanService;
+
 	@GetMapping("/operations")
 	public String operations(Principal principal, Model model) throws IOException {
 		User user = userService.findByUsername(principal.getName());
@@ -442,6 +445,67 @@ public class SettingsController {
 		} catch (Exception e1) {
 			LOG.error(e1.getMessage());
 		}
+
+		return "operations";
+	}
+
+	@GetMapping("/circulationLoanData")
+	public String circulationLoanData(Principal principal, Model model)
+//			,
+//			@RequestParam(
+//					
+//					value = "libraryDropDown", required = false, defaultValue = "0") String libraryDropDown)
+			throws IOException {
+
+//		System.out.println("libraryDropDown -- " + libraryDropDown);
+
+		User user = userService.findByUsername(principal.getName());
+		model.addAttribute("user", user);
+
+//		if (libraryDropDown != "0" || libraryDropDown != "0") {
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location, CacheMap.running);
+
+					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location,
+							CacheMap.running);
+
+					CirculationLoanProcess oprocess = new CirculationLoanProcess(circulationLogService,
+							circulationLoanService);
+
+					try {
+
+						oprocess.manipulate(locationService, false);
+
+						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.idle);
+
+					} catch (RestClientException | IOException e) {
+
+						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction,
+								CacheMap.error + e.getMessage());
+
+						e.printStackTrace();
+					}
+
+					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location,
+							CacheMap.get(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location));
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			LOG.error(e1.getMessage());
+		}
+
+//		} else {
+//			System.out.println("libraryDropDown -- " + libraryDropDown);
+//		}
 
 		return "operations";
 	}

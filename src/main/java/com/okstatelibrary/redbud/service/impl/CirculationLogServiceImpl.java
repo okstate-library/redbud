@@ -31,7 +31,10 @@ public class CirculationLogServiceImpl implements CirculationLogService {
 		String guidList = locations.stream().map(guid -> "'" + guid + "'") // Add single quotes
 				.collect(Collectors.joining(","));
 
-		System.out.println("materialType " + materialType);
+//		System.out.println("guidList " + guidList);
+//		System.out.println("isEmptyDateWants " + isEmptyDateWants);
+//		System.out.println("isOpenLoans " + isOpenLoans);
+//		System.out.println("materialType " + materialType);
 		
 		return circulationLogDao.getCirculationLogByLocations(guidList, startDate, endDate, isEmptyDateWants,
 				isOpenLoans, materialType);

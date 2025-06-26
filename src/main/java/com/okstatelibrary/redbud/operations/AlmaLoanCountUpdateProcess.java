@@ -127,7 +127,7 @@ public class AlmaLoanCountUpdateProcess extends MainProcess {
 
 											circulationLog = new CirculationLog();
 
-											circulationLog.setLocation(item.effectiveLocation.id);
+											circulationLog.setLocationId(item.effectiveLocation.id);
 											circulationLog.setItemId(item.id);
 											circulationLog.setBarcode(item.barcode);
 											circulationLog.setCallNumber(item.callNumber);

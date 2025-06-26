@@ -442,6 +442,7 @@ function callOverdueFinesReportAjaxRequest() {
 				"feeFineOwner" : feeFineOwner
 			},
 			beforeSend : function() {
+								
 				$('#loader').removeClass('hidden') // Loader
 			},
 			success : function(data) {
@@ -797,6 +798,8 @@ function callCirculationLogReportAjaxRequest() {
 		},
 		success : function(data) {
 
+			//console.log(JSON.stringify(data));
+			
 			$('#circulationLogTable').dataTable().fnDestroy();
 
 			var table = $('#circulationLogTable').DataTable(
@@ -840,16 +843,213 @@ function callCirculationLogReportAjaxRequest() {
 							 width: "10%",
 							"targets" : 6
 						},{
-							title : "Renewal Count",
+							title : "FOLIO Total Renewals",
 							 width: "5%",
 							"targets" : 7
 						},{
-							title : "# of loans",
+							title : "FOLIO Total Loans",
 							 width: "5%",
 							"targets" : 8
 						} ,
 						{
-							title : "# of Alma loans",
+							title : "ALMA Total Loans",
+							 width: "5%",
+							"targets" : 9
+						},
+						{
+							title : "Author",
+							visible: false,
+				            searchable: false,
+							"targets" : 10
+						},
+						{
+							title : "Edition",
+							visible: false,
+				            searchable: false,
+							"targets" : 11
+						},
+						{
+							title : "Published Year",
+							visible: false,
+				            searchable: false,
+							"targets" : 12
+						},
+						{
+							title : "Statemet",
+							visible: false,
+				            searchable: false,
+							"targets" : 13
+						},
+						{
+							title : "Staff Note",
+							visible: false,
+				            searchable: false,
+							"targets" : 14
+						}
+						],
+						columns : [
+						{
+							className : 'dt-control',
+							orderable : false,
+							data : null,
+							defaultContent : ''
+						},{
+							"data" : "locationId"
+						},
+						{
+							"data" : "barcode"
+						}, {
+							"data" : "callNumber"
+						}, {
+							"data" : "materialType"
+						}, {
+							"data" : "title"
+						}, {
+							"data" : "loanDate",
+							render : getLoanDate,
+						}, {
+							"data" : "renewalCount"
+						}, {
+							"data" : "numLoans"
+						}, {
+							"data" : "almaNumLoans"
+						},
+						{
+							"data" : "author"
+						},
+						{
+							"data" : "edition"
+						},
+						{
+							"data" : "publishYear"
+						},
+						{
+							"data" : "statement"
+						},{
+							"data" : "staffNote"
+						}
+						],
+										
+						"lengthMenu" : [ [ 10, 50, 100, 200, -1 ],
+								[ 10, 50, 100, 200, "All" ] ],
+						"pageLength" : 10,
+					});
+
+			
+			table.on('click', 'td.dt-control', function(e) {
+				let tr = e.target.closest('tr');
+				let row = table.row(tr);
+
+				if (row.child.isShown()) {
+					// This row is already open - close it
+					row.child.hide();
+				} else {
+					// Open this row
+					row.child(formatAuthorEditionPublishedYear(row.data())).show();
+				}
+			});
+		},
+		complete : function() { // Set our complete callback, adding the .hidden
+			// class and hiding the spinner.
+			$('#loader').addClass('hidden')
+		},
+	});
+
+}
+
+function callCirculationLoanReportAjaxRequest() {
+
+	var sDate = $("#datetimepicker_from_date").find("input").val();
+	var eDate = $("#datetimepicker_to_date").find("input").val();
+
+	var institution = document.getElementById("institutionDropDown").value;
+	var campus = document.getElementById("campusDropDown").value;
+	var library = document.getElementById("libraryDropDown").value;
+	var location = document.getElementById("locationDropDown").value;
+
+	var loanAction = document.getElementById("loanActionDropDown").value;
+	var materialType = document.getElementById("materialTypeDropDown").value;
+	
+	 if (Date.parse(sDate) > Date.parse(eDate)) {
+		 alert("Start date shouldn't greater than End date");
+		 return false;
+	 }
+	 
+	$.ajax({
+		type : "GET",
+		cache : false,
+		url : '/reports/circulationloan/data',
+		data : {
+			"from_date" : $("#datetimepicker_from_date").find("input").val(),
+			"to_date" : $("#datetimepicker_to_date").find("input").val(),
+			"institution" : institution,
+			"campus" : campus,
+			"library" : library,
+			"location" : location,
+			"loanAction" : loanAction,
+			"materialType" : materialType
+		},
+		beforeSend : function() {
+			$('#loader').removeClass('hidden') // Loader
+			
+		},
+		success : function(data) {
+
+			console.log(JSON.stringify(data));
+			
+			$('#circulationLogTable').dataTable().fnDestroy();
+
+			var table = $('#circulationLogTable').DataTable(
+					{
+
+						dom : 'Bfrtip',
+						buttons : [ 'excel', 'print' ],
+						data : data,
+						order : [ [ 5, 'asc' ] ],
+						dom : 'Blfrtip',
+						orderCellsTop : true,
+						fixedHeader : true,
+						autoWidth : false,
+						"columnDefs" : [{
+							title : "",
+							"targets" : 0
+						},
+						{
+							title : "Location",
+							 width: "30%",
+							"targets" : 1
+						},
+						{
+							title : "Barcode",
+							 width: "5%",
+							"targets" : 2
+						},{
+							title : "Call Number",
+							 width: "5%",
+							"targets" : 3
+						},{
+							title : "Material Type",
+							 width: "5%",
+							"targets" : 4
+						},{
+							title : "Title",
+							 width: "30%",
+							"targets" : 5
+						},{
+							title : "Loan Date",
+							 width: "10%",
+							"targets" : 6
+						},{
+							title : "Renewal Count",
+							 width: "5%",
+							"targets" : 7
+						},{
+							title : "Is Open",
+							 width: "5%",
+							"targets" : 8
+						} ,
+						{
+							title : "Action",
 							 width: "5%",
 							"targets" : 9
 						},
@@ -902,14 +1102,13 @@ function callCirculationLogReportAjaxRequest() {
 						}, {
 							"data" : "title"
 						}, {
-							"data" : "loanDate",
-							render : getLoanDate,
+							"data" : "date"
 						}, {
 							"data" : "renewalCount"
 						}, {
-							"data" : "numLoans"
+							"data" : "open"
 						}, {
-							"data" : "almaNumLoans"
+							"data" : "action"
 						},
 						{
 							"data" : "author"

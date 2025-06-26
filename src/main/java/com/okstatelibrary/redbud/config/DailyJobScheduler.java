@@ -24,26 +24,39 @@ import com.okstatelibrary.redbud.util.CacheMap;
 import com.okstatelibrary.redbud.util.Constants;
 import com.okstatelibrary.redbud.util.DateUtil;
 
+/**
+ * Component responsible for running scheduled background jobs daily/ monthly.
+ * <p>
+ * This scheduler uses a single-threaded {@link ExecutorService} to queue and
+ * execute multiple asynchronous jobs sequentially. The execution is triggered
+ * based on a cron schedule defined in {@code @Scheduled}.
+ * </p>
+ *
+ * <p>
+ * Jobs include:
+ * <ul>
+ * <li>Institutional Resource Counting</li>
+ * <li>User Property Change Updates</li>
+ * <li>Circulation Data Logging</li>
+ * <li>User Integration (optional, currently not scheduled)</li>
+ * <li>OCLC Job (optional, commented out)</li>
+ * </ul>
+ * </p>
+ * 
+ * <p>
+ * Execution is controlled via the
+ * {@code AppSystemProperties.ScheduleCornJobsRunStatus} flag.
+ * </p>
+ * 
+ * @author [Your Name]
+ */
 @Component
 public class DailyJobScheduler {
 
-	private final ExecutorService queue = Executors.newSingleThreadExecutor();
-
-	@Scheduled(cron = "0 00 1 * * ?") // Runs at the start of every hour
-	public void executeTasksInQueue() {
-
-		if (AppSystemProperties.ScheduleCornJobsRunStatus) {
-			queue.execute(this::runInstitutionalResourcesCounting);
-			queue.execute(this::runUserPropertyChangeJob);
-			queue.execute(this::runCirculationJob);
-			// queue.execute(this::runOCLCJob);
-		}
-
-	}
-
 	private static final Logger LOG = LoggerFactory.getLogger(DailyJobScheduler.class);
 
-	private GroupService groupService;
+	/** A single-threaded executor to manage job execution in sequence */
+	private final ExecutorService queue = Executors.newSingleThreadExecutor();
 
 	@Autowired
 	private LocationService locationService;
@@ -54,174 +67,157 @@ public class DailyJobScheduler {
 	@Autowired
 	private CirculationLogService circulationLogService;
 
-	public void runInstitutionalResourcesCounting() {
+	private GroupService groupService;
 
+	/**
+	 * Scheduled method that runs daily at 1:00 AM.
+	 * <p>
+	 * It conditionally triggers multiple job executions by submitting them to the
+	 * executor queue.
+	 * </p>
+	 */
+	@Scheduled(cron = "0 00 1 * * ?") // Runs daily at 1:00 AM
+	public void executeTasksInQueue() {
+		if (AppSystemProperties.ScheduleCornJobsRunStatus) {
+			queue.execute(this::runInstitutionalResourcesCounting);
+			queue.execute(this::runUserPropertyChangeJob);
+			queue.execute(this::runCirculationJob);
+			// queue.execute(this::runOCLCJob); // Optional, currently disabled
+		}
+	}
+
+	/**
+	 * Runs the job that counts institutional resources and updates data
+	 * accordingly. Uses {@link InstitutionRecordCountProcess} to perform business
+	 * logic.
+	 */
+	private void runInstitutionalResourcesCounting() {
 		try {
+			Thread myThread = new Thread(() -> {
+				CacheMap.set("UserIntegrationProcess", "true");
 
-			Thread myThread = new Thread(new Runnable() {
+				InstitutionRecordCountProcess oprocess = new InstitutionRecordCountProcess();
+				oprocess.printScreen(
+						"Beeper starts for institutional resource count job " + DateUtil.getTodayDateAndTime(),
+						Constants.ErrorLevel.INFO);
 
-				public void run() {
-
-					CacheMap.set("UserIntegrationProcess", "true");
-
-					InstitutionRecordCountProcess oprocess = new InstitutionRecordCountProcess();
-
-					oprocess.printScreen("Beeper starts for user integration process " + DateUtil.getTodayDateAndTime(),
-							Constants.ErrorLevel.INFO);
-
-					try {
-						oprocess.manipulate(locationService, institutionalHoldingsService);
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					CacheMap.set("UserIntegrationProcess", "stop");
+				try {
+					oprocess.manipulate(locationService, institutionalHoldingsService);
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
+
+				CacheMap.set("UserIntegrationProcess", "stop");
 			});
-
 			myThread.start();
-
 		} catch (Exception e1) {
 			LOG.error(e1.getMessage());
 		}
-
 	}
 
-	public void runUserIntegrationJob() {
-
+	/**
+	 * Executes a job that integrates external user data into the system. Uses
+	 * {@link UserIntegrationProcess} for processing.
+	 */
+	private void runUserIntegrationJob() {
 		try {
+			Thread myThread = new Thread(() -> {
+				CacheMap.set("UserIntegrationProcess", "true");
 
-			Thread myThread = new Thread(new Runnable() {
+				UserIntegrationProcess oprocess = new UserIntegrationProcess();
+				oprocess.printScreen("Beeper starts for user integration process " + DateUtil.getTodayDateAndTime(),
+						Constants.ErrorLevel.INFO);
 
-				public void run() {
+				oprocess.copyFiles();
+				oprocess.manipulate(groupService);
 
-					CacheMap.set("UserIntegrationProcess", "true");
+				CacheMap.set("UserIntegrationProcess", "stop");
+			});
+			myThread.start();
+		} catch (Exception e1) {
+			LOG.error(e1.getMessage());
+		}
+	}
 
-					UserIntegrationProcess oprocess = new UserIntegrationProcess();
+	/**
+	 * Executes a job that updates user properties. Uses
+	 * {@link UserProertiesUpdateProcess} for processing.
+	 */
+	private void runUserPropertyChangeJob() {
+		try {
+			Thread myThread = new Thread(() -> {
+				CacheMap.set("UserPropertiesUpdateProcess", "true");
 
-					oprocess.printScreen("Beeper starts for user integration process " + DateUtil.getTodayDateAndTime(),
-							Constants.ErrorLevel.INFO);
+				UserProertiesUpdateProcess oprocess = new UserProertiesUpdateProcess();
+				oprocess.printScreen("Beeper starts for user property update job " + DateUtil.getTodayDateAndTime(),
+						Constants.ErrorLevel.INFO);
 
-					oprocess.copyFiles();
+				oprocess.copyFiles();
 
+				try {
 					oprocess.manipulate(groupService);
-
-					CacheMap.set("UserIntegrationProcess", "stop");
+				} catch (RestClientException | IOException e) {
+					e.printStackTrace();
 				}
+
+				CacheMap.set("UserPropertiesUpdateProcess", "stop");
 			});
-
 			myThread.start();
-
 		} catch (Exception e1) {
 			LOG.error(e1.getMessage());
 		}
-
 	}
 
-	public void runUserPropertyChangeJob() {
-
+	/**
+	 * Executes a job that logs circulation data for reporting or integration. Uses
+	 * {@link CirculationLogProcess} to process logs.
+	 */
+	private void runCirculationJob() {
 		try {
+			Thread myThread = new Thread(() -> {
+				CacheMap.set("Running-CirculationJob", "true");
 
-			Thread myThread = new Thread(new Runnable() {
+				CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
+				oprocess.printScreen("Beeper starts for Circulation data extraction " + DateUtil.getTodayDateAndTime(),
+						Constants.ErrorLevel.INFO);
 
-				public void run() {
-
-					CacheMap.set("UserPropertiesUpdateProcess", "true");
-
-					UserProertiesUpdateProcess oprocess = new UserProertiesUpdateProcess();
-
-					oprocess.printScreen("Beeper starts for user integration process " + DateUtil.getTodayDateAndTime(),
-							Constants.ErrorLevel.INFO);
-
-					oprocess.copyFiles();
-
-					try {
-						oprocess.manipulate(groupService);
-					} catch (RestClientException | IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					CacheMap.set("UserPropertiesUpdateProcess", "stop");
+				try {
+					oprocess.manipulate(locationService, true, "0");
+				} catch (RestClientException | IOException e) {
+					e.printStackTrace();
 				}
+
+				CacheMap.set("Running-CirculationJob", "stop");
 			});
-
 			myThread.start();
-
 		} catch (Exception e1) {
 			LOG.error(e1.getMessage());
 		}
-
 	}
 
-	public void runCirculationJob() {
-
+	/**
+	 * Executes a placeholder job for OCLC integration. Currently not invoked.
+	 */
+	private void runOCLCJob() {
 		try {
+			Thread myThread = new Thread(() -> {
+				CacheMap.set("Running-CirculationJob", "true");
 
-			Thread myThread = new Thread(new Runnable() {
+				CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
+				oprocess.printScreen("Beeper starts for Circulation data extraction " + DateUtil.getTodayDateAndTime(),
+						Constants.ErrorLevel.INFO);
 
-				public void run() {
-
-					CacheMap.set("Running-CirculationJob", "true");
-
-					CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
-
-					oprocess.printScreen(
-							"Beeper starts for Circulation data extraction " + DateUtil.getTodayDateAndTime(),
-							Constants.ErrorLevel.INFO);
-
-					try {
-						oprocess.manipulate(locationService, true, "0");
-					} catch (RestClientException | IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					CacheMap.set("Running-CirculationJob", "stop");
+				try {
+					oprocess.manipulate(locationService, true, "0");
+				} catch (RestClientException | IOException e) {
+					e.printStackTrace();
 				}
+
+				CacheMap.set("Running-CirculationJob", "stop");
 			});
-
 			myThread.start();
-
-		} catch (Exception e1) {
-			LOG.error(e1.getMessage());
-		}
-
-	}
-
-	public void runOCLCJob() {
-
-		try {
-
-			Thread myThread = new Thread(new Runnable() {
-
-				public void run() {
-
-					CacheMap.set("Running-CirculationJob", "true");
-
-					CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
-
-					oprocess.printScreen(
-							"Beeper starts for Circulation data extraction " + DateUtil.getTodayDateAndTime(),
-							Constants.ErrorLevel.INFO);
-
-					try {
-						oprocess.manipulate(locationService, true, "0");
-					} catch (RestClientException | IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					CacheMap.set("Running-CirculationJob", "stop");
-				}
-			});
-
-			myThread.start();
-
 		} catch (Exception e1) {
 			LOG.error(e1.getMessage());
 		}
 	}
-
 }

@@ -25,7 +25,6 @@ import com.google.gson.Gson;
 import com.okstatelibrary.redbud.folio.entity.*;
 import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord;
 import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord2;
-import com.okstatelibrary.redbud.folio.entity.holding.HoldingsStatement;
 import com.okstatelibrary.redbud.folio.entity.instance.Identifier;
 import com.okstatelibrary.redbud.folio.entity.instance.Instance;
 import com.okstatelibrary.redbud.folio.entity.inventory.Inventory;
@@ -67,6 +66,8 @@ public class FolioService extends FolioServiceToken {
 	}
 
 	private int apiRecordlimit = 1000;
+
+	private String zeroRecordCount = "0";
 
 	public boolean updateLoan(Loan payload) {
 
@@ -130,8 +131,6 @@ public class FolioService extends FolioServiceToken {
 			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
 			System.out.println("totalIterations" + totalIterations);
-
-			ArrayList<Item> items = new ArrayList<>();
 
 			String fileName = locationName + ".csv";
 
@@ -317,7 +316,7 @@ public class FolioService extends FolioServiceToken {
 		} catch (Exception e) {
 
 			System.err.println("Error: FolioService : getHoldingRecordByHoldingId " + e.getMessage());
-			
+
 			return null;
 		}
 	}
@@ -418,7 +417,7 @@ public class FolioService extends FolioServiceToken {
 
 		try {
 
-			String url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"closed\" )&limit=1";
+			String url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"closed\" )&limit=0";
 
 			ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					CirculationRoot.class);
@@ -435,19 +434,19 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
-	public ArrayList<Loan> getOpenedLoans()
+	public ArrayList<Loan> getOpenedLoans(String locationId)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
 		try {
 
-			String mainUrl = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"open\")&limit=";
+			String mainUrl = AppSystemProperties.FolioURL
+					+ "loan-storage/loans?query=(status.name==\"open\" and itemEffectiveLocationIdAtCheckOut=="
+					+ locationId + ")&limit=";
 
-			ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + "1", HttpMethod.GET,
+			ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + zeroRecordCount, HttpMethod.GET,
 					getHttpRequest(), CirculationRoot.class);
 
 			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
-
-			System.out.println("totalIterations" + totalIterations);
 
 			ArrayList<Loan> loans = new ArrayList<>();
 
@@ -456,8 +455,6 @@ public class FolioService extends FolioServiceToken {
 				int offset = iterations * apiRecordlimit;
 
 				String url = mainUrl + apiRecordlimit + "&offset=" + offset;
-
-				// System.out.println("url- " + url);
 
 				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
 
@@ -493,12 +490,12 @@ public class FolioService extends FolioServiceToken {
 						+ locationId + ")&limit=";
 			}
 
-			System.out.println("url- " + mainUrl);
+			// System.out.println("url- " + mainUrl);
 
 			ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + "0", HttpMethod.GET,
 					getHttpRequest(), CirculationRoot.class);
 
-			System.out.println("TotalRecords - " + response.getBody().totalRecords);
+			// System.out.println("TotalRecords - " + response.getBody().totalRecords);
 
 			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
@@ -945,14 +942,15 @@ public class FolioService extends FolioServiceToken {
 
 					if (holdingRecord.holdingsStatements != null && holdingRecord.holdingsStatements.size() > 0) {
 
-						HoldingsStatement holdingsStatement = holdingRecord.holdingsStatements.get(0);
+						// HoldingsStatement holdingsStatement =
+						// holdingRecord.holdingsStatements.get(0);
 
 //						if (!StringHelper.isStringNullOrEmpty(holdingsStatement.statement)
 //								|| !StringHelper.isStringNullOrEmpty(holdingsStatement.staffNote)) {
 
 						// System.out.println("holdingRecord.id " + holdingRecord.id);
 
-						holdings.add(holdingRecord);
+						// holdings.add(holdingRecord);
 						// }
 					}
 

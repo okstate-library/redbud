@@ -13,6 +13,7 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import com.okstatelibrary.redbud.util.DateUtil;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @Entity
@@ -27,7 +28,7 @@ public class CirculationLog {
 	@Transient
 	private String loanId;
 
-	private String location;
+	private String location_id;
 
 	private String call_number;
 
@@ -55,7 +56,7 @@ public class CirculationLog {
 	private String staffNote;
 
 	private boolean isOpen;
-	
+
 	public boolean isOpen() {
 		return isOpen;
 	}
@@ -176,20 +177,6 @@ public class CirculationLog {
 	 */
 	public void setLoanId(String loanId) {
 		this.loanId = loanId;
-	}
-
-	/**
-	 * @return the location
-	 */
-	public String getLocation() {
-		return location;
-	}
-
-	/**
-	 * @param location the location to set
-	 */
-	public void setLocation(String location) {
-		this.location = location;
 	}
 
 	/**
@@ -314,6 +301,20 @@ public class CirculationLog {
 	 */
 	public void setStatement(String statement) {
 		this.statement = statement;
+	}
+
+	/**
+	 * @return the location_id
+	 */
+	public String getLocationId() {
+		return location_id;
+	}
+
+	/**
+	 * @param location_id the location_id to set
+	 */
+	public void setLocationId(String location_id) {
+		this.location_id = location_id;
 	}
 
 }

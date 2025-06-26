@@ -1,11 +1,13 @@
 package com.okstatelibrary.redbud.controller;
 
+import com.okstatelibrary.redbud.entity.CirculationLoan;
 import com.okstatelibrary.redbud.entity.CirculationLog;
 import com.okstatelibrary.redbud.entity.Institution;
 import com.okstatelibrary.redbud.entity.InstitutionRecord;
 import com.okstatelibrary.redbud.entity.Location;
 import com.okstatelibrary.redbud.entity.PatronGroup;
 import com.okstatelibrary.redbud.entity.User;
+import com.okstatelibrary.redbud.enums.LoanAction;
 import com.okstatelibrary.redbud.folio.entity.Account;
 import com.okstatelibrary.redbud.folio.entity.FineAndFeesObject;
 import com.okstatelibrary.redbud.folio.entity.FolioUser;
@@ -13,7 +15,9 @@ import com.okstatelibrary.redbud.folio.entity.PatronBlockObject;
 import com.okstatelibrary.redbud.folio.entity.PatronBlockRoot;
 import com.okstatelibrary.redbud.folio.entity.inventory.*;
 import com.okstatelibrary.redbud.folio.entity.manualblock.ManualBlock;
+import com.okstatelibrary.redbud.model.CirculationLoanReportModel;
 import com.okstatelibrary.redbud.service.CampusService;
+import com.okstatelibrary.redbud.service.CirculationLoanService;
 import com.okstatelibrary.redbud.service.CirculationLogService;
 import com.okstatelibrary.redbud.service.GroupService;
 import com.okstatelibrary.redbud.service.InstitutionService;
@@ -57,6 +61,9 @@ public class ReportController {
 
 	@Autowired
 	private CirculationLogService circulationLogService;
+
+	@Autowired
+	private CirculationLoanService circulationLoanService;
 
 	@Autowired
 	private InstitutionService institutionService;
@@ -148,6 +155,31 @@ public class ReportController {
 		model.addAttribute("materialTypeList", circulationLogService.getDistinctMaterialTypes());
 
 		return "reports/circulationlog";
+
+	}
+
+	@GetMapping("/circulationloan")
+	public String getCirculationLoan(Principal principal, Model model) throws IOException {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+//		CirculationLogProcess process = new CirculationLogProcess();
+//		
+//		process.maanipulate(circulationLogService);
+
+		model.addAttribute("institutionList", institutionService.getInstitutionList());
+
+		model.addAttribute("campusList", campusService.getCampusList());
+
+		model.addAttribute("libraryList", libraryService.getLibraryList());
+
+		model.addAttribute("locationList", locationService.getLocationList());
+
+		model.addAttribute("materialTypeList", circulationLogService.getDistinctMaterialTypes());
+
+		return "reports/circulationloan";
 
 	}
 
@@ -452,8 +484,8 @@ public class ReportController {
 	}
 
 	@RequestMapping(value = "/inventoryloans/data", method = RequestMethod.GET)
-	private @ResponseBody ArrayList<Loan> inventoryLoansData(@RequestParam(required = false) String location)
-			throws RestClientException, IOException {
+	private @ResponseBody ArrayList<Loan> inventoryLoansData(@RequestParam(required = false) String location,
+			@RequestParam(required = false) String year) throws RestClientException, IOException {
 
 		ArrayList<Loan> loans = new ArrayList<Loan>();
 
@@ -461,7 +493,7 @@ public class ReportController {
 
 			location = "efa727cb-339c-41bd-8d86-920065dfec37";
 
-			Inventory inventory = folioService.getInventoryLoanDetails(location);
+			Inventory inventory = folioService.getInventoryLoanDetails(location, year);
 
 			for (Loan loan : inventory.loans) {
 
@@ -482,9 +514,10 @@ public class ReportController {
 			}
 
 		} else if (location.equalsIgnoreCase("laptops")) {
+
 			location = "129dec9a-10f5-4ac2-9228-5d091e817116";
 
-			Inventory inventory = folioService.getInventoryLoanDetails(location);
+			Inventory inventory = folioService.getInventoryLoanDetails(location, year);
 
 			for (Loan loan : inventory.loans) {
 
@@ -614,6 +647,65 @@ public class ReportController {
 				to_date, Boolean.parseBoolean(isEmptyDateWants), Boolean.parseBoolean(isOpenLoans), materialType);
 
 		return circulationLogList;
+	}
+
+	@RequestMapping(value = "/circulationloan/data", method = RequestMethod.GET)
+	private @ResponseBody List<CirculationLoanReportModel> getCirculationLoanData(
+			@RequestParam(required = false) String institution, @RequestParam(required = false) String campus,
+			@RequestParam(required = false) String library, @RequestParam(required = false) String location,
+			@RequestParam(required = false) String from_date, @RequestParam(required = false) String to_date,
+			@RequestParam(required = false) String loanAction, @RequestParam(required = false) String materialType)
+			throws RestClientException, IOException {
+
+//		System.out.println("institution " + institution);
+//		System.out.println("campus " + campus);
+//		System.out.println("library " + library);
+//		System.out.println("location " + location);
+//		System.out.println("from_date " + from_date);4241320158837339
+//		System.out.println("to_date " + to_date);
+
+		List<String> locations = new ArrayList<String>();
+
+		if (location != null && !location.trim().isEmpty() && !location.equals("0")) {
+			System.out.println("Looking for Location");
+			locations.add(location);
+		} else if (library != null && !library.trim().isEmpty() && !library.equals("0")) {
+			System.out.println("Looking for Library");
+			locations = locationService.getLocationListByLibraryId(library).stream()
+					.map(com.okstatelibrary.redbud.entity.Location::getLocation_id).collect(Collectors.toList());
+		} else if (campus != null && !campus.trim().isEmpty() && !campus.equals("0")) {
+			System.out.println("Looking for Campus");
+			locations = locationService.getLocationListByCampusId(campus).stream()
+					.map(com.okstatelibrary.redbud.entity.Location::getLocation_id).collect(Collectors.toList());
+		} else if (institution != null && !institution.trim().isEmpty() && !institution.equals("0")) {
+			System.out.println("Looking for institution");
+			locations = locationService.getLocationListByInstitutionId(institution).stream()
+					.map(com.okstatelibrary.redbud.entity.Location::getLocation_id).collect(Collectors.toList());
+		}
+
+		List<CirculationLoan> circulationLogList = circulationLoanService.getCirculationLoanList(locations, from_date,
+				to_date, loanAction, materialType);
+
+		List<CirculationLoanReportModel> reportModelList = new ArrayList<>();
+
+		for (CirculationLoan loan : circulationLogList) {
+
+			CirculationLoanReportModel reportModel = new CirculationLoanReportModel();
+			reportModel.setLocation(loan.getRowId());
+			reportModel.setBarcode(loan.getCirculationLog().getBarcode());
+			reportModel.setCallNumber(loan.getCirculationLog().getCallNumber());
+			reportModel.setMaterialType(loan.getCirculationLog().getMaterialType());
+			reportModel.setTitle(loan.getCirculationLog().getTitle());
+
+			reportModel.setDate(loan.getDate().toString().substring(0, 10));
+			reportModel.setRenewalCount(loan.getRenewalCount());
+			reportModel.setOpen(loan.isOpen());
+			reportModel.setAction(LoanAction.fromCode(loan.getAction()).toString());
+
+			reportModelList.add(reportModel);
+		}
+
+		return reportModelList;
 	}
 
 	@GetMapping("/institutionRecords")

@@ -2,6 +2,7 @@ package com.okstatelibrary.redbud.controller;
 
 import com.okstatelibrary.redbud.config.HttpSessionConfig;
 import com.okstatelibrary.redbud.entity.User;
+import com.okstatelibrary.redbud.enums.ErrorType;
 import com.okstatelibrary.redbud.service.UserService;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,7 +19,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("")
-public class AdminController {
+public class AdminController extends MainController {
 
 	@Autowired
 	private UserService userService;
@@ -199,8 +200,9 @@ public class AdminController {
 
 		updatePassword(username, "abc123");
 
-//		this.errorType = ErrorType.SUCESS;
-//		message = "Reset password successfully!";
+		this.errorType = ErrorType.SUCESS;
+		
+		message = "Reset password successfully!";
 
 		return "redirect:/users";
 

@@ -42,6 +42,7 @@
 	<ul class="nav nav-tabs">
 		<li class="active"><a data-toggle="tab" href="#general">General</a></li>
 		<li><a data-toggle="tab" href="#cicrlog">Circulation Log</a></li>
+		<li><a data-toggle="tab" href="#cicrloan">Circulation Loan</a></li>
 		<li><a data-toggle="tab" href="#user">User</a></li>
 		<li><a data-toggle="tab" href="#user-patron-group">User
 				Patron Group</a></li>
@@ -321,7 +322,8 @@
 								onchange="document.getElementById('executeCirculationLogByLocation').disabled = !this.checked;" />
 						</div>
 						<div class="col-xs-1">
-							<h5 th:text="${Process_CirculationLog_API_Data_Extraction_By_Location}"></h5>
+							<h5
+								th:text="${Process_CirculationLog_API_Data_Extraction_By_Location}"></h5>
 						</div>
 
 					</div>
@@ -423,6 +425,43 @@
 						</div>
 						<div class="col-xs-1">
 							<h5 th:text="${Never_Circulated_Items_Search_Process}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+		</div>
+
+
+		<div id="cicrloan" class="tab-pane fade">
+
+			<div class="row top-buffer container-border">
+				<h4>
+					<b>Manual Process for getting the Circulation loan records to
+						database.</b>
+				</h4>
+				<h5>
+					<i>#ManualTask</i>
+				</h5>
+				<form method="get" th:action="@{/settings/circulationLoanData}">
+
+					<div class="row">
+
+						<div class="col-xs-8">Get all circulation loan details from
+							the API and stored in DB for reporting purposes. This operation
+							not depend on any time frame.</div>
+						<div class="col-xs-2">
+							<button type="submit" id="executeCirculationLoan" disabled
+								class="btn btn-success btn-md btn-block">Execute</button>
+						</div>
+
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeCirculationLoan').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
 						</div>
 
 					</div>
