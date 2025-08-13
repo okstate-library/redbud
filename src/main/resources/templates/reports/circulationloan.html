@@ -49,8 +49,8 @@
 						<div class="cols-sm-10">
 							<div class="input-group">
 
-								<select onchange="selectInstitution()" class="form-control"
-									id="institutionDropDown" th:name="institutionDropDown">
+								<select onchange="selectInstitution(this)" class="form-control"
+									id="institutionDropDown3" name="institutionDropDown">
 									<option th:value="0">Select Institution</option>
 
 									<option th:each="institution : ${institutionList}"
@@ -77,8 +77,8 @@
 						<div class="cols-sm-10">
 							<div class="input-group">
 
-								<select onchange="selectCampus()" class="form-control"
-									id="campusDropDown">
+								<select onchange="selectCampus(this)" class="form-control"
+									id="campusDropDown3" name="campusDropDown">
 									<option th:value="0">Select Campus</option>
 
 									<option th:each="campus : ${campusList}"
@@ -103,8 +103,8 @@
 						<div class="cols-sm-10">
 							<div class="input-group">
 
-								<select onchange="selectLibrary()" class="form-control"
-									id="libraryDropDown" th:name="libraryDropDown">
+								<select onchange="selectLibrary(this)" class="form-control"
+									id="libraryDropDown3" name="libraryDropDown">
 									<option th:value="0">Select Library</option>
 
 									<option th:each="library : ${libraryList}"
@@ -131,8 +131,8 @@
 						<div class="cols-sm-10">
 							<div class="input-group">
 
-								<select class="form-control" id="locationDropDown"
-									th:name="locationDropDown">
+								<select class="form-control" id="locationDropDown3"
+									name="locationDropDown">
 									<option th:value="0">Select Location</option>
 
 									<option th:each="location : ${locationList}"
@@ -295,8 +295,6 @@
 						<th></th>
 						<th></th>
 						<th></th>
-						<th></th>
-						<th></th>
 						<th style="display: none;"></th>
 						<th style="display: none;"></th>
 						<th style="display: none;"></th>
@@ -316,9 +314,9 @@
 	$("#load-dt").click(
 			function() {
 
-				if (institutionDropDown.value == 0 && campusDropDown.value == 0
-						&& libraryDropDown.value == 0
-						&& locationDropDown.value == 0) {
+				if (institutionDropDown3.value == 0 && campusDropDown3.value == 0
+						&& libraryDropDown3.value == 0
+						&& locationDropDown3.value == 0) {
 					alert("Please select a value from at least one dropdown.");
 				} else if ($('#start_date').val() == ''
 						|| $('#end_date').val() == '') {

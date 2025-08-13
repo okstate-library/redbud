@@ -373,7 +373,7 @@ public class FolioService extends FolioServiceToken {
 		try {
 
 			String url = AppSystemProperties.FolioURL
-					+ "circulation/requests?query=(requestType==\"Hold\" and  status ==\"Open - Not yet filled\")&limit=100";
+					+ "circulation/requests?query=(requestType==\"Hold\" and  status ==\"Open - Not yet filled\")&limit=1000";
 
 			ResponseEntity<RequestRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					RequestRoot.class);
@@ -434,14 +434,27 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
-	public ArrayList<Loan> getOpenedLoans(String locationId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+	public ArrayList<Loan> getOpenedLoans(String locationId, String startDateTime, String endDateTime,
+			boolean isDailyProcess) throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
 		try {
 
-			String mainUrl = AppSystemProperties.FolioURL
-					+ "loan-storage/loans?query=(status.name==\"open\" and itemEffectiveLocationIdAtCheckOut=="
-					+ locationId + ")&limit=";
+			String mainUrl = "";
+
+			if (isDailyProcess) {
+
+				mainUrl = AppSystemProperties.FolioURL
+						+ "loan-storage/loans?query=(status.name==\"open\" and returnDate>=" + startDateTime
+						+ " AND returnDate<=" + endDateTime + " and itemEffectiveLocationIdAtCheckOut==" + locationId
+						+ ")&limit=";
+
+			} else {
+				mainUrl = AppSystemProperties.FolioURL
+						+ "loan-storage/loans?query=(status.name==\"open\" and itemEffectiveLocationIdAtCheckOut=="
+						+ locationId + ")&limit=";
+			}
+
+			System.out.println("mainUrl -- " + mainUrl);
 
 			ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + zeroRecordCount, HttpMethod.GET,
 					getHttpRequest(), CirculationRoot.class);
@@ -480,8 +493,8 @@ public class FolioService extends FolioServiceToken {
 			if (isDailyProcess) {
 
 				mainUrl = AppSystemProperties.FolioURL
-						+ "loan-storage/loans?query=(status.name==\"closed\" and returnDate>=" + startDateTime
-						+ " AND returnDate<=" + endDateTime + " and itemEffectiveLocationIdAtCheckOut==" + locationId
+						+ "loan-storage/loans?query=(status.name==\"closed\" and loanDate>=" + startDateTime
+						+ " AND loanDate<=" + endDateTime + " and itemEffectiveLocationIdAtCheckOut==" + locationId
 						+ ")&limit=";
 
 			} else {
@@ -653,29 +666,31 @@ public class FolioService extends FolioServiceToken {
 	public ArrayList<HoldingsRecord> getInventoryHoldings(String locationID, String startDateTime, String endDateTime)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 		try {
-			String url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId= "
-					+ locationID + ")&limit=0";
 
-			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					HoldingRoot.class);
+			String mainUrl = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId= "
+					+ locationID
+					+ " AND instanceFormatIds <> \"f5e8210f-7640-459b-a71f-552567f92369\" AND staffSuppress==false "
+					+ " )&limit=";
 
-			System.out.print("" + response.getBody().totalRecords);
+			System.out.println("mainUrl - " + mainUrl);
+			// "AND metadata.updatedDate >= " + startDateTime +
+
+			ResponseEntity<HoldingRoot> response = restTemplate.exchange(mainUrl + zeroRecordCount, HttpMethod.GET,
+					getHttpRequest(), HoldingRoot.class);
+
+			// System.out.print("" + response.getBody().totalRecords);
 
 			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
 			ArrayList<HoldingsRecord> pairList = new ArrayList<>();
 
-			System.out.println("totalIterations - " + totalIterations);
+			// System.out.println("totalIterations - " + totalIterations);
 
 			for (int iterations = 0; iterations < totalIterations; iterations++) {
 
 				int offset = iterations * apiRecordlimit;
 
-				url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=( effectiveLocationId= "
-						+ locationID + " )&limit=" + apiRecordlimit + "& offset=" + offset;
-
-//						+ "query=(returnDate>=" + startDateTime
-//						+ " AND returnDate<=" + endDateTime + ")&limit=" + 10 + "
+				String url = mainUrl + apiRecordlimit + "&offset=" + offset;
 
 				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), HoldingRoot.class);
 
@@ -1590,6 +1605,8 @@ public class FolioService extends FolioServiceToken {
 
 		} catch (Exception e) {
 			// TODO: handle exception
+
+			System.out.println("Barcode" + barCode);
 			e.getMessage();
 			e.printStackTrace();
 			return null;
@@ -1624,7 +1641,7 @@ public class FolioService extends FolioServiceToken {
 
 		try {
 
-			String url = AppSystemProperties.FolioURL + "users?query=(active=false and externalSystemId==  " + userId
+			String url = AppSystemProperties.FolioURL + "users?query=(externalSystemId==  " + userId
 					+ ")";
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);

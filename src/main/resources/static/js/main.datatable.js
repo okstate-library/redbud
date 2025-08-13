@@ -762,10 +762,10 @@ function callCirculationLogReportAjaxRequest() {
 	var sDate = $("#datetimepicker_from_date").find("input").val();
 	var eDate = $("#datetimepicker_to_date").find("input").val();
 
-	var institution = document.getElementById("institutionDropDown").value;
-	var campus = document.getElementById("campusDropDown").value;
-	var library = document.getElementById("libraryDropDown").value;
-	var location = document.getElementById("locationDropDown").value;
+	var institution = document.getElementById("institutionDropDown4").value;
+	var campus = document.getElementById("campusDropDown4").value;
+	var library = document.getElementById("libraryDropDown4").value;
+	var location = document.getElementById("locationDropDown4").value;
 
 	var isEmptyDateWants = document.getElementById("is_with_empty_dates").checked;
 	
@@ -962,10 +962,10 @@ function callCirculationLoanReportAjaxRequest() {
 	var sDate = $("#datetimepicker_from_date").find("input").val();
 	var eDate = $("#datetimepicker_to_date").find("input").val();
 
-	var institution = document.getElementById("institutionDropDown").value;
-	var campus = document.getElementById("campusDropDown").value;
-	var library = document.getElementById("libraryDropDown").value;
-	var location = document.getElementById("locationDropDown").value;
+	var institution = document.getElementById("institutionDropDown3").value;
+	var campus = document.getElementById("campusDropDown3").value;
+	var library = document.getElementById("libraryDropDown3").value;
+	var location = document.getElementById("locationDropDown3").value;
 
 	var loanAction = document.getElementById("loanActionDropDown").value;
 	var materialType = document.getElementById("materialTypeDropDown").value;
@@ -1033,55 +1033,47 @@ function callCirculationLoanReportAjaxRequest() {
 							"targets" : 4
 						},{
 							title : "Title",
-							 width: "30%",
+							 width: "40%",
 							"targets" : 5
 						},{
 							title : "Loan Date",
 							 width: "10%",
 							"targets" : 6
-						},{
-							title : "Renewal Count",
-							 width: "5%",
-							"targets" : 7
-						},{
-							title : "Is Open",
-							 width: "5%",
-							"targets" : 8
-						} ,
+						},
 						{
 							title : "Action",
 							 width: "5%",
-							"targets" : 9
+							"targets" : 7
 						},
 						{
 							title : "Author",
 							visible: false,
 				            searchable: false,
-							"targets" : 10
+							"targets" : 8
 						},
 						{
 							title : "Edition",
 							visible: false,
 				            searchable: false,
-							"targets" : 11
+							"targets" : 9
 						},
 						{
 							title : "Published Year",
 							visible: false,
 				            searchable: false,
-							"targets" : 12
+							"targets" : 10
 						},
 						{
 							title : "Statemet",
 							visible: false,
 				            searchable: false,
-							"targets" : 13
+							"targets" : 11
 						},
 						{
 							title : "Staff Note",
 							visible: false,
 				            searchable: false,
-							"targets" : 14
+							"targets" : 12
 						}
 						],
 						columns : [
@@ -1103,10 +1095,6 @@ function callCirculationLoanReportAjaxRequest() {
 							"data" : "title"
 						}, {
 							"data" : "date"
-						}, {
-							"data" : "renewalCount"
-						}, {
-							"data" : "open"
 						}, {
 							"data" : "action"
 						},

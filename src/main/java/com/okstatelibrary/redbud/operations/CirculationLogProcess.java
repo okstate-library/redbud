@@ -64,7 +64,7 @@ public class CirculationLogProcess extends MainProcess {
 
 			for (Location location : locations) {
 
-				executeLoans(endDateTime, startDateTime, location, isDailyProcess);
+				executeLoans(startDateTime, endDateTime, location, isDailyProcess);
 			}
 
 		} else {
@@ -76,7 +76,7 @@ public class CirculationLogProcess extends MainProcess {
 
 			for (Location location : locations) {
 
-				executeLoans(endDateTime, startDateTime, location, isDailyProcess);
+				executeLoans(startDateTime, endDateTime, location, isDailyProcess);
 			}
 
 		}
@@ -89,7 +89,7 @@ public class CirculationLogProcess extends MainProcess {
 
 	}
 
-	private void executeLoans(String endDateTime, String startDateTime, Location location, boolean isDailyProcess)
+	private void executeLoans(String startDateTime, String endDateTime, Location location, boolean isDailyProcess)
 			throws JsonParseException, JsonMappingException, IOException {
 
 		printScreen(" Location " + location.getLocation_name(), Constants.ErrorLevel.INFO);
@@ -107,7 +107,8 @@ public class CirculationLogProcess extends MainProcess {
 
 		// Execute Open loans
 
-		ArrayList<Loan> openLocationLoans = folioService.getOpenedLoans(location.getLocation_id());
+		ArrayList<Loan> openLocationLoans = folioService.getOpenedLoans(location.getLocation_id(), startDateTime,
+				endDateTime, isDailyProcess);
 
 		int openLoansCount = processOpenLoans(openLocationLoans);
 

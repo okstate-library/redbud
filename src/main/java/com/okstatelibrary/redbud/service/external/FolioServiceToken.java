@@ -1,6 +1,7 @@
 package com.okstatelibrary.redbud.service.external;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -30,7 +31,7 @@ public class FolioServiceToken {
 	 * construct method
 	 */
 	public FolioServiceToken() {
-		setToken();
+		getToken();
 	}
 
 	/**
@@ -39,12 +40,13 @@ public class FolioServiceToken {
 	ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
 	/**
-	 *  set the token and check every 9  minutes 
+	 * set the token and check every 9 minutes
 	 */
-	public void setToken() {
+	public void getToken() {
 
 		scheduler.scheduleAtFixedRate(() -> {
 			setTokens();
+
 		}, 0, 9, TimeUnit.MINUTES);
 	}
 
@@ -65,42 +67,61 @@ public class FolioServiceToken {
 
 	/**
 	 * sets the token by accessing the FOLIO Api and save it in the variable.
+	 * 
+	 * @throws URISyntaxException
 	 */
 	public void setTokens() {
 
-		System.out.println("Get FOLIO Token at : " + DateUtil.getTodayDateAndTime());
+		int loopCount = 1;
 
-		com.okstatelibrary.redbud.folio.entity.User user = new com.okstatelibrary.redbud.folio.entity.User();
+		boolean success = false;
 
-		user.username = AppSystemProperties.FolioUsername;
+		while (!success) {
 
-		user.password = AppSystemProperties.FolioPassword;
+			com.okstatelibrary.redbud.folio.entity.User user = new com.okstatelibrary.redbud.folio.entity.User();
 
-		HttpEntity<?> request = new HttpEntity<Object>(user, getHttpHeaders());
+			user.username = AppSystemProperties.FolioUsername;
 
-		try {
+			user.password = AppSystemProperties.FolioPassword;
 
-			URI uri = new URI(AppSystemProperties.FolioURL + "authn/login-with-expiry");
-						
-			ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, request, String.class);
+			HttpEntity<?> request = new HttpEntity<Object>(user, getHttpHeaders());
 
-			String[] vavlues = responseEntity.getHeaders().get("Set-Cookie").toString().split(";");
+			try {
 
-			for (String value : vavlues) {
+				System.out.println("Loop count " + loopCount);
 
-				if (value.contains("[folioAccessToken=")) {
+				loopCount++;
 
-					String token = value.split("=")[1];
+				//URI uri = new URI(AppSystemProperties.FolioURL + "/authn/login-with-expiry");
 
-					authToken = token;
+				 URI uri = new
+				 URI("https://okapi-okstate.folio.ebsco.com/authn/login-with-expiry");
 
+				ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, request,
+						String.class);
+
+				String[] vavlues = responseEntity.getHeaders().get("Set-Cookie").toString().split(";");
+
+				for (String value : vavlues) {
+
+					if (value.contains("[folioAccessToken=")) {
+
+						String token = value.split("=")[1];
+
+						authToken = token;
+
+						System.out.println("Get FOLIO Token at : " + DateUtil.getTodayDateAndTime());
+
+						success = true; // If no exception, mark success
+					}
 				}
+
+			} catch (Exception e) {
+
+				e.getMessage();
+				e.printStackTrace();
+
 			}
-
-		} catch (Exception e) {
-
-			e.getMessage();
-			e.printStackTrace();
 
 		}
 	}

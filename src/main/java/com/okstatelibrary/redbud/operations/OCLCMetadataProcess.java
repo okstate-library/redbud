@@ -41,27 +41,30 @@ public class OCLCMetadataProcess extends MainProcess {
 
 		Thread.sleep(5000);
 
-		for (Campus campus : campusService.getCampusListByInstitutionId(institutionId)) {
+		// OCLC operation is running only for "Oklahoma State University, Stillwater"
+
+		for (Campus campus : campusService.getCampusListByInstitutionId("b3439a37-ec18-4d3f-a1a0-88a404b8062c")) {
 
 			for (Library library : libraryService.getLibraryListByCampusId(campus.getCampus_id())) {
 
-				if (library.getLibrary_id().contentEquals("189ff94d-d146-4751-aeff-7dae9e4ccde1")) {
+				for (Location location : locationService.getLocationListByLibraryId(library.getLibrary_id())) {
 
-					for (Location location : locationService.getLocationListByLibraryId(library.getLibrary_id())) {
+					if (!location.getLocation_id().contentEquals("4e4331ec-d652-4591-af7f-4c0dc6ddf485")) {
 
-						System.out.print("campus-" + campus.getCampus_name() + "," + "library-"
+						System.out.println("campus-" + campus.getCampus_name() + "," + "library-"
 								+ library.getLibrary_name() + "," + "location-" + location.getLocation_name() + ",");
 
 						oclcProcess(location.getLocation_id());
-
-						System.out.println(" ");
-
+						
+						System.out.println("End of location  --  " + location.getLocation_name());
 					}
 				}
 
 			}
 
 		}
+		
+		System.out.println("End of OLC process");
 
 		Thread.sleep(5000);
 
@@ -74,7 +77,8 @@ public class OCLCMetadataProcess extends MainProcess {
 	private void oclcProcess(String location) {
 		try {
 
-			List<HoldingsRecord> holdingList = folioService.getInventoryHoldings(location, "", "");
+			List<HoldingsRecord> holdingList = folioService.getInventoryHoldings(location,
+					"2025-01-01T00:00:00.000+00:00", "");
 
 			System.out.println("list size: " + holdingList.size());
 
@@ -107,21 +111,31 @@ public class OCLCMetadataProcess extends MainProcess {
 
 							if (!holding.holdingSet && !selectedHolding.discoverySuppress) {
 
-								System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
-										+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
-										+ " Folio id " + selectedHolding.getInstanceId());
+//								System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
+//										+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
+//										+ " Folio id " + selectedHolding.getInstanceId());
 
 								if (!setHoldigsList.contains(controlNumber)) {
+
+									System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
+											+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
+											+ " Folio id " + selectedHolding.getInstanceId());
+
 									setHoldigsList.add(controlNumber);
 								}
 
 							} else if (holding.holdingSet && selectedHolding.discoverySuppress) {
 
-								System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
-										+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
-										+ " Folio id " + selectedHolding.getInstanceId());
+//								System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
+//										+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
+//										+ " Folio id " + selectedHolding.getInstanceId());
 
 								if (!unSetHoldigsList.contains(controlNumber)) {
+
+									System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
+											+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
+											+ " Folio id " + selectedHolding.getInstanceId());
+
 									unSetHoldigsList.add(controlNumber);
 								}
 							}
@@ -136,25 +150,25 @@ public class OCLCMetadataProcess extends MainProcess {
 				}
 
 			}
+//
+//			System.out.println("*********************OCLC operation *****************");
+//
+//			System.out.println("OCLC Numbers that should change to  holdingSet true");
 
-			System.out.println("*********************OCLC operation *****************");
-
-			System.out.println("OCLC Numbers that should change to  holdingSet true");
-
-			for (String controlNumber : setHoldigsList) {
-
-				System.out.println(
-						"OCLCNumber " + controlNumber + "  response " + oclcService.setOCLCItems(controlNumber));
-
-			}
-
-			System.out.println("OCLC Numbers that should change to  holdingSet false");
-
-			for (String controlNumber : unSetHoldigsList) {
-
-				System.out.println(
-						"OCLCNumber " + controlNumber + "  response " + oclcService.unSetOCLCItems(controlNumber));
-			}
+//			for (String controlNumber : setHoldigsList) {
+//
+//				System.out.println(
+//						"OCLCNumber " + controlNumber + "  response " + oclcService.setOCLCItems(controlNumber));
+//
+//			}
+//
+//			System.out.println("OCLC Numbers that should change to  holdingSet false");
+//
+//			for (String controlNumber : unSetHoldigsList) {
+//
+//				System.out.println(
+//						"OCLCNumber " + controlNumber + "  response " + oclcService.unSetOCLCItems(controlNumber));
+//			}
 
 			System.out.println("End of processing ");
 

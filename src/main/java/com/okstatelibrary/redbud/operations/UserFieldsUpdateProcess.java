@@ -14,9 +14,8 @@ import com.okstatelibrary.redbud.util.Constants;
 import com.okstatelibrary.redbud.util.DateUtil;
 
 /**
- * @author Damith
- * User fields update while reading a different csv format file.
- * This CSV file is not the normal CSV uploaded to the main feed.
+ * @author Damith User fields update while reading a different csv format file.
+ *         This CSV file is not the normal CSV uploaded to the main feed.
  */
 public class UserFieldsUpdateProcess extends MainProcess {
 
@@ -44,6 +43,8 @@ public class UserFieldsUpdateProcess extends MainProcess {
 
 				if (csvFile.isFile() && csvFile.getName().contains(".csv")) {
 
+					System.out.println("File name " + csvFile);
+
 					String line = "";
 
 					try {
@@ -52,77 +53,136 @@ public class UserFieldsUpdateProcess extends MainProcess {
 						@SuppressWarnings("resource")
 						BufferedReader br = new BufferedReader(new FileReader(csvFile));
 
+						int userCount = 0;
+						int userGroupUserCount = 0;
+
 						while ((line = br.readLine()) != null) // returns a Boolean value
 						{
-							String barCode = line.split(",")[0];
 
-							FolioUser folioUser = folioService.getUsersByBarcode(barCode);
+							String orgCode = line.split(",")[0];
 
-							// System.out.println("********************************");
+							String barCode = line.split(",")[2];
+							String exterNalSystemId = line.split(",")[1];
 
-							if (folioUser != null) {
+							String userGroup = line.split(",")[3];
 
-								PatronGroup selectedGroup = groupList.stream()
-										.filter(selGroup -> selGroup.getInstitutionCode() != null
-												&& selGroup.getFolioGroupId().equals(folioUser.patronGroup))
-										.findFirst().get();
+							if (orgCode.trim().contentEquals("OUH-CHS")
+									&& userGroup.trim().contentEquals("OUH-CHS-student-med")) {
 
-								// System.out.println("Folio Group Name" + selectedGroup.getFolioGroupName());
+								userGroupUserCount++;
 
-								String birthDate = line.split(",")[2];
+								FolioUser folioUser = folioService.getUsersByExternalSystemId(exterNalSystemId);
 
-								String middleName = line.split(",")[3];
+								// FolioUser folioUser = folioService.getUsersByBarcode(barCode);
 
-								String email = line.split(",")[6];
+								if (folioUser != null) {
+									userCount++;
 
-								String phoneNumber = "";
+									System.out.println(folioUser.toString() + " status " + folioUser.active
+											+ " expiry date " + folioUser.expirationDate);
 
-								if (line.split(",").length == 8) {
-									phoneNumber = line.split(",")[7];
-								}
-
-//								System.out.println("Folio User " + folioUser.personal.dateOfBirth + " : "
-//										+ folioUser.personal.middleName + " : " + folioUser.personal.email + " : "
-//										+ folioUser.personal.phone);
+//									folioUser.active = true;
+//									folioUser.expirationDate = DateUtil.getCustomDate();
 //
-//								System.out.println("CSV User " + birthDate + " : " + middleName + " : " + email + " : "
-//										+ phoneNumber);
+////									if (folioUser.customFields == null
+////											|| folioUser.customFields.additionalPatronGroup_4 == null
+////											|| folioUser.customFields.additionalPatronGroup_4.isEmpty()) {
+////
+////										CustomFields newCustommFields = new CustomFields();
+////										newCustommFields.additionalPatronGroup_4 = group.getFolioGroupName();
+////										folioUser.customFields = newCustommFields;
+////									}
+//
+//									folioUser.metadata = getMetadata(folioUser.metadata);
 
-								if (birthDate != null && !birthDate.trim().isEmpty()) {
+//									if (!folioService.updateUser(folioUser)) {
+//
+//										printScreen("Error modify only Folio User " + folioUser,
+//												Constants.ErrorLevel.INFO);
+//
+//										// messageList.add("Error modify only Folio User " + folioUser);
+//									} else {
+//										printScreen("Done User " + folioUser,
+//												Constants.ErrorLevel.INFO);
+//									}
 
-									String date = DateUtil.getDate(birthDate).toString();
-
-									folioUser.personal.dateOfBirth = date;
-								}
-
-								folioUser.personal.middleName = middleName;
-								folioUser.personal.email = email;
-								folioUser.personal.phone = phoneNumber;
-
-								if (folioUser.customFields == null) {
-									CustomFields newCustommFields = new CustomFields();
-									newCustommFields.additionalPatronGroup_4 = selectedGroup.getFolioGroupName();
-									folioUser.customFields = newCustommFields;
 								} else {
-									folioUser.customFields.additionalPatronGroup_4 = selectedGroup.getFolioGroupName();
+									System.out.println("exterNalSystemId" + exterNalSystemId);
 								}
 
-								boolean isUpdated = folioService.updateUser(folioUser);
-
-								if (!isUpdated) {
-									System.out.println("Not Updated : " + barCode);
-								}
-
-//								else {
-//									System.out.println("Updated : " + barCode);
-//								}
-
-							} else {
-
-								System.out.println("Null folio Users :" + barCode);
 							}
 
+//
+//							FolioUser folioUser = folioService.getUsersByBarcode(barCode);
+//
+//							// System.out.println("********************************");
+//
+//							if (folioUser != null) {
+//
+//								PatronGroup selectedGroup = groupList.stream()
+//										.filter(selGroup -> selGroup.getInstitutionCode() != null
+//												&& selGroup.getFolioGroupId().equals(folioUser.patronGroup))
+//										.findFirst().get();
+//
+//								// System.out.println("Folio Group Name" + selectedGroup.getFolioGroupName());
+//
+//								String birthDate = line.split(",")[2];
+//
+//								String middleName = line.split(",")[3];
+//
+//								String email = line.split(",")[6];
+//
+//								String phoneNumber = "";
+//
+//								if (line.split(",").length == 8) {
+//									phoneNumber = line.split(",")[7];
+//								}
+//
+////								System.out.println("Folio User " + folioUser.personal.dateOfBirth + " : "
+////										+ folioUser.personal.middleName + " : " + folioUser.personal.email + " : "
+////										+ folioUser.personal.phone);
+////
+////								System.out.println("CSV User " + birthDate + " : " + middleName + " : " + email + " : "
+////										+ phoneNumber);
+//
+//								if (birthDate != null && !birthDate.trim().isEmpty()) {
+//
+//									String date = DateUtil.getDate(birthDate).toString();
+//
+//									folioUser.personal.dateOfBirth = date;
+//								}
+//
+//								folioUser.personal.middleName = middleName;
+//								folioUser.personal.email = email;
+//								folioUser.personal.phone = phoneNumber;
+//
+//								if (folioUser.customFields == null) {
+//									CustomFields newCustommFields = new CustomFields();
+//									newCustommFields.additionalPatronGroup_4 = selectedGroup.getFolioGroupName();
+//									folioUser.customFields = newCustommFields;
+//								} else {
+//									folioUser.customFields.additionalPatronGroup_4 = selectedGroup.getFolioGroupName();
+//								}
+//
+//								boolean isUpdated = folioService.updateUser(folioUser);
+//
+//								if (!isUpdated) {
+//									System.out.println("Not Updated : " + barCode);
+//								}
+//
+////								else {
+////									System.out.println("Updated : " + barCode);
+////								}
+//
+//							} else {
+//
+//								System.out.println("Null folio Users :" + barCode);
+//							}
+
 						}
+
+						System.out.println("OUH-CHS-student-med users Count" + userGroupUserCount + " folio user Count "
+								+ userCount);
 
 					} catch (Exception e) {
 
@@ -133,7 +193,8 @@ public class UserFieldsUpdateProcess extends MainProcess {
 			}
 
 		} catch (Exception e1) {
-			// LOG.error(e1.getMessage());
+
+			e1.printStackTrace();
 		}
 
 	}

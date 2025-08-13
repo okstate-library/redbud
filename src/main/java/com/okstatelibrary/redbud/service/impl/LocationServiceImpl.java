@@ -26,6 +26,12 @@ public class LocationServiceImpl implements LocationService {
 		return locationDao.save(location);
 	}
 
+	@Override
+	public Location getLocationById(String locationId) {
+		return getLocationList().stream().filter(location -> location.getLocation_id().equals(locationId)).findFirst()
+				.orElse(null);
+	}
+
 	@Cacheable(cacheNames = "getLocationList")
 	@Override
 	public List<Location> getLocationList() {

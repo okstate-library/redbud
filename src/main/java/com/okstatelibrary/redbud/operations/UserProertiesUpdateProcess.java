@@ -145,7 +145,7 @@ public class UserProertiesUpdateProcess extends MainProcess {
 
 						// Check the user status and if inactive change in to active.
 
-						if (!folioUser.active && !isUserStatusChanged) {
+						if (!isUserStatusChanged) {
 
 							updateFolioUser(folioUser, csvUserModel, " - Update Status");
 						}
@@ -187,7 +187,6 @@ public class UserProertiesUpdateProcess extends MainProcess {
 
 	private void updateFolioUser(FolioUser folioUser, CsvUserModel csvUserModel, String updateCriteria) {
 
-		folioUser.active = true;
 		folioUser.expirationDate = DateUtil.get9MonthsAfterTodayDate();
 
 		folioUser.metadata = getMetadata(folioUser.metadata);

@@ -25,6 +25,11 @@ public class MainProcess {
 	 */
 	private static final Logger LOG = LoggerFactory.getLogger(MainProcess.class);
 
+	public void printScreen(String msg) {
+		System.out.println(msg);
+
+	}
+
 	public void printScreen(String msg, Constants.ErrorLevel errorLevel) {
 		switch (errorLevel) {
 		case ERROR:

@@ -120,6 +120,9 @@ public class SettingsController {
 		model.addAttribute(CacheMap.process_Never_Circulated_Items_Seacrh_Process,
 				CacheMap.get(CacheMap.process_Never_Circulated_Items_Seacrh_Process));
 
+		model.addAttribute(CacheMap.process_CirculationLoan_API_Data_Extraction_By_Location,
+				CacheMap.get(CacheMap.process_CirculationLoan_API_Data_Extraction_By_Location));
+
 	}
 
 	@GetMapping("/enableUserIntegration")
@@ -267,8 +270,8 @@ public class SettingsController {
 		return "operations";
 	}
 
-	@GetMapping("/executechangeexpirationdates")
-	public String executeInactiveUsers(Principal principal, Model model) {
+	@GetMapping("/executeChangeExpirationDateOfActiveUsers")
+	public String executeChangeExpirationDateOfActiveUsers(Principal principal, Model model) {
 		User user = userService.findByUsername(principal.getName());
 
 		model.addAttribute("user", user);
@@ -375,7 +378,7 @@ public class SettingsController {
 						// 02609d66-4b2a-47f6-988a-cf7b5b2932c7 - OKS-OSU-faculty
 						// e8f2c425-2daa-44fd-a813-7bfd2329e8cc - OKS-OSU-faculty -ret
 
-						oprocess.manipulate("e8f2c425-2daa-44fd-a813-7bfd2329e8cc");
+						oprocess.manipulate("02609d66-4b2a-47f6-988a-cf7b5b2932c7");
 
 					} catch (RestClientException | IOException e) {
 						// TODO Auto-generated catch block
@@ -450,19 +453,73 @@ public class SettingsController {
 	}
 
 	@GetMapping("/circulationLoanData")
-	public String circulationLoanData(Principal principal, Model model)
-//			,
-//			@RequestParam(
-//					
-//					value = "libraryDropDown", required = false, defaultValue = "0") String libraryDropDown)
+	public String circulationLoanData(Principal principal, Model model,
+			@RequestParam(value = "libraryDropDown", required = false, defaultValue = "0") String libraryDropDown,
+			@RequestParam(value = "locationDropDown", required = false, defaultValue = "0") String locationDropDown)
 			throws IOException {
 
-//		System.out.println("libraryDropDown -- " + libraryDropDown);
+		System.out.println("libraryDropDown -- " + libraryDropDown);
+		System.out.println("locationDropDown -- " + locationDropDown);
 
 		User user = userService.findByUsername(principal.getName());
 		model.addAttribute("user", user);
 
-//		if (libraryDropDown != "0" || libraryDropDown != "0") {
+		if (libraryDropDown != "0" || locationDropDown != "0") {
+
+			try {
+
+				Thread myThread = new Thread(new Runnable() {
+
+					public void run() {
+
+						CacheMap.set(CacheMap.process_CirculationLoan_API_Data_Extraction_By_Location,
+								CacheMap.running);
+
+						model.addAttribute(CacheMap.process_CirculationLoan_API_Data_Extraction_By_Location,
+								CacheMap.running);
+
+						CirculationLoanProcess oprocess = new CirculationLoanProcess(circulationLogService,
+								circulationLoanService);
+
+						try {
+
+							oprocess.manipulate(locationService, false, libraryDropDown, locationDropDown);
+
+							CacheMap.set(CacheMap.process_CirculationLoan_API_Data_Extraction_By_Location,
+									CacheMap.idle);
+
+						} catch (RestClientException | IOException e) {
+
+							CacheMap.set(CacheMap.process_CirculationLoan_API_Data_Extraction_By_Location,
+									CacheMap.error + e.getMessage());
+
+							e.printStackTrace();
+						}
+
+						model.addAttribute(CacheMap.process_CirculationLoan_API_Data_Extraction_By_Location,
+								CacheMap.get(CacheMap.process_CirculationLoan_API_Data_Extraction_By_Location));
+					}
+				});
+
+				myThread.start();
+
+			} catch (Exception e1) {
+				LOG.error(e1.getMessage());
+			}
+
+		} else {
+			System.out.println("libraryDropDown -- " + libraryDropDown);
+		}
+
+		return "operations";
+	}
+
+	@GetMapping("/circulationLoanDailyProcess")
+	public String circulationLoanDailyProcess(Principal principal, Model model) throws IOException {
+
+		User user = userService.findByUsername(principal.getName());
+		
+		model.addAttribute("user", user);
 
 		try {
 
@@ -470,9 +527,9 @@ public class SettingsController {
 
 				public void run() {
 
-					CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location, CacheMap.running);
+					CacheMap.set(CacheMap.process_CirculationLoan_API_Data_Extraction_Daily_Process, CacheMap.running);
 
-					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location,
+					model.addAttribute(CacheMap.process_CirculationLoan_API_Data_Extraction_Daily_Process,
 							CacheMap.running);
 
 					CirculationLoanProcess oprocess = new CirculationLoanProcess(circulationLogService,
@@ -480,20 +537,20 @@ public class SettingsController {
 
 					try {
 
-						oprocess.manipulate(locationService, false);
+						oprocess.manipulate(locationService, true, "0", "0");
 
-						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.idle);
+						CacheMap.set(CacheMap.process_CirculationLoan_API_Data_Extraction_Daily_Process, CacheMap.idle);
 
 					} catch (RestClientException | IOException e) {
 
-						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction,
+						CacheMap.set(CacheMap.process_CirculationLoan_API_Data_Extraction_Daily_Process,
 								CacheMap.error + e.getMessage());
 
 						e.printStackTrace();
 					}
 
-					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location,
-							CacheMap.get(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location));
+					model.addAttribute(CacheMap.process_CirculationLoan_API_Data_Extraction_Daily_Process,
+							CacheMap.get(CacheMap.process_CirculationLoan_API_Data_Extraction_Daily_Process));
 				}
 			});
 
@@ -670,6 +727,9 @@ public class SettingsController {
 	@GetMapping("/userFieldsUpdateProcess")
 	public String userFieldsUpdateProcess(Principal principal, Model model) throws IOException {
 
+		System.out.println("***************CheckUserStatusProcess*****************");
+
+		
 		User user = userService.findByUsername(principal.getName());
 
 		model.addAttribute("user", user);
@@ -682,7 +742,7 @@ public class SettingsController {
 
 					CacheMap.set(CacheMap.process_Send_Test_Email, CacheMap.running);
 
-					UserFieldsUpdateProcess oprocess = new UserFieldsUpdateProcess();
+					CheckUserStatusProcess oprocess = new CheckUserStatusProcess();
 
 					oprocess.manipulate(groupService);
 

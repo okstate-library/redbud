@@ -16,6 +16,11 @@ public class DateUtil {
 
 	private static SimpleDateFormat longDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
+	public static String getCustomDate() {
+
+		return "2026-03-01";
+	}
+
 	public static String get9MonthsAfterTodayDate() {
 
 		return LocalDate.now().plusMonths(9).toString();
@@ -36,9 +41,23 @@ public class DateUtil {
 
 	}
 
+	public static String getLastMonthDate(boolean isMorning) {
+
+		String date = LocalDate.now().plusDays(-30).toString();
+
+		if (isMorning) {
+			return date + "T00:00:00.000Z";
+		}
+
+		date = LocalDate.now().plusDays(-1).toString();
+
+		return date + "T23:59:59.000Z";
+	}
+
 	public static String getYesterdayDate(boolean isMorning) {
 
 		String date = LocalDate.now().plusDays(-1).toString();
+
 		if (isMorning) {
 			return date + "T00:00:00.000Z";
 		}
@@ -84,13 +103,12 @@ public class DateUtil {
 		for (DateTimeFormatter formatter : formatters) {
 			try {
 				parsedDate = LocalDate.parse(stringDate, formatter);
-				
-				 // Adjust the year if necessary
-                if (parsedDate.getYear() >= 2000) {
-                	parsedDate = parsedDate.withYear(parsedDate.getYear() - 100);
-                }
 
-                
+				// Adjust the year if necessary
+				if (parsedDate.getYear() >= 2000) {
+					parsedDate = parsedDate.withYear(parsedDate.getYear() - 100);
+				}
+
 				break; // Exit the loop if parsing was successful
 			} catch (DateTimeParseException e) {
 				// Continue trying other formatters
@@ -199,20 +217,17 @@ public class DateUtil {
 		// SimpleDateFormat df2 = new SimpleDateFormat("dd/MM/yy");
 		return dateFormat.format(dateFormat.parse(dateString));
 	}
-	
+
 	public static boolean isValidDate(String dateStr, String format) {
-		
-		
-		
-		
-        SimpleDateFormat sdf = new SimpleDateFormat(format);
-        sdf.setLenient(false);  // Disable lenient parsing
-        try {
-            sdf.parse(dateStr);  // Try parsing the date
-            return true;
-        } catch (ParseException e) {
-            return false;
-        }
-    }
+
+		SimpleDateFormat sdf = new SimpleDateFormat(format);
+		sdf.setLenient(false); // Disable lenient parsing
+		try {
+			sdf.parse(dateStr); // Try parsing the date
+			return true;
+		} catch (ParseException e) {
+			return false;
+		}
+	}
 
 }

@@ -48,7 +48,7 @@ import com.okstatelibrary.redbud.util.DateUtil;
  * {@code AppSystemProperties.ScheduleCornJobsRunStatus} flag.
  * </p>
  * 
- * @author [Your Name]
+ * @author Damith Perera
  */
 @Component
 public class DailyJobScheduler {
@@ -77,13 +77,18 @@ public class DailyJobScheduler {
 	 * </p>
 	 */
 	@Scheduled(cron = "0 00 1 * * ?") // Runs daily at 1:00 AM
-	public void executeTasksInQueue() {
+	public void executeDailyTasksInQueue() {
 		if (AppSystemProperties.ScheduleCornJobsRunStatus) {
 			queue.execute(this::runInstitutionalResourcesCounting);
 			queue.execute(this::runUserPropertyChangeJob);
 			queue.execute(this::runCirculationJob);
 			// queue.execute(this::runOCLCJob); // Optional, currently disabled
 		}
+	}
+
+	@Scheduled(cron = "0 0 1 1 * *") // MIN HOUR DAY MONTH DAYOFWEEK YEAR
+	public void runMonthlyTask() {
+		
 	}
 
 	/**

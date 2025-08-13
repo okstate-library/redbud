@@ -44,19 +44,16 @@ public class CirculationLoanProcess extends MainProcess {
 		this.circulationLoanService = circulationLoanService;
 	}
 
-	public void manipulate(LocationService locationService, boolean isDailyProcessd)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+	public void manipulate(LocationService locationService, boolean isDailyProcess, String libraryId,
+			String locationId) throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
 		String timePeriod = "Time period - " + DateUtil.getYesterdayDate(true) + "  -   "
 				+ DateUtil.getYesterdayDate(false) + " Is Daily process - ";// + isDailyProcess;
 
 		printScreen(timePeriod, Constants.ErrorLevel.INFO);
 
-		// Get all the locations
-		List<Location> locations = locationService.getLocationList();
-
-		String endDateTime = DateUtil.getYesterdayDate(false);
-		String startDateTime = DateUtil.getYesterdayDate(true);
+		String startDateTime = DateUtil.getLastMonthDate(true);
+		String endDateTime = DateUtil.getLastMonthDate(false);
 
 		lines.append("Start time:" + DateUtil.getTodayDateAndTime() + "<br/>");
 
@@ -65,39 +62,50 @@ public class CirculationLoanProcess extends MainProcess {
 		lines.append("Location").append(tab).append("Close Loan record count").append(tab).append("unique records")
 				.append(tab).append(" open loans").append("<br/>");
 
-//		if (libraryId.equals("0")) {
-//
-//			// Run the loan execution for all locations.
-//
-//			printScreen(" Location is 0  ----------", Constants.ErrorLevel.INFO);
-//
-//			for (Location location : locations) {
-//
-//				executeLoans(endDateTime, startDateTime, openLoans, location, isDailyProcess);
-//			}
-//
-//		} else {
-//
-//			// Selecting a specific locations from related to library id and do the
-//			// operations.
-//
-		//locations = locationService.getLocationListByLibraryId("665c49b9-ad54-483e-bc2c-d549e5b6e865");
+		if (libraryId.equals("0") & locationId.equals("0")) {
 
-		for (Location location : locations) {
+			System.out.println("isDailyProcess -- " + isDailyProcess);
 
-			printScreen(" Location  " + location.getLocation_name(), Constants.ErrorLevel.INFO);
+			// Get all the locations
+			List<Location> locations = locationService.getLocationList();
 
-//			ArrayList<Loan> openLocationLoans = (ArrayList<Loan>) openLoans.stream()
-//					.filter(l -> l.itemEffectiveLocationIdAtCheckOut.equals(location.getLocation_id()))
-//					.collect(Collectors.toList());
+			// Run the loan execution for all locations.
 
-			executeOpenLoans(location.getLocation_id());
+			printScreen(" Location is 0  ----------", Constants.ErrorLevel.INFO);
 
-			//executeLoans(endDateTime, startDateTime, location.getLocation_id(), false);
+			for (Location location : locations) {
+
+				executeOpenLoans(location, startDateTime, endDateTime, isDailyProcess);
+			}
+
+		} else {
+
+			System.out.println("locationId in Manupiluate -- " + locationId);
+
+			List<Location> locations = new ArrayList<>();
+
+			if (!locationId.equals("0")) {
+
+				locations.add(locationService.getLocationById(locationId));
+
+				System.out.println("locationId in Manupiluate -- " + locationId);
+
+			} else if (!libraryId.equals("0")) {
+				locations = locationService.getLocationListByLibraryId(libraryId);
+
+				System.out.println("locationId in Manupiluate -- " + libraryId);
+			}
+
+			for (Location location : locations) {
+
+				executeOpenLoans(location, startDateTime, endDateTime, isDailyProcess);
+
+				// executeClosedLoans(endDateTime, startDateTime, location.getLocation_id(),
+				// false);
+
+			}
 
 		}
-
-//		}
 
 		lines.append("End time:" + DateUtil.getTodayDateAndTime() + "<br/>");
 
@@ -108,7 +116,7 @@ public class CirculationLoanProcess extends MainProcess {
 
 	}
 
-	private void executeLoans(String endDateTime, String startDateTime, String location, boolean isDailyProcess)
+	private void executeClosedLoans(String endDateTime, String startDateTime, String location, boolean isDailyProcess)
 			throws JsonParseException, JsonMappingException, IOException {
 
 		ArrayList<Loan> closedLocationLoans = folioService.getClosedLoansByLocation(location, startDateTime,
@@ -159,11 +167,13 @@ public class CirculationLoanProcess extends MainProcess {
 		}
 	}
 
-	private int executeOpenLoans(String locationId)
+	private int executeOpenLoans(Location location, String startDateTime, String endDateTime, boolean isDailyProcess)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		ArrayList<Loan> openLoans = folioService.getOpenedLoans(locationId);
+		ArrayList<Loan> openLoans = folioService.getOpenedLoans(location.getLocation_id(), startDateTime, endDateTime,
+				isDailyProcess);
 
+		printScreen(" Location  " + location.getLocation_name(), Constants.ErrorLevel.INFO);
 		printScreen(" Open loan count  ----------" + openLoans.size(), Constants.ErrorLevel.INFO);
 
 		for (Loan loan : openLoans) {

@@ -274,8 +274,8 @@
 					<div class="row top-buffer">
 
 						<div class="col-xs-2">
-							<select onchange="selectInstitution()" class="form-control"
-								id="institutionDropDown" th:name="institutionDropDown">
+							<select onchange="selectInstitution(this)" class="form-control"
+								id="institutionDropDown" name="institutionDropDown">
 								<option th:value="0">Select Institution</option>
 
 								<option th:each="institution : ${institutionList}"
@@ -284,8 +284,8 @@
 							</select>
 						</div>
 						<div class="col-xs-2">
-							<select onchange="selectCampus()" class="form-control"
-								id="campusDropDown">
+							<select onchange="selectCampus(this)" class="form-control"
+								id="campusDropDown" name="campusDropDown">
 								<option th:value="0">Select Campus</option>
 
 								<option th:each="campus : ${campusList}"
@@ -293,8 +293,8 @@
 							</select>
 						</div>
 						<div class="col-xs-2">
-							<select onchange="selectLibrary()" class="form-control"
-								id="libraryDropDown" th:name="libraryDropDown">
+							<select onchange="selectLibrary(this)" class="form-control"
+								id="libraryDropDown" name="libraryDropDown">
 								<option th:value="0">Select Library</option>
 
 								<option th:each="library : ${libraryList}"
@@ -468,6 +468,119 @@
 				</form>
 
 			</div>
+
+			<div class="row top-buffer container-border">
+				<h4>
+					<b>Manual Process for getting the Circulation Loan records to
+						database for a specific location.</b>
+				</h4>
+				<h5>
+					<i>#ManualTask</i>
+				</h5>
+				<form method="get" th:action="@{/settings/circulationLoanData}">
+
+					<div class="row">
+
+						<div class="col-xs-12">Get circulation loan details from the
+							API based on location and stored in DB for reporting purposes.</div>
+					</div>
+
+
+					<div class="row top-buffer">
+
+						<div class="col-xs-2">
+							<select onchange="selectInstitution(this)" class="form-control"
+								id="institutionDropDown2" name="institutionDropDown">
+								<option th:value="0">Select Institution</option>
+
+								<option th:each="institution : ${institutionList}"
+									th:value="${institution.institution_id}"
+									th:text="${institution.institution_name}"></option>
+							</select>
+						</div>
+						<div class="col-xs-2">
+							<select onchange="selectCampus(this)" class="form-control"
+								id="campusDropDown2" name="campusDropDown">
+								<option th:value="0">Select Campus</option>
+
+								<option th:each="campus : ${campusList}"
+									th:value="${campus.campus_id}" th:text="${campus.campus_name}"></option>
+							</select>
+						</div>
+						<div class="col-xs-2">
+							<select onchange="selectLibrary(this)" class="form-control"
+								id="libraryDropDown2" name="libraryDropDown">
+								<option th:value="0">Select Library</option>
+
+								<option th:each="library : ${libraryList}"
+									th:value="${library.library_id}"
+									th:text="${library.library_name}"></option>
+							</select>
+						</div>
+						<div class="col-xs-2">
+							<select class="form-control" name="locationDropDown"
+								id="locationDropDown2">
+								<option th:value="0">Select Location</option>
+
+								<option th:each="location : ${locationList}"
+									th:value="${location.location_id}"
+									th:text="${location.location_name}"></option>
+							</select>
+						</div>
+						<div class="col-xs-2">
+							<button type="submit" id="executeCirculationLoanByLocation"
+								disabled class="btn btn-success btn-md btn-block">Execute</button>
+						</div>
+
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeCirculationLoanByLocation').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5
+								th:text="${process_CirculationLoan_API_Data_Extraction_By_Location}"></h5>
+						</div>
+
+					</div>
+
+				</form>
+
+			</div>
+
+
+			<div class="row top-buffer container-border">
+				<h4>
+					<b>Manual Process for getting the Circulation loan records to
+						database based on previous day records</b>
+				</h4>
+				<h5>
+					<i>#ScheduleTask</i>
+				</h5>
+				<form method="get"
+					th:action="@{/settings/circulationLoanDailyProcess}">
+
+					<div class="row">
+
+						<div class="col-xs-8">Get circulation loan details from the
+							API and stored in DB for reporting purposes.</div>
+						<div class="col-xs-2">
+							<button type="submit" id="executeCirculationLoanDailyProcess"
+								disabled class="btn btn-success btn-md btn-block">Execute</button>
+						</div>
+
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeCirculationLoanDailyProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5
+								th:text="${process_CirculationLoan_API_Data_Extraction_Daily_Process}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
 		</div>
 
 		<div id="user" class="tab-pane fade">
@@ -480,7 +593,7 @@
 					<i>#ManualTask</i>
 				</h5>
 				<form method="get"
-					th:action="@{/settings/executechangeexpirationdates}">
+					th:action="@{/settings/executeChangeExpirationDateOfActiveUsers}">
 
 					<div class="row">
 						<div class="col-xs-8">When executed, the process will
