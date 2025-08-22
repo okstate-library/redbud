@@ -27,6 +27,8 @@ import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord;
 import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord2;
 import com.okstatelibrary.redbud.folio.entity.instance.Identifier;
 import com.okstatelibrary.redbud.folio.entity.instance.Instance;
+import com.okstatelibrary.redbud.folio.entity.instance.InstanceFormat;
+import com.okstatelibrary.redbud.folio.entity.instance.InstanceType;
 import com.okstatelibrary.redbud.folio.entity.inventory.Inventory;
 import com.okstatelibrary.redbud.folio.entity.inventory.Item;
 import com.okstatelibrary.redbud.folio.entity.loan.Loan;
@@ -199,6 +201,68 @@ public class FolioService extends FolioServiceToken {
 			ResponseEntity<Item> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Item.class);
 
 			return response.getBody();
+
+		} catch (Exception e) {
+
+			System.err.println("Error: FolioService : getItemByItemId " + e.getMessage());
+
+			return null;
+		}
+
+	}
+
+	public ArrayList<InstanceType> getInstanceTypes()
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+		try {
+			String url = AppSystemProperties.FolioURL + "instance-types?limit=100";
+
+			ResponseEntity<InstanceTypeRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					InstanceTypeRoot.class);
+
+			return response.getBody().instanceTypes;
+
+		} catch (Exception e) {
+
+			System.err.println("Error: FolioService : getItemByItemId " + e.getMessage());
+
+			return null;
+		}
+
+	}
+
+	public int getInstanceCountByFormatAndType(String formatId, String typeId, String locationId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		String url = AppSystemProperties.FolioURL
+				+ "inventory/instances?limit=00&query=(staffSuppress==false AND discoverySuppress==false "
+				+ "AND instanceFormatIds=" + formatId + " AND instanceTypeId =" + typeId
+				+ " AND query=holdingsRecords.permanentLocationId= " + locationId + ")";
+
+		try {
+
+			ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					ItemRoot.class);
+
+			return response.getBody().totalRecords;
+
+		} catch (Exception e) {
+
+			System.err.println("Error: FolioService : getItembyBarcode " + e.getMessage());
+
+			return 0;
+		}
+
+	}
+
+	public ArrayList<InstanceFormat> getInstanceFormats()
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+		try {
+			String url = AppSystemProperties.FolioURL + "instance-formats?limit=100";
+
+			ResponseEntity<InstanceFormatRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					InstanceFormatRoot.class);
+
+			return response.getBody().instanceFormats;
 
 		} catch (Exception e) {
 
@@ -1641,8 +1705,7 @@ public class FolioService extends FolioServiceToken {
 
 		try {
 
-			String url = AppSystemProperties.FolioURL + "users?query=(externalSystemId==  " + userId
-					+ ")";
+			String url = AppSystemProperties.FolioURL + "users?query=(externalSystemId==  " + userId + ")";
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
