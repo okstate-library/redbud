@@ -234,7 +234,7 @@ public class FolioService extends FolioServiceToken {
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
 		String url = AppSystemProperties.FolioURL
-				+ "inventory/instances?limit=00&query=(staffSuppress==false AND discoverySuppress==false "
+				+ "inventory/instances?limit=00&query=(staffSuppress==false AND discoverySuppress==false AND metadata.createdDate <= \"2025-06-30T00:00:00.000+00:00\"  "
 				+ "AND instanceFormatIds=" + formatId + " AND instanceTypeId =" + typeId
 				+ " AND query=holdingsRecords.permanentLocationId= " + locationId + ")";
 

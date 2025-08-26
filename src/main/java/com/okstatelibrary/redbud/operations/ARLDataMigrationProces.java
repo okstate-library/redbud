@@ -1,6 +1,8 @@
 
 package com.okstatelibrary.redbud.operations;
 
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -43,40 +45,52 @@ public class ARLDataMigrationProces extends MainProcess {
 
 			int locationCount = 1;
 
-			for (LocationModel location : locations) {
+			String csvFile = "ARL report.csv";
 
-//				System.out.println(
-//						"location " + locationCount + " ## " + location.location_id + " ## " + location.location);
+			BufferedWriter writer = new BufferedWriter(new FileWriter(csvFile));
 
-				ArrayList<InstanceFormat> formats = folioService.getInstanceFormats();
+			writer.write("Institution, Campus, Library, Location , format, type , count");
+			writer.newLine();
 
-				ArrayList<InstanceType> types = folioService.getInstanceTypes();
+				for (LocationModel location : locations) {
 
-				int itemCount = 0;
+					System.out.println(
+							"location " + locationCount + " ## " + location.location_id + " ## " + location.location);
 
-				for (InstanceFormat format : formats) {
+					ArrayList<InstanceFormat> formats = folioService.getInstanceFormats();
 
-					for (InstanceType type : types) {
+					ArrayList<InstanceType> types = folioService.getInstanceTypes();
 
-						int loanCount = folioService.getInstanceCountByFormatAndType(format.id, type.id,
-								location.location_id);
+					int itemCount = 0;
 
-						if (loanCount > 0) {
-							System.out.println(location.institution + "," + location.campus + "," + location.library
-									+ "," + location.location + "," + format.name + "," + type.name + "," + loanCount);
+					for (InstanceFormat format : formats) {
+
+						for (InstanceType type : types) {
+
+							int loanCount = folioService.getInstanceCountByFormatAndType(format.id, type.id,
+									location.location_id);
+
+							if (loanCount > 0) {
+								writer.write(location.institution + "," + location.campus + "," + location.library
+										+ "," + location.location + "," + format.name + "," + type.name + ","
+										+ loanCount);
+
+								writer.newLine();
+							}
+
+							itemCount++;
+
 						}
-
-						itemCount++;
 
 					}
 
+					System.out.println("locationCount" + locationCount);
+
+					locationCount++;
+
 				}
 
-				System.out.println("locationCount" + locationCount);
-
-				locationCount++;
-
-			}
+			writer.close();
 
 			System.out.println("Done");
 
