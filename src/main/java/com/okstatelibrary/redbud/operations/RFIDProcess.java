@@ -37,11 +37,11 @@ public class RFIDProcess extends MainProcess {
 
 			for (LocationModel location : locations) {
 
-				if (location.location_id.equals("03de4f93-9d20-4c5b-890f-2cf784a72d09")) {
+				if (location.location_id.equals("912064a8-6296-4d35-8c91-48722c5ddc59")) {
 
 					System.out.println("location " + i + " ## " + location.location_id + " ## " + location.location);
 
-					ArrayList<Item> items = folioService.getItemsByLocationId(location.location_id, location.location);
+					folioService.getItemsByLocationId(location.location_id, location.location);
 
 					i++;
 				}

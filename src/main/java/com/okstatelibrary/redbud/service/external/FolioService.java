@@ -138,7 +138,7 @@ public class FolioService extends FolioServiceToken {
 
 			try (FileWriter writer = new FileWriter(fileName)) {
 
-				writer.append("ID#CallNUmber#BarCode#Title#EffectiveLocation#PermanentLocation"+ "\n");
+				writer.append("ID#CallNUmber#BarCode#Title#EffectiveLocation#PermanentLocation" + "\n");
 
 				for (int iterations = 0; iterations < totalIterations; iterations++) {
 
@@ -156,16 +156,22 @@ public class FolioService extends FolioServiceToken {
 
 					for (Item item : response.getBody().items) {
 
-						int loanCount = this.getLoanCountByItemId(item.id);
+//						int loanCount = this.getLoanCountByItemId(item.id);
+//
+//						if (loanCount == 0 && item.lastCheckIn == null) {
 
-						if (loanCount == 0 && item.lastCheckIn == null) {
+						// Item item folioService.getItemByItemId(item.id);
 
-							// Item item folioService.getItemByItemId(item.id);
-
-							writer.append(item.id + "#" + item.callNumber + "#" + item.barcode + "#" + item.title
-									+ "#" + item.effectiveLocation.name + "#" + item.permanentLocation.name + "\n");
-
+						if (item != null) {
+														
+							writer.append(Objects.toString(item.id, "") + "#" +
+								    Objects.toString(item.callNumber, "") + "#" +
+								    Objects.toString(item.barcode, "") + "#" +
+								    Objects.toString(item.title.replace(",", ";"), "") + "#" +
+								    (item.effectiveLocation != null ? Objects.toString(item.effectiveLocation.name, "") : "") + "#" +
+								    (item.permanentLocation != null ? Objects.toString(item.permanentLocation.name, "") : "") + "\n");
 						}
+						// }
 
 //					if (itemCount % 1000 == 0) {
 //						System.out.println("Item count " + itemCount);
@@ -175,7 +181,7 @@ public class FolioService extends FolioServiceToken {
 
 					}
 
-					Thread.sleep(5000);
+					Thread.sleep(2000);
 
 				}
 
