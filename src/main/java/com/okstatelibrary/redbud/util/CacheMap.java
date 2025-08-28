@@ -39,6 +39,8 @@ public class CacheMap {
 	
 	public static final String process_ARL_Reporting_Process = "ARL_Reporting_Process";
 	
+	public static final String process_RFID_Reporting_Process = "RFID_Reporting_Process";
+	
 	public static final String process_StaffNote_Update_Process = "StaffNote_Update_Process";
 
 	public static final String process_Never_Circulated_Items_Seacrh_Process = "Never_Circulated_Items_Search_Process";

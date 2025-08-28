@@ -1096,6 +1096,52 @@ public class SettingsController {
 		return "operations";
 	}
 
+	
+	@GetMapping("/rfidReportingProcess")
+	public String rfidReportingProcess(Principal principal, Model model) {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_RFID_Reporting_Process, CacheMap.running);
+
+					RFIDProcess oprocess = new RFIDProcess();
+
+					try {
+						oprocess.manipulate(institutionService, campusService, libraryService, locationService,
+								servicePointService, circulationLogService);
+					} catch (RestClientException | IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+
+					CacheMap.set(CacheMap.process_RFID_Reporting_Process, CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+			model.addAttribute(CacheMap.process_RFID_Reporting_Process,
+					CacheMap.get(CacheMap.process_RFID_Reporting_Process));
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+	
+	
 	@GetMapping("/updateCirculationLogRecordProperties")
 	public String updateCirculationLogRecordProperties(Principal principal, Model model) {
 

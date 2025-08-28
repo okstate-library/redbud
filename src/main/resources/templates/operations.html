@@ -215,31 +215,61 @@
 				</form>
 
 			</div>
-			
+
 			<div class="row top-buffer container-border">
 				<h4>
-					<b>ARL  REporting - Instance (format,type) count based on institutes.</b>
+					<b>ARL Reporting - Instance (format,type) count based on
+						institutes.</b>
 				</h4>
 
 				<h5>
 					<i>#ScheduleTask</i>
 				</h5>
-				<form method="get"
-					th:action="@{/settings/arlReportingProcess}">
+				<form method="get" th:action="@{/settings/arlReportingProcess}">
 
 					<div class="row">
 						<div class="col-xs-8">Manually gather the record count for
 							Instances, Holdings, and Items associated with each institution.</div>
 
 						<div class="col-xs-2">
-							<button type="submit"
-								id="executearlReportingProcess"
+							<button type="submit" id="executearlReportingProcess"
 								name="executearlReportingProcess" disabled
 								class="btn btn-success btn-md btn-block">execute</button>
 						</div>
 						<div class="col-xs-1">
 							<input type="checkbox"
 								onchange="document.getElementById('executearlReportingProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Institutional_Holdings_Records_Process}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+
+			<div class="row top-buffer container-border">
+				<h4>
+					<b>RFID report</b>
+				</h4>
+
+				<h5>
+					<i>#ScheduleTask</i>
+				</h5>
+				<form method="get" th:action="@{/settings/rfidReportingProcess}">
+
+					<div class="row">
+						<div class="col-xs-8">Gather the items from RFID report.</div>
+
+						<div class="col-xs-2">
+							<button type="submit" id="executeRfidReportingProcess"
+								name="executeRfidReportingProcess" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeRfidReportingProcess').disabled = !this.checked;" />
 						</div>
 						<div class="col-xs-1">
 							<h5 th:text="${Institutional_Holdings_Records_Process}"></h5>

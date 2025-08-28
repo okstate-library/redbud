@@ -88,7 +88,7 @@ public class FolioServiceToken {
 
 			try {
 
-				//System.out.println("Loop count " + loopCount);
+				// System.out.println("Loop count " + loopCount);
 
 				loopCount++;
 
@@ -110,7 +110,7 @@ public class FolioServiceToken {
 
 						authToken = token;
 
-						//System.out.println("Get FOLIO Token at : " + DateUtil.getTodayDateAndTime());
+						// System.out.println("Get FOLIO Token at : " + DateUtil.getTodayDateAndTime());
 
 						success = true; // If no exception, mark success
 					}

@@ -138,7 +138,7 @@ public class FolioService extends FolioServiceToken {
 
 			try (FileWriter writer = new FileWriter(fileName)) {
 
-				writer.append("ID##CallNUmber##BarCode##Title");
+				writer.append("ID#CallNUmber#BarCode#Title#EffectiveLocation#PermanentLocation"+ "\n");
 
 				for (int iterations = 0; iterations < totalIterations; iterations++) {
 
@@ -162,8 +162,8 @@ public class FolioService extends FolioServiceToken {
 
 							// Item item folioService.getItemByItemId(item.id);
 
-							writer.append(
-									item.id + "##" + item.callNumber + "##" + item.barcode + "##" + item.title + "\n");
+							writer.append(item.id + "#" + item.callNumber + "#" + item.barcode + "#" + item.title
+									+ "#" + item.effectiveLocation.name + "#" + item.permanentLocation.name + "\n");
 
 						}
 
