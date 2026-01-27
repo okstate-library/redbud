@@ -12,7 +12,7 @@
 
 	<groupId>com.okstatelibrary</groupId>
 	<artifactId>redbud</artifactId>
-	<version>0.0.1</version>
+	<version>1.0.2</version>
 	<packaging>jar</packaging>
 
 	<name>redbud</name>
@@ -23,6 +23,12 @@
 			<id>mcdperera</id>
 			<name>Damith Perea</name>
 			<email>charmdm@okstate.edu</email>
+			<timezone>+1</timezone>
+		</developer>
+		<developer>
+			<id>nikhilmotwani24</id>
+			<name>Nikhil Motwani</name>
+			<email>nikhil.motwani@okstate.edu</email>
 			<timezone>+1</timezone>
 		</developer>
 	</developers>
@@ -134,6 +140,12 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>com.opencsv</groupId>
+			<artifactId>opencsv</artifactId>
+			<version>5.7.1</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -142,26 +154,13 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			 <!-- Checkstyle -->
-       <!--      <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-checkstyle-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <phase>validate</phase>
-                        <goals>
-                            <goal>check</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <configLocation>google_checks.xml</configLocation> or sun_checks.xml
-                    <encoding>UTF-8</encoding>
-                    <consoleOutput>true</consoleOutput>
-                    <failsOnError>true</failsOnError>
-                </configuration>
-            </plugin> -->
+			<!-- Checkstyle -->
+			<!-- <plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-checkstyle-plugin</artifactId> 
+				<version>3.3.0</version> <executions> <execution> <phase>validate</phase> 
+				<goals> <goal>check</goal> </goals> </execution> </executions> <configuration> 
+				<configLocation>google_checks.xml</configLocation> or sun_checks.xml <encoding>UTF-8</encoding> 
+				<consoleOutput>true</consoleOutput> <failsOnError>true</failsOnError> </configuration> 
+				</plugin> -->
 		</plugins>
 	</build>
 
