@@ -20,13 +20,45 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h3 class="modal-title" id="exampleModalLabel">- Help</h3>
+						<h3 class="modal-title" id="exampleModalLabel">Institutional
+							Counts - Help</h3>
 					</div>
 					<div class="modal-body">
 
+						The report displays the counts of instances, holdings, and items
+						by institutional location. The data is collected through a daily
+						process that runs early in the morning, processes the information,
+						and stores it in the database. To obtain the instance count, the
+						system accesses the holdings API using location IDs, retrieves the
+						records, and filters them to get the duplicate and non-duplicate
+						holdings counts. The resulting record counts are then saved as the
+						instance and holdings counts. Next, API call is made using the
+						same location ID filters to retrieve and save the item count. The
+						report displays the Institution name, location name, instance
+						count, holdings count and item count. The report displays near
+						real-time data, as it retrieves information collected on the day
+						before the request.
+
+						<h5>API’s</h5>
 						<ul>
-							<li>Institutional counts related to Instances, Holdings and
-								items.</li>
+							<li>/holdings-storage/holdings?query=(effectiveLocationId=locationID)</li>
+
+							<li>/inventory/items?query=(effectiveLocationId=locationID)</li>
+						</ul>
+
+
+						<h5>FOLIO DOC</h5>
+
+						<ul>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-inventory-storage/p/holdings-storage.html#holdings_storage_holdings_get">
+									https://s3.amazonaws.com/foliodocs/api/mod-inventory-storage/p/holdings-storage.html
+							</a></li>
+
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-inventory/p/inventory.html#inventory_items_get">
+									https://s3.amazonaws.com/foliodocs/api/mod-inventory/p/inventory.html
+							</a></li>
 						</ul>
 					</div>
 

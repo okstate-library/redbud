@@ -255,7 +255,7 @@
 				</h4>
 
 				<h5>
-					<i>#ScheduleTask</i>
+					<i>#ManualTask</i>
 				</h5>
 				<form method="get" th:action="@{/settings/rfidReportingProcess}">
 
@@ -367,14 +367,7 @@
 							</select>
 						</div>
 						<div class="col-xs-2">
-							<!-- <select class="form-control" id="locationDropDown"
-								th:name="locationDropDown">
-								<option th:value="0">Select Location</option>
-
-								<option th:each="location : ${locationList}"
-									th:value="${location.location_id}"
-									th:text="${location.location_name}"></option>
-							</select> -->
+							
 						</div>
 						<div class="col-xs-2">
 							<button type="submit" id="executeCirculationLogByLocation"

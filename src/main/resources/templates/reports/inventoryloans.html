@@ -19,13 +19,39 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h3 class="modal-title" id="exampleModalLabel">- Help</h3>
+						<h3 class="modal-title" id="exampleModalLabel">Inventory Loans Report- Help</h3>
 					</div>
 					<div class="modal-body">
 
+						This report includes two dropdowns—one for location (Oklahoma
+						State University Creative Studio and Laptop) and another for year.
+						Using the selected location and year, the system accesses the
+						circulation loans API to collect open loan records. For each
+						record, the user API is called using the user’s barcode to
+						retrieve user details. The report displays the loan type, user
+						information (primary identifier and name), item policy, due date,
+						and barcode.
+						<h5>API’s</h5>
 						<ul>
-							<li>Displays creative studios and laptop inventory loans.
-								Please select the location from the drop down.</li>
+							<li>/circulation/loans?query=(status.name==’open’ and
+								itemEffectiveLocationIdAtCheckOut==’location’ AND dueDate >=
+								‘year’-01-01' AND dueDate < 'year’-12-31')</li>
+
+							<li>/users?query=(barcode==barCode)</li>
+						</ul>
+
+
+						<h5>FOLIO DOC</h5>
+
+						<ul>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-circulation/p/circulation.html#circulation_loans_get">
+									https://s3.amazonaws.com/foliodocs/api/mod-circulation/p/circulation.html#circulation_loans_get
+							</a></li>
+
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-users/p/users.html">https://s3.amazonaws.com/foliodocs/api/mod-users/p/users.html
+							</a></li>
 						</ul>
 					</div>
 
@@ -50,8 +76,15 @@
 								<select class="form-control" name="locationDropDownList"
 									id="locationDropDownList">
 									<option th:value="0">Select Location</option>
-									<option value="creative_studio">Creative Studios</option>
-									<option value="laptops">Laptops</option>
+									<option value="creative_studio">OKS-OSU Creative Studios</option>
+									<option value="laptops">OKS-OSU Laptops</option>
+									<option value="osuit_tech_togo">OTL-OSUIT Tech To-Go</option>
+									<option value="osuit_lrc_106c">OTL-OSUIT LRC Room 106C</option>
+									<option value="osuit_ttg_cabinet1">OTL-OSUIT TTG Cabinet 1</option>
+									<option value="osuit_ttg_cabinet2">OTL-OSUIT TTG Cabinet 2</option>
+									<option value="osuit_ttg_case1">OTL-OSUIT TTG Case 1</option>
+									<option value="osuit_ttg_case2">OTL-OSUIT TTG Case 2</option>
+									
 								</select>
 
 
@@ -76,9 +109,11 @@
 
 								<select class="form-control" id="yearDropDown">
 									<option th:value="0">Select Year</option>
+									<option value="all">All Years</option>
 									<option value="2023">2023</option>
 									<option value="2024">2024</option>
 									<option value="2025">2025</option>
+									<option value="2026">2026</option>
 								</select>
 
 
@@ -121,6 +156,7 @@
 				class="table table-bordered table-hover table-striped">
 				<thead>
 					<tr class="datatable-heading">
+						<th></th>
 						<th></th>
 						<th></th>
 						<th></th>

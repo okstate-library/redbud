@@ -21,15 +21,39 @@
 				<div class="modal-content">
 					<div class="modal-header">
 						<h3 class="modal-title" id="exampleModalLabel">Overdue Open
-							Loans - Help</h3>
+							Loans Report - Help</h3>
 					</div>
 					<div class="modal-body">
+						Collects open loans based on selected locations using the API. The
+						user must first choose a location to proceed. For each open loan
+						item, an additional API call retrieves details such as the barcode
+						and title. User information is then obtained through the user
+						details API based on the borrower associated with the open loan.
+						<h5>API’s</h5>
+						<ul>
+							<li>/loan-storage/loans?query=(status.name==’open’ AND
+								checkoutServicePointId==‘servicePoint’)</li>
+
+							<li>/inventory/items/itemId</li>
+
+							<li>/users?query=(id==userId)</li>
+						</ul>
+						<h5>FOLIO DOC</h5>
 
 						<ul>
-							<li>Displays overdue fines with relevant to the library
-								patron.Please select the relevant institution from the drop down
-								to proceed.</li>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-circulation-storage/p/loan-storage.html l">
+									https://s3.amazonaws.com/foliodocs/api/mod-circulation-storage/p/loan-storage.html
+							</a></li>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-inventory/p/inventory.html">
+									https://s3.amazonaws.com/foliodocs/api/mod-inventory/p/inventory.html</a></li>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-users/p/users.html">
+									https://s3.amazonaws.com/foliodocs/api/mod-users/p/users.html </a></li>
+
 						</ul>
+
 					</div>
 
 				</div>
@@ -75,6 +99,7 @@
 				class="table table-bordered table-hover table-striped">
 				<thead>
 					<tr class="datatable-heading">
+						<th></th>
 						<th></th>
 						<th></th>
 						<th></th>

@@ -20,14 +20,38 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h3 class="modal-title" id="exampleModalLabel">Patron blocks
+						<h3 class="modal-title" id="exampleModalLabel">Patron blocks Report
 							- Help</h3>
 					</div>
 					<div class="modal-body">
 
+						First, the manual block API is used to collect all manual blocks.
+						These are then filtered by the institution ID captured from the
+						user interface. While iterating through the blocks, the system
+						retrieves user details via the user API. The report includes user
+						information (primary identifier, name, and email), along with the
+						block type and code. It also indicates whether the user can
+						borrow, renew, or place requests. When a report row is expanded,
+						the block description is displayed.
+
+						<h5>API’s</h5>
 						<ul>
-							<li>Displays the manually patron blocks with user details.Please select
-								the relevant institution from the drop down to proceed.</li>
+							<li>/manualblocks</li>
+
+							<li>/users?query=(id==userId)</li>
+						</ul>
+
+
+						<h5>FOLIO DOC</h5>
+
+						<ul>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-feesfines/p/manualblocks.html">https://s3.amazonaws.com/foliodocs/api/mod-feesfines/p/manualblocks.html
+							</a></li>
+
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-users/p/users.html">https://s3.amazonaws.com/foliodocs/api/mod-users/p/users.html
+							</a></li>
 						</ul>
 					</div>
 

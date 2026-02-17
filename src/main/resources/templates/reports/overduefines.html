@@ -20,15 +20,39 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h3 class="modal-title" id="exampleModalLabel">Overdue Fines
+						<h3 class="modal-title" id="exampleModalLabel">Overdue Fines Report
 							- Help</h3>
 					</div>
 					<div class="modal-body">
 
+						Based on the institution, the system displays open fee/fine
+						accounts. It first retrieves fee/fine details through an API, then
+						makes another API call to associate each fee/fine account with the
+						corresponding user. The report also includes a “Patron Block”
+						field, which indicates whether the user has any active blocks,
+						along with the user’s group and location information. When a user
+						expands a report row, the title of the overdue item is displayed.
+						<h5>API’s</h5>
+
 						<ul>
-							<li>Displays overdue fines with relevant to the library
-								patron.Please select the relevant institution from the drop down
-								to proceed.</li>
+							<li>/accounts?query=(status.name==’open’ and
+								feeFineOwner=institutionId)</li>
+							<li>/users?query=(id==userId)</li>
+							<li>/automated-patron-blocks/userId</li>
+						</ul>
+						<h5>FOLIO DOC</h5>
+
+						<ul>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-feesfines/p/accounts.html">
+									https://s3.amazonaws.com/foliodocs/api/mod-feesfines/p/accounts.html
+							</a></li>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-users/p/users.html">
+									https://s3.amazonaws.com/foliodocs/api/mod-users/p/users.html </a></li>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-patron-blocks/p/automated-patron-blocks.html">
+									https://s3.amazonaws.com/foliodocs/api/mod-patron-blocks/p/automated-patron-blocks.html</a></li>
 						</ul>
 					</div>
 

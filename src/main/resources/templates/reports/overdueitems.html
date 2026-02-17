@@ -25,10 +25,32 @@
 					</div>
 					<div class="modal-body">
 
+						Based on the institution, the system displays open fee/fine
+						accounts. It first retrieves fee/fine details through an API, then
+						makes another API call to associate each fee/fine account with the
+						corresponding user. User’s information also includes like id,
+						name, email, and phone number.
+						<h5>API’s</h5>
+
 						<ul>
-							<li>Displays overdue fines with relevant to the library
-								patron.Please select the relevant institution from the drop down
-								to proceed.</li>
+							<li>/accounts?query=(status.name==’open’ and
+								feeFineOwner=institutionid)</li>
+							<li>/users?query=id==userId</li>
+							<li>/automated-patron-blocks/userId</li>
+						</ul>
+						<h5>FOLIO DOC</h5>
+
+						<ul>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-feesfines/p/accounts.html">
+									https://s3.amazonaws.com/foliodocs/api/mod-feesfines/p/accounts.html
+							</a></li>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-users/p/users.html">
+									https://s3.amazonaws.com/foliodocs/api/mod-users/p/users.html </a></li>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-patron-blocks/p/automated-patron-blocks.html">
+									https://s3.amazonaws.com/foliodocs/api/mod-patron-blocks/p/automated-patron-blocks.html</a></li>
 						</ul>
 					</div>
 
@@ -75,6 +97,7 @@
 				class="table table-bordered table-hover table-striped">
 				<thead>
 					<tr class="datatable-heading">
+						<th></th>
 						<th></th>
 						<th></th>
 						<th></th>

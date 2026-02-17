@@ -26,11 +26,23 @@
 					<div class="modal-body">
 
 						<ul>
-							<li>Displays circulation loan records with relevant to the
-								library items.Please select the relevant location from the drop
-								downs and select from and to date (last loan date duration) to
-								proceed.</li>
+							<li>This report displays closed loans OR open loans (not
+								both). Report columns include the location, barcode, call
+								number, material type, title, last loan date, total number of
+								renewals in folio, total number of loans in Folio, total number
+								of loans in Alma. It can be filtered by location, date range,
+								material type, and items with no circulation. Examples of when
+								you might use this report:</li>
 						</ul>
+						<ol>
+							<li>To view item loan history in FOLIO and in Alma</li>
+							<li>To compile a report of print circulation during the
+								previous fiscal year (this requires running the report twice,
+								once for open loans and once for closed loans)</li>
+							<li>To view items that have never circulated</li>
+							<li>To view the last date that items were checked out in a
+								certain location</li>
+						</ol>
 					</div>
 
 				</div>
@@ -228,7 +240,8 @@
 
 				<div class="form-group">
 					<div class="form-group">
-						<label class="cols-sm-2 control-label">Only empty dates</label>
+						<label class="cols-sm-2 control-label">Only items with no
+							circulation</label>
 						<div class="cols-sm-10">
 							<div class="input-group">
 

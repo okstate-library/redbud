@@ -9,7 +9,7 @@
 	<div class="row">
 		<div class="col-lg-12">
 			<h1 class="page-header">
-				Circulation Loans
+				Open Loans
 				<button type="button" class="btn btn-info" data-bs-toggle="modal"
 					id="helpButton" data-bs-target="#exampleModal">?</button>
 			</h1>
@@ -20,17 +20,78 @@
 			<div class="modal-dialog">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h3 class="modal-title" id="exampleModalLabel">Circulation
-							Loans - Help</h3>
+						<h3 class="modal-title" id="exampleModalLabel">Open Loans -
+							Help</h3>
 					</div>
 					<div class="modal-body">
 
 						<ul>
-							<li>Displays circulation loan records with relevant to the
-								library items.Please select the relevant location from the drop
-								downs and select from and to date (loan date duration) to
-								proceed.</li>
+							<li>This report displays open loans only. Report columns
+								include the location, barcode, call number, material type,
+								title, date of the loan action, and the loan action (checked
+								out, renewed, override, checked in).</li>
+							<li>This report can be used to see what items in a
+								particular location or material type are currently checked out.
+								It can be filtered by location, date range, material type, and
+								loan action.</li>
+							<li>This process is run include in the daily process. By
+								accessing the API to get the open loans based on the location
+								within certain time frame. The time frame is defined as, if the
+								data is accessed through the daily process, the start time is
+								set to 00:00:00 of the previous day, and the end time is
+								23:59:59 of the same day.</li>
+
 						</ul>
+						<h5>API’s</h5>
+
+						<ul>
+							<li>/loan-storage/loans?query=(status.name==’open’ and
+								returnDate>=’ startDateTime’AND returnDate &lt;=’endDateTime + " and
+								itemEffectiveLocationIdAtCheckOut==’locationId’)</li>
+						</ul>
+
+						<h5>Operations</h5>
+
+						<ul>
+							<li>While processing the loan data, the system verifies
+								whether the loaned item exists in the database, performs the
+								necessary operations, and saves the loan details in the database
+								for reporting purposes.</li>
+							<li>In the application, the “Operations” menu includes a set
+								of processes, among which the “Circulation Loan” section
+								contains multiple processes as listed below.</li>
+						</ul>
+
+						<ol>
+							<li><b>Manual Process for getting the Circulation loan
+									records to database.</b> <br />The above operation is performed
+								for all locations without considering any specific time frame.</li>
+
+							<li><b>Manual Process for getting the Circulation Loan
+									records to database for a specific location.</b> <br />The above
+								operation is performed without considering any specific time
+								frame or location.</li>
+
+							<li><b>Manual Process for getting the Circulation loan
+									records to database based on previous day records.</b> <br />
+								Simulating the daily process, the above operation is performed
+								for all locations based on the data from the previous day.</li>
+						</ol>
+
+						<h5>FOLIO DOC</h5>
+
+						<!-- <ul>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-feesfines/p/accounts.html">
+									https://s3.amazonaws.com/foliodocs/api/mod-feesfines/p/accounts.html
+							</a></li>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-users/p/users.html">
+									https://s3.amazonaws.com/foliodocs/api/mod-users/p/users.html </a></li>
+							<li><a
+								href="https://s3.amazonaws.com/foliodocs/api/mod-patron-blocks/p/automated-patron-blocks.html">
+									https://s3.amazonaws.com/foliodocs/api/mod-patron-blocks/p/automated-patron-blocks.html</a></li>
+						</ul> -->
 					</div>
 
 				</div>
@@ -314,7 +375,8 @@
 	$("#load-dt").click(
 			function() {
 
-				if (institutionDropDown3.value == 0 && campusDropDown3.value == 0
+				if (institutionDropDown3.value == 0
+						&& campusDropDown3.value == 0
 						&& libraryDropDown3.value == 0
 						&& locationDropDown3.value == 0) {
 					alert("Please select a value from at least one dropdown.");
