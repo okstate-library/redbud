@@ -3,6 +3,9 @@ package com.okstatelibrary.redbud.operations;
 import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.okstatelibrary.redbud.entity.CsvFileModel;
 import com.okstatelibrary.redbud.folio.entity.Metadata;
 import com.okstatelibrary.redbud.service.external.EmailService;
@@ -46,7 +49,21 @@ public class MainProcess {
 			break;
 
 		}
+	}
 
+	public static void printJson(Object object) {
+
+		ObjectMapper mapper = new ObjectMapper();
+		mapper.enable(SerializationFeature.INDENT_OUTPUT);
+
+		Object obj = object;
+
+		try {
+			String json = mapper.writeValueAsString(obj);
+			System.out.println(json);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public boolean isStringNullOrEmpty(String str) {

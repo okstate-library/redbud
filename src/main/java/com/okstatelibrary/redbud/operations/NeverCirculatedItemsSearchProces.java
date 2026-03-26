@@ -45,7 +45,7 @@ public class NeverCirculatedItemsSearchProces extends MainProcess {
 
 				System.out.println("location " + i + " ## " + location.location_id + " ## " + location.location);
 
-				ArrayList<Item> items = folioService.getItemsByLocationId(location.location_id, location.location);
+				ArrayList<Item> items = folioService.getItemsByLocationId(location.location_id, location.location , "");
 
 				int itemCount = 0;
 

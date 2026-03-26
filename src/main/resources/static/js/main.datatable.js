@@ -267,11 +267,15 @@ function callOverdueOpenLoansReportAjaxRequest()
 							"targets" : 5
 						},
 						{
-							title : "Email",
+							title : "User group",
 							"targets" : 6
+						},
+						{
+							title : "Email",
+							"targets" : 7
 						}, {
 							title : "Phone",
-							"targets" : 7
+							"targets" : 8
 						} ],
 						columns : [ {
 							"data" : "location"
@@ -282,9 +286,11 @@ function callOverdueOpenLoansReportAjaxRequest()
 						}, {
 							"data" : "date"
 						}, {
-							"data" : "identifier",
+							"data" : "identifier"
 						}, {
 							"data" : "name"
+						}, {
+							"data" : "group"
 						}, {
 							"data" : "email"
 						}, {
@@ -625,13 +631,17 @@ function callOverdueItemsReportAjaxRequest() {
 								title : "User",
 								"targets" : 5
 							},
+							 {
+								title : "Group",
+								"targets" : 6
+							},
 
 							{
 								title : "Email",
-								"targets" : 6
+								"targets" : 7
 							}, {
 								title : "Phone",
-								"targets" : 7
+								"targets" : 8
 							} ],
 							columns : [ {
 								"data" : "location"
@@ -646,6 +656,8 @@ function callOverdueItemsReportAjaxRequest() {
 							}, {
 								"data" : "name"
 							}, {
+								"data" : "group"
+							},{
 								"data" : "email"
 							}, {
 								"data" : "phone"
@@ -716,14 +728,18 @@ function callInventoryLoansReportAjaxRequest() {
 							"width" : "10px",
 							title : "Item Policy",
 							"targets" : 3
-						}, {
+						},{
 							"width" : "10px",
-							title : "Due Date",
+							title : "Item Status",
 							"targets" : 4
 						}, {
 							"width" : "10px",
-							title : "Barcode",
+							title : "Due Date",
 							"targets" : 5
+						}, {
+							"width" : "10px",
+							title : "Barcode",
+							"targets" : 6
 						} ],
 						columns : [
 
@@ -736,9 +752,11 @@ function callInventoryLoansReportAjaxRequest() {
 							render : getFullName,
 						}, {
 							"data" : "loanPolicy.name"
-						}, {
+						},{
+							"data" : "item.status.name"
+						},  {
 							"data" : "dueDate",
-							render : getShortDate,
+							render : getShortDateWithTime,
 						}, {
 							"data" : "item.barcode"
 						} ],
@@ -1147,6 +1165,17 @@ function getBooleanImage(data, type, full, meta) {
 	} else {
 		return '<i class="fa fa-times" aria-hidden="true"/>';
 	}
+}
+
+function getShortDateWithTime(data) {
+	return new Date(data).toLocaleDateString('en-US', {
+		  year: 'numeric',
+		  month: '2-digit',
+		  day: '2-digit',
+		  hour: '2-digit',
+		  minute: '2-digit',
+		  hour12: true
+		});
 }
 
 function getShortDate(data) {

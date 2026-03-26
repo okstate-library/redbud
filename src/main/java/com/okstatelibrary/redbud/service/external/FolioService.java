@@ -31,6 +31,7 @@ import com.okstatelibrary.redbud.folio.entity.instance.InstanceFormat;
 import com.okstatelibrary.redbud.folio.entity.instance.InstanceType;
 import com.okstatelibrary.redbud.folio.entity.inventory.Inventory;
 import com.okstatelibrary.redbud.folio.entity.inventory.Item;
+import com.okstatelibrary.redbud.folio.entity.inventory.Item4Rfid;
 import com.okstatelibrary.redbud.folio.entity.loan.Loan;
 import com.okstatelibrary.redbud.folio.entity.loan.LoanRoot;
 import com.okstatelibrary.redbud.folio.entity.manualblock.ManualBlock;
@@ -58,6 +59,8 @@ public class FolioService extends FolioServiceToken {
 
 		headers.add("x-okapi-token", FolioServiceToken.authToken);
 
+		headers.add("Content-Type", "application/json");
+
 		return headers;
 
 	}
@@ -81,7 +84,9 @@ public class FolioService extends FolioServiceToken {
 
 			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
 
-			return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
+			String returnCode = responseEntity.getStatusCode().toString();
+
+			return returnCode.equals("204 NO_CONTENT") ? true : false;
 
 		} catch (Exception e) {
 
@@ -115,13 +120,13 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
-	public ArrayList<Item> getItemsByLocationId(String locationID, String locationName)
+	public ArrayList<Item> getItemsByLocationId(String locationID, String locationName, String status)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
 		try {
 
 			String mainUrl = AppSystemProperties.FolioURL + "inventory/items?limit=%s&query=(effectiveLocationId=="
-					+ locationID + ")sortby id";
+					+ locationID + " and (enumeration<>\"\" OR volume<>\"\")  )sortby id";
 
 			// System.out.println("mainUrl - " + String.format(mainUrl, "0"));
 
@@ -132,46 +137,61 @@ public class FolioService extends FolioServiceToken {
 
 			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
+			int totalCount = (int) response.getBody().totalRecords;
+
+			System.out.println(status + "," + totalCount);
+
 			System.out.println("totalIterations" + totalIterations);
 
-			String fileName = locationName + ".csv";
+			if (totalCount > 0) {
 
-			try (FileWriter writer = new FileWriter(fileName)) {
+				String fileName = locationName + "_" + status + ".csv";
 
-				writer.append("ID#CallNUmber#BarCode#Title#EffectiveLocation#PermanentLocation" + "\n");
+				try (FileWriter writer = new FileWriter(fileName)) {
 
-				for (int iterations = 0; iterations < totalIterations; iterations++) {
+					writer.append("ID#CallNUmber#BarCode#Title#EffectiveLocation#PermanentLocation#volume#enumeration"
+							+ "\n");
 
-					int offset = iterations * apiRecordlimit;
+					for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-					String url = String.format(mainUrl, "100") + "&offset=" + offset;
+						int offset = iterations * apiRecordlimit;
 
-					// System.out.println("url - " + url);
+						String url = String.format(mainUrl, "100") + "&offset=" + offset;
 
-					System.out.println("iterations - " + iterations);
+						// System.out.println("url - " + url);
 
-					response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), ItemRoot.class);
+						System.out.println("iterations - " + iterations);
 
-					// items.addAll(response.getBody().items);
+						response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), ItemRoot.class);
 
-					for (Item item : response.getBody().items) {
+						// items.addAll(response.getBody().items);
+
+						for (Item item : response.getBody().items) {
 
 //						int loanCount = this.getLoanCountByItemId(item.id);
 //
 //						if (loanCount == 0 && item.lastCheckIn == null) {
 
-						// Item item folioService.getItemByItemId(item.id);
+							// Item item folioService.getItemByItemId(item.id);
 
-						if (item != null) {
-														
-							writer.append(Objects.toString(item.id, "") + "#" +
-								    Objects.toString(item.callNumber, "") + "#" +
-								    Objects.toString(item.barcode, "") + "#" +
-								    Objects.toString(item.title.replace(",", ";"), "") + "#" +
-								    (item.effectiveLocation != null ? Objects.toString(item.effectiveLocation.name, "") : "") + "#" +
-								    (item.permanentLocation != null ? Objects.toString(item.permanentLocation.name, "") : "") + "\n");
-						}
-						// }
+							if (item != null) {
+
+								writer.append(Objects.toString(item.id, "") + "#"
+										+ Objects.toString(item.callNumber, "") + "#"
+										+ Objects.toString(item.barcode, "") + "#"
+										+ Objects.toString(item.title.replace(",", ";"), "") + "#"
+										+ (item.effectiveLocation != null
+												? Objects.toString(item.effectiveLocation.name, "")
+												: "")
+										+ "#"
+										+ (item.permanentLocation != null
+												? Objects.toString(item.permanentLocation.name, "")
+												: "")
+										+ "#" + (item.volume != null ? Objects.toString(item.volume, "") : "") + "#"
+										+ (item.enumeration != null ? Objects.toString(item.enumeration, "") : "")
+										+ "\n");
+							}
+							// }
 
 //					if (itemCount % 1000 == 0) {
 //						System.out.println("Item count " + itemCount);
@@ -179,14 +199,16 @@ public class FolioService extends FolioServiceToken {
 //
 //					itemCount++;
 
+						}
+
+						Thread.sleep(2000);
+
 					}
 
-					Thread.sleep(2000);
-
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 
-			} catch (IOException e) {
-				e.printStackTrace();
 			}
 			return null;
 
@@ -733,16 +755,17 @@ public class FolioService extends FolioServiceToken {
 
 	}
 
-	public ArrayList<HoldingsRecord> getInventoryHoldings(String locationID, String startDateTime, String endDateTime)
+	public ArrayList<HoldingsRecord> getInventoryHoldings(String locationID)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 		try {
 
 			String mainUrl = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId= "
 					+ locationID
-					+ " AND instanceFormatIds <> \"f5e8210f-7640-459b-a71f-552567f92369\" AND staffSuppress==false "
+					// + " AND staffSuppress==false " //AND instanceFormatIds <>
+					// \"f5e8210f-7640-459b-a71f-552567f92369\"
 					+ " )&limit=";
 
-			System.out.println("mainUrl - " + mainUrl);
+			System.out.println("mainUrl - " + mainUrl + zeroRecordCount);
 			// "AND metadata.updatedDate >= " + startDateTime +
 
 			ResponseEntity<HoldingRoot> response = restTemplate.exchange(mainUrl + zeroRecordCount, HttpMethod.GET,
@@ -785,6 +808,8 @@ public class FolioService extends FolioServiceToken {
 
 			String url = AppSystemProperties.FolioURL + "inventory/instances?query=(id=" + instanceId + ")";
 
+			//System.out.println("url - " + url);
+
 			ResponseEntity<InstanceRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					InstanceRoot.class);
 
@@ -794,16 +819,19 @@ public class FolioService extends FolioServiceToken {
 
 			for (Instance instance : Instance) {
 
-				for (Identifier identifier : instance.identifiers) {
+				if (!instance.staffSuppress) {
 
-					String originalText = identifier.value;
+					for (Identifier identifier : instance.identifiers) {
 
-					if (originalText.toLowerCase().contains("(ocolc)")
-							&& identifier.identifierTypeId.equals("439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef")) {
+						String originalText = identifier.value;
 
-						oclcNumbers.add(originalText.replaceAll("\\D+", ""));
+						if (originalText.toLowerCase().contains("(ocolc)")
+								&& identifier.identifierTypeId.equals("439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef")) {
+
+							oclcNumbers.add(originalText.replaceAll("\\D+", ""));
+						}
+
 					}
-
 				}
 			}
 
@@ -939,6 +967,30 @@ public class FolioService extends FolioServiceToken {
 	}
 
 	public boolean updateItem(Item payload) {
+
+		HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "inventory/items/" + payload.id;
+
+			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
+
+			return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
+
+		} catch (Exception e) {
+
+			System.out.println("Error update Item - " + payload.id);
+
+			e.getMessage();
+
+			e.printStackTrace();
+
+			return false;
+		}
+	}
+
+	public boolean updateItem4Rfid(Item4Rfid payload) {
 
 		HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
 
@@ -1553,8 +1605,13 @@ public class FolioService extends FolioServiceToken {
 		try {
 
 			String url = AppSystemProperties.FolioURL + "circulation/loans?limit=1000&query=(status.name==\"open\" and "
-					+ "itemEffectiveLocationIdAtCheckOut==\"" + location + "\" AND dueDate >= '" + year + "-01-01' \n"
-					+ "AND dueDate < '" + year + "-12-31')";
+					+ "itemEffectiveLocationIdAtCheckOut==\"" + location + "\"";
+
+			if (!year.contentEquals("all")) {
+				url += "AND dueDate >= '" + year + "-01-01' \n" + "AND dueDate < '" + year + "-12-31')";
+			} else {
+				url += " )";
+			}
 
 			ResponseEntity<Inventory> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					Inventory.class);

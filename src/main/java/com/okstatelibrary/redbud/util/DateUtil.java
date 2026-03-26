@@ -76,6 +76,12 @@ public class DateUtil {
 		return new java.sql.Date(millis);
 	}
 
+	public static String getTodayDateInString() {
+		long millis = System.currentTimeMillis();
+
+		return new java.sql.Date(millis).toString();
+	}
+	
 	public static int getCurrentHour() {
 
 		Calendar rightNow = Calendar.getInstance();
@@ -228,6 +234,6 @@ public class DateUtil {
 		} catch (ParseException e) {
 			return false;
 		}
-	}
-
+	}	
+	
 }

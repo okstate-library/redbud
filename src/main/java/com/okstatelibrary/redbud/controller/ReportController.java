@@ -42,8 +42,11 @@ import org.springframework.web.client.RestClientException;
 import java.util.stream.Collectors;
 import java.io.IOException;
 import java.security.Principal;
+import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Controller
@@ -84,6 +87,18 @@ public class ReportController {
 	private InstitutionRecordService institutionRecordService;
 
 	private String notApplicable = "N/A";
+
+	private static Map<String, String> inventoryLoanLocations = new HashMap<String, String>() {
+		{
+			put("laptops", "129dec9a-10f5-4ac2-9228-5d091e817116");
+			put("osuit_tech_togo", "b7cb01f1-2c47-4627-8501-427f28279e1a");
+			put("osuit_lrc_106c", "82475a8f-f493-4cfa-ba26-00009a81b685");
+			put("osuit_ttg_cabinet1", "4c70febc-f37c-4a63-8fdd-b29dcb9435e7");
+			put("osuit_ttg_cabinet2", "336f5f78-5bd8-4935-b3cb-8a2d2c9bed15");
+			put("osuit_ttg_case1", "9be3483d-0f0a-4bdd-9982-683e2fb7da85");
+			put("osuit_ttg_case2", "2c06d8cb-aaf3-4821-838d-ac2f5754e7fb");
+		}
+	};
 
 	@GetMapping("/overduefines")
 	private String getOverdueFines(Principal principal, Model model) throws IOException {
@@ -158,16 +173,12 @@ public class ReportController {
 
 	}
 
-	@GetMapping("/circulationloan")
+	@GetMapping("/openloans")
 	public String getCirculationLoan(Principal principal, Model model) throws IOException {
 
 		User user = userService.findByUsername(principal.getName());
 
 		model.addAttribute("user", user);
-
-//		CirculationLogProcess process = new CirculationLogProcess();
-//		
-//		process.maanipulate(circulationLogService);
 
 		model.addAttribute("institutionList", institutionService.getInstitutionList());
 
@@ -179,7 +190,7 @@ public class ReportController {
 
 		model.addAttribute("materialTypeList", circulationLogService.getDistinctMaterialTypes());
 
-		return "reports/circulationloan";
+		return "reports/openloans";
 
 	}
 
@@ -197,9 +208,10 @@ public class ReportController {
 
 	@RequestMapping(value = "/overdueOpenLoans/data", method = RequestMethod.GET)
 	private @ResponseBody List<FineAndFeesObject> overdueOpenLoansData(
-			@RequestParam(required = false) String servicepointid) throws RestClientException, IOException {
+			@RequestParam(required = false) String servicepointid)
+			throws RestClientException, IOException, ParseException {
 
-		System.out.print("dsadsadsadsad");
+		System.out.println("dsadsadsadsad");
 
 		List<PatronGroup> groupList = groupService.getGroupList();
 
@@ -304,9 +316,7 @@ public class ReportController {
 
 	@RequestMapping(value = "/overdueItems/data", method = RequestMethod.GET)
 	private @ResponseBody List<FineAndFeesObject> overDueItemsData(@RequestParam(required = false) String feeFineOwner)
-			throws RestClientException, IOException {
-
-		// System.out.print("DAmith ");
+			throws RestClientException, IOException, ParseException {
 
 		List<PatronGroup> groupList = groupService.getGroupList();
 
@@ -397,7 +407,7 @@ public class ReportController {
 
 	@RequestMapping(value = "/overdueFines/data", method = RequestMethod.GET)
 	private @ResponseBody List<FineAndFeesObject> overDueFinesData(@RequestParam(required = false) String feeFineOwner)
-			throws RestClientException, IOException {
+			throws RestClientException, IOException, ParseException {
 
 		List<PatronGroup> groupList = groupService.getGroupList();
 
@@ -513,9 +523,13 @@ public class ReportController {
 
 			}
 
-		} else if (location.equalsIgnoreCase("laptops")) {
+		} else { // if (location.equalsIgnoreCase("laptops")) {
 
-			location = "129dec9a-10f5-4ac2-9228-5d091e817116";
+			location = inventoryLoanLocations.get(location.toLowerCase());
+
+			System.out.println("location :" + location);
+
+			// location = "129dec9a-10f5-4ac2-9228-5d091e817116";
 
 			Inventory inventory = folioService.getInventoryLoanDetails(location, year);
 

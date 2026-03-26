@@ -40,9 +40,6 @@ public class CirculationLogProcess extends MainProcess {
 
 		printScreen(timePeriod, Constants.ErrorLevel.INFO);
 
-		// Get all the locations
-		List<Location> locations = locationService.getLocationList();
-
 		String endDateTime = DateUtil.getYesterdayDate(false);
 		String startDateTime = DateUtil.getYesterdayDate(true);
 
@@ -60,6 +57,9 @@ public class CirculationLogProcess extends MainProcess {
 
 			// Run the loan execution for all locations.
 
+			// Get all the locations
+			List<Location> locations = locationService.getLocationList();
+
 			printScreen(" Location is 0  ----------", Constants.ErrorLevel.INFO);
 
 			for (Location location : locations) {
@@ -72,7 +72,7 @@ public class CirculationLogProcess extends MainProcess {
 			// Selecting a specific locations from related to library id and do the
 			// operations.
 
-			locations = locationService.getLocationListByLibraryId(libraryId);
+			List<Location> locations = locationService.getLocationListByLibraryId(libraryId);
 
 			for (Location location : locations) {
 

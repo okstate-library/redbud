@@ -1,21 +1,11 @@
 package com.okstatelibrary.redbud.folio.entity.inventory;
 
 import java.util.ArrayList;
-import java.util.Date;
 
 import com.okstatelibrary.redbud.folio.entity.Metadata;
 import com.okstatelibrary.redbud.folio.entity.Status;
 
-public class Item {
-	public String itemId;
-	public String userId;
-	public String instanceId;
-	public Date loanDate;
-	public Date dueDate;
-
-	public PermanentLocation permanentLocation;
-
-	public HoldingsLocation holdingsLocation;
+public class Item4Rfid {
 
 	public String id;
 	public String _version;
@@ -30,8 +20,6 @@ public class Item {
 	public String holdingsRecordId;
 	public String barcode;
 	public String itemLevelCallNumber;
-	public String volume;
-	public String enumeration;
 	public String copyNumber;
 	public ArrayList<Note> notes;
 	public ArrayList<Object> circulationNotes;
@@ -47,29 +35,5 @@ public class Item {
 	public String effectiveShelvingOrder;
 	public boolean isBoundWith;
 	public EffectiveLocation effectiveLocation;
-	public LastCheckIn lastCheckIn;
 
-	public String getContributorNames() {
-
-		StringBuilder result = new StringBuilder();
-
-		if (contributorNames != null) {
-
-			for (int i = 0; i < contributorNames.size(); i++) {
-
-				result.append(contributorNames.get(i).name);
-
-				if (i < contributorNames.size() - 1) {
-
-					result.append(", ");
-				}
-
-			}
-
-			return result.toString();
-		}
-
-		return "N/A";
-
-	}
 }

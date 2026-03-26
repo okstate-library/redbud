@@ -64,6 +64,8 @@ public class OCLCService extends OCLCServiceToken {
 
 			String url = mainOCLCUrl + "current" + queryString.trim();
 
+			//System.out.println("url :  " + url);
+
 			// Execute the request
 			HttpResponse response = httpClient.execute(getHttpGet(url));
 
@@ -84,6 +86,8 @@ public class OCLCService extends OCLCServiceToken {
 
 					Gson gson = new Gson();
 
+					//System.out.println("result :  " + result);
+					
 					if (result.toString().contains("Unauthorized")) {
 
 						System.out.println("oclcNumber :  " + oclcNumbers + " result : " + result.toString());
@@ -163,7 +167,5 @@ public class OCLCService extends OCLCServiceToken {
 		return null;
 
 	}
-
-
 
 }

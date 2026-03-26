@@ -80,7 +80,7 @@ public class InfrastructureSetupProcess extends MainProcess {
 
 	}
 
-	private void setupLocation(LocationService locationService) {
+	void setupLocation(LocationService locationService) {
 
 		ArrayList<com.okstatelibrary.redbud.folio.entity.location.Location> folioLocations = folioService
 				.getLocations();
@@ -126,7 +126,7 @@ public class InfrastructureSetupProcess extends MainProcess {
 
 	}
 
-	private void setupLibrary(LibraryService libraryService) {
+	void setupLibrary(LibraryService libraryService) {
 
 		ArrayList<com.okstatelibrary.redbud.folio.entity.library.Library> folioCampuses = folioService.getLibraries();
 
@@ -169,7 +169,7 @@ public class InfrastructureSetupProcess extends MainProcess {
 
 	}
 
-	private void setupCampus(CampusService campusService) {
+	void setupCampus(CampusService campusService) {
 
 		ArrayList<com.okstatelibrary.redbud.folio.entity.campus.Campus> folioCampuses = folioService.getCampuses();
 
@@ -211,7 +211,7 @@ public class InfrastructureSetupProcess extends MainProcess {
 		}
 	}
 
-	private void setupInstitution(InstitutionService institutionService) {
+	void setupInstitution(InstitutionService institutionService) {
 
 		ArrayList<com.okstatelibrary.redbud.folio.entity.institution.Institution> folioInstitutions = folioService
 				.getInstitutions();
@@ -253,7 +253,7 @@ public class InfrastructureSetupProcess extends MainProcess {
 		}
 	}
 
-	private void setupServicePoint(ServicePointService servicePointService) {
+	void setupServicePoint(ServicePointService servicePointService) {
 
 		ArrayList<com.okstatelibrary.redbud.folio.entity.servicepoint.ServicePoint> folioServicePoints = folioService
 				.getServicePoints();

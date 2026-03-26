@@ -115,58 +115,7 @@ public class CirculationLoanProcess extends MainProcess {
 		// lines.toString());
 
 	}
-
-	private void executeClosedLoans(String endDateTime, String startDateTime, String location, boolean isDailyProcess)
-			throws JsonParseException, JsonMappingException, IOException {
-
-		ArrayList<Loan> closedLocationLoans = folioService.getClosedLoansByLocation(location, startDateTime,
-				endDateTime, isDailyProcess);
-
-		if (closedLocationLoans != null && closedLocationLoans.size() > 0) {
-
-			printScreen(" Close loan count  ----------" + closedLocationLoans.size(), Constants.ErrorLevel.INFO);
-
-			for (Loan loan : closedLocationLoans) {
-
-				CirculationLog selectedCirculationLog = circulationLogService.getCirculationLogByItemId(loan.itemId);
-
-				if (selectedCirculationLog != null) {
-
-					CirculationLoan circulationLoan = this.circulationLoanService.getCirculationLoanByRowId(loan.id);
-
-					if (circulationLoan == null) {
-
-						printScreen(" loan.action -- " + loan.action, Constants.ErrorLevel.ERROR);
-
-						saveCirculationLoan(loan, selectedCirculationLog, false);
-
-						printScreen(" Loan ID Closed Loan For new record  " + loan.id + " -- " + loan.action,
-								Constants.ErrorLevel.ERROR);
-					}
-
-					// Already exists record in the table.
-
-				} else {
-
-					selectedCirculationLog = saveCirculationLog(loan, false);
-
-					if (selectedCirculationLog != null) {
-
-						if (openLoanActionsList.contains(loan.action)) {
-
-							saveCirculationLoan(loan, selectedCirculationLog, true);
-
-							printScreen(" Loan ID Open Loan For new record  " + loan.id + " -- " + loan.action,
-									Constants.ErrorLevel.ERROR);
-
-						}
-
-					}
-				}
-			}
-		}
-	}
-
+	
 	private int executeOpenLoans(Location location, String startDateTime, String endDateTime, boolean isDailyProcess)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 

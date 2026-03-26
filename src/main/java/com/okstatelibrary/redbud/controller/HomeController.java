@@ -31,7 +31,7 @@ public class HomeController {
 	@RequestMapping("/")
 	public String index() {
 
-		System.out.println(appSystems.toString());
+		System.out.println("appSystems" + appSystems.toString());
 
 		return "redirect:/index";
 	}

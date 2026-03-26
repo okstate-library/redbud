@@ -32,7 +32,7 @@ public class Instance {
 //    public ArrayList<Note> notes;
 //    public String modeOfIssuanceId;
 //    public boolean previouslyHeld;
-//    public boolean staffSuppress;
+    public boolean staffSuppress;
 	public boolean discoverySuppress;
 //    public ArrayList<Object> statisticalCodeIds;
 //    public Date statusUpdatedDate;

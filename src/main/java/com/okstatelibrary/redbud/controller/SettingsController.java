@@ -596,11 +596,11 @@ public class SettingsController {
 
 							oprocess.manipulate(locationService, false, libraryDropDown);
 
-							CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.idle);
+							CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location, CacheMap.idle);
 
 						} catch (RestClientException | IOException e) {
 
-							CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction,
+							CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location,
 									CacheMap.error + e.getMessage());
 
 							e.printStackTrace();
@@ -612,11 +612,47 @@ public class SettingsController {
 				});
 
 				myThread.start();
+				
+				System.out.println("libraryDropDown -- " + libraryDropDown);
 
 			} catch (Exception e1) {
 				LOG.error(e1.getMessage());
 			}
 		} else {
+			
+			
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.running);
+
+					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction,
+							CacheMap.running);
+
+					CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
+
+					try {
+
+						oprocess.manipulate(locationService, false, "0");
+
+						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.idle);
+
+					} catch (RestClientException | IOException e) {
+
+						CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction,
+								CacheMap.error + e.getMessage());
+
+						e.printStackTrace();
+					}
+
+					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction,
+							CacheMap.get(CacheMap.process_CirculationLog_API_Data_Extraction));
+				}
+			});
+
+			myThread.start();
+							
 			System.out.println("libraryDropDown -- " + libraryDropDown);
 		}
 

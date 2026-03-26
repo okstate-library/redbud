@@ -11,13 +11,16 @@ public class Loan {
 	public String itemId;
 	public String itemEffectiveLocationIdAtCheckOut;
 	public Status status;
-	private String loanDate;
+	public String loanDate;
 	public String dueDate;
 	public String action;
-	public int renewalCount;
+
 	public String actionComment;
+	public int renewalCount;
+
 	public String loanPolicyId;
 	public String checkoutServicePointId;
+	public boolean isDcb;
 	public String overdueFinePolicyId;
 	public String lostItemPolicyId;
 	public Metadata metadata;
@@ -45,7 +48,7 @@ public class Loan {
 	 * @param loanDate the loanDate to set
 	 */
 	public void setLoanDate(String loanDate) {
-		this.loanDate = loanDate.toString();
+		this.loanDate = loanDate;
 	}
 
 	/**
@@ -59,6 +62,6 @@ public class Loan {
 	 * @param dueDate the dueDate to set
 	 */
 	public void setDueDate(String dueDate) {
-		this.dueDate = dueDate.toString();
+		this.dueDate = dueDate;
 	}
 }

@@ -2,11 +2,17 @@ package com.okstatelibrary.redbud.operations;
 
 import java.io.IOException;
 import java.text.ParseException;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
+
 import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.okstatelibrary.redbud.folio.entity.*;
 import com.okstatelibrary.redbud.folio.entity.loan.Loan;
 import com.okstatelibrary.redbud.folio.entity.request.Request;
@@ -45,100 +51,86 @@ public class LoanDueDateUpdateProcess extends MainProcess {
 
 // 		Code  segment 1 - User details
 
-		// String userId = "77615dd3-f540-5392-8de7-80f96f0c06fa"; // Known user id
+		String userId = "38aee6d1-15a0-41ae-be50-d4286634770e"; // "e5483ea8-6ad8-5602-8365-7abf255a0825"; // Known user
+																// id
 
-		// FolioUser user = folioService.getUsersById(userId);
+		FolioUser user = folioService.getUsersById(userId);
 
-		for (FolioUser user : userRoot.users) {
+		// for (FolioUser user : userRoot.users) {
 
-			// System.out.println(" Username " + user.username);
+		// System.out.println(" Username " + user.username);
 
-			ArrayList<Loan> loans = folioService.getLoansByUser(user.id);
+		ArrayList<Loan> loans = folioService.getLoansByUser(user.id);
 
-			// System.out.println("Loaan Count- " + loans.size());
+		// System.out.println("Loaan Count- " + loans.size());
 
-			ArrayList<Loan> sortedLoans = new ArrayList<Loan>();
+		ArrayList<Loan> sortedLoans = new ArrayList<Loan>();
 
-			for (Loan loan : loans) {
-//
-				// System.out.println("Loaan due date - " + loan.getDueDate());
+		for (Loan loan : loans) {
 
-				// System.out.println("Loaan due date - " + loan.getDueDate());
-				String dateTime = DateUtil.getShortDate(loan.getDueDate());
+			if (loan.loanPolicyId.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")//
+					&& !loan.itemEffectiveLocationIdAtCheckOut.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")) {
 
-				// LocalDateTime dateTime = LocalDateTime.parse(loan.getDueDate());
+				boolean isIn = false;
 
-//				System.out.println("Loan due date - " + loan.getDueDate() + "  " + user.username + "  "
-//						+ loan.loanPolicyId + "  " + loan.itemEffectiveLocationIdAtCheckOut + loan.item.title);
+				for (Request request : requests) {
 
-				if (!loan.item.materialType.name.equals("equipment")
-						&& loan.loanPolicyId.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")//
-						&& !loan.itemEffectiveLocationIdAtCheckOut.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")) {
-					// && dateTime.equals("2025-03-01")) { // remove checking the loan due date
-
-					boolean isIn = false;
-
-					for (Request request : requests) {
-
-						if (request.itemId.equals(loan.itemId)) {
-							isIn = true;
-						}
+					if (request.itemId.equals(loan.itemId)) {
+						isIn = true;
 					}
+				}
 
-					if (!isIn) {
-
-						// System.out.println(user.username + " loan due date - " + dateTime);
-
-						sortedLoans.add(loan);
-					}
-
-				} else {
-					// System.out.println("Loan due date - " + dateTime + " " + user.username);
+				if (!isIn) {
+					sortedLoans.add(loan);
 				}
 
 			}
 
-			if (sortedLoans.size() > 0) {
+		}
 
-				// Task 3. Get the list of users having loan detais.
-				System.out.println(user.id + "," + user.personal.email + "," + user.personal.firstName + " "
-						+ user.personal.lastName + "," + loans.size() + "," + +sortedLoans.size());
+		if (sortedLoans.size() > 0) {
 
-				// Sending the email with replacing to a lib-dls and after sending add the
-				// replace to old email.
-				// Task 4. To remove the comments before running.
+			// Task 3. Get the list of users having loan detais.
 
-//				String userEmail = user.personal.email;
-//
-//				user.personal.email = "lib-dls@okstate.edu";
-//
-//				folioService.updateUser(user);
-//
-//				Thread.sleep(3000);
-//
-//				for (Loan loan : sortedLoans) {
-//
-//					// System.out.println("loan " + loan.id + " - due Date - " + loan.getDueDate());
-//
-//					loan.actionComment = "faculty auto-renewal spring 2025";
-//					// loan.setDueDate("2025-03-01T04:59:59.000+00:00"); // Fed 28,
-//					loan.setDueDate("2026-03-01T04:59:59.000+00:00"); // September 1,
-//
-//					loan.loanPolicyId = "7abd2943-08a0-4ca1-8cc8-6a1f116e8763";
-//					folioService.updateLoan(loan);
-//
-//					// break;
-//				}
-//
-//				Thread.sleep(3000);
-//
-//				user.personal.email = userEmail;
-//				folioService.updateUser(user);
+			System.out.println(user.id + "," + user.personal.email + "," + user.personal.firstName + " "
+					+ user.personal.lastName + "," + loans.size() + "," + +sortedLoans.size());
 
-				// End of Task 4.
+			// Task 4. To remove the comments before running.
+			// Sending the email with replacing to a lib-dls and after sending add the
+			// replace to old email.
+
+			String userEmail = user.personal.email;
+
+			user.personal.email = "lib-dls@okstate.edu";
+
+			folioService.updateUser(user);
+
+			// Thread.sleep(3000);
+
+			for (Loan loan : sortedLoans) {
+
+				System.out.println(loan.id);// + " - " + loan.getDueDate());
+
+				loan.actionComment = "faculty auto-renewal spring 2026";
+				loan.setDueDate("2026-09-02T04:59:59.000+00:00");
+
+				if (!folioService.updateLoan(loan)) {
+					System.out.println("Error with updating loan");
+				}
+
+				// Loan updateedLaon = folioService.getLoansByLoanId(loan.id);
+
+				// System.out.println("new duedate" + updateedLaon.getDueDate());
 			}
 
+			Thread.sleep(3000);
+
+			user.personal.email = userEmail;
+
+			folioService.updateUser(user);
+
 		}
+		// }
 
 		System.out.println("End");
 

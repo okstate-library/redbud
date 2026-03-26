@@ -6,4 +6,5 @@ public class CheckinServicePoint{
     public Object description;
     public Object shelvingLagTime;
     public boolean pickupLocation;
+    
 }

@@ -55,15 +55,20 @@ public class OCLCMetadataProcess extends MainProcess {
 								+ library.getLibrary_name() + "," + "location-" + location.getLocation_name() + ",");
 
 						oclcProcess(location.getLocation_id());
-						
+
 						System.out.println("End of location  --  " + location.getLocation_name());
+
+						break;
 					}
 				}
 
+				break;
 			}
 
+			break;
+
 		}
-		
+
 		System.out.println("End of OLC process");
 
 		Thread.sleep(5000);
@@ -77,8 +82,7 @@ public class OCLCMetadataProcess extends MainProcess {
 	private void oclcProcess(String location) {
 		try {
 
-			List<HoldingsRecord> holdingList = folioService.getInventoryHoldings(location,
-					"2025-01-01T00:00:00.000+00:00", "");
+			List<HoldingsRecord> holdingList = folioService.getInventoryHoldings(location);
 
 			System.out.println("list size: " + holdingList.size());
 
@@ -94,12 +98,13 @@ public class OCLCMetadataProcess extends MainProcess {
 				count++;
 
 				if (oclcNumbers.size() > 1) {
+
 					System.out.println("oclcNumbers.size() > 1" + " Folio id " + selectedHolding.getInstanceId());
 				}
 
 				for (String oclcNumber : oclcNumbers) {
 
-					// String oclcNummber = (oclcNumber.split("#")[1]);
+					System.out.println("oclcNumber" + oclcNumber);
 
 					HoldingRoot holdingRoot = oclcService.getOCLCItems(oclcNumber);
 
@@ -145,11 +150,29 @@ public class OCLCMetadataProcess extends MainProcess {
 
 				}
 
-				if (count % 10000 == 0) {
+				if (count % 1000 == 0) {
+
 					System.out.println("Process record Count" + count);
+					
 				}
 
 			}
+
+			System.out.println("OCLC Numbers that should change to  holdingSet true");
+
+			for (String controlNumber : setHoldigsList) {
+
+				System.out.println(controlNumber);
+
+			}
+
+			System.out.println("OCLC Numbers that should change to  holdingSet false");
+
+			for (String controlNumber : unSetHoldigsList) {
+
+				System.out.println(controlNumber);
+			}
+
 //
 //			System.out.println("*********************OCLC operation *****************");
 //

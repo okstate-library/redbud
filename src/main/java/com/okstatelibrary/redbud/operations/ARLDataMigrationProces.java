@@ -50,6 +50,7 @@ public class ARLDataMigrationProces extends MainProcess {
 			BufferedWriter writer = new BufferedWriter(new FileWriter(csvFile));
 
 			writer.write("Institution, Campus, Library, Location , format, type , count");
+			
 			writer.newLine();
 
 				for (LocationModel location : locations) {
