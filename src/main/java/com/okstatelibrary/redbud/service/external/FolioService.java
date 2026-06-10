@@ -808,7 +808,7 @@ public class FolioService extends FolioServiceToken {
 
 			String url = AppSystemProperties.FolioURL + "inventory/instances?query=(id=" + instanceId + ")";
 
-			//System.out.println("url - " + url);
+			// System.out.println("url - " + url);
 
 			ResponseEntity<InstanceRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
 					InstanceRoot.class);
@@ -1185,8 +1185,6 @@ public class FolioService extends FolioServiceToken {
 
 			} else {
 
-				System.out.println("externalSystemId is null for" + externalSystemId);
-
 				return null;
 			}
 
@@ -1307,9 +1305,9 @@ public class FolioService extends FolioServiceToken {
 
 		try {
 
-			Gson gson = new Gson();
-			String jsonString = gson.toJson(payload);
-			System.out.println("jsonString" + jsonString);
+//			Gson gson = new Gson();
+//			String jsonString = gson.toJson(payload);
+//			System.out.println("jsonString" + jsonString);
 
 			String url = AppSystemProperties.FolioURL + "users";
 
@@ -1763,27 +1761,29 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
-	public FolioUser getUsersByExternalSystemId(String userId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
-
-		try {
-
-			String url = AppSystemProperties.FolioURL + "users?query=(externalSystemId==  " + userId + ")";
-
-			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
-
-			if (response.getBody() != null && response.getBody().users != null && response.getBody().users.size() > 0)
-				return response.getBody().users.get(0);
-			else
-				return null;
-
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+//	public FolioUser getUsersByExternalSystemId(String userId)
+//			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+//
+//		try {
+//
+//			String url = AppSystemProperties.FolioURL + "users?query=(externalSystemId==  " + userId + ")";
+//
+//			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+//
+//			if (response.getBody() != null && response.getBody().users != null && response.getBody().users.size() > 0)
+//				
+//				
+//				return response.getBody().users.get(0);
+//			else
+//				return null;
+//
+//		} catch (Exception e) {
+//			// TODO: handle exception
+//			e.getMessage();
+//			e.printStackTrace();
+//			return null;
+//		}
+//	}
 
 	public void printScreen(String msg, Constants.ErrorLevel errorLevel) {
 		switch (errorLevel) {

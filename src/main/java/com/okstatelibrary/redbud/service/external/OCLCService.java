@@ -58,13 +58,13 @@ public class OCLCService extends OCLCServiceToken {
 	public HoldingRoot getOCLCItems(String oclcNumbers)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+		try (CloseableHttpClient httpClient = HttpClients.custom().disableCookieManagement().build()) {
 
 			String queryString = "?oclcNumbers=" + oclcNumbers;
 
 			String url = mainOCLCUrl + "current" + queryString.trim();
 
-			//System.out.println("url :  " + url);
+			// System.out.println("url : " + url);
 
 			// Execute the request
 			HttpResponse response = httpClient.execute(getHttpGet(url));
@@ -86,8 +86,8 @@ public class OCLCService extends OCLCServiceToken {
 
 					Gson gson = new Gson();
 
-					//System.out.println("result :  " + result);
-					
+					// System.out.println("result : " + result);
+
 					if (result.toString().contains("Unauthorized")) {
 
 						System.out.println("oclcNumber :  " + oclcNumbers + " result : " + result.toString());
@@ -115,7 +115,7 @@ public class OCLCService extends OCLCServiceToken {
 	public String setOCLCItems(String oclcNumber)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException, InterruptedException {
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+		try (CloseableHttpClient httpClient = HttpClients.custom().disableCookieManagement().build()) {
 
 			String url = mainOCLCUrl + oclcNumber + "/set";
 
@@ -144,7 +144,7 @@ public class OCLCService extends OCLCServiceToken {
 	public String unSetOCLCItems(String oclcNumber)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException, InterruptedException {
 
-		try (CloseableHttpClient httpClient = HttpClients.createDefault()) {
+		try (CloseableHttpClient httpClient = HttpClients.custom().disableCookieManagement().build()) {
 
 			String url = mainOCLCUrl + oclcNumber + "/unset";
 

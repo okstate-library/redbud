@@ -53,7 +53,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             "/reports/*",
             "/stat",
             "/error/**/*",
-            "/console/**"
+            "/console/**",
+            "/api/getItemDetails/**",           
     };
 
     /**

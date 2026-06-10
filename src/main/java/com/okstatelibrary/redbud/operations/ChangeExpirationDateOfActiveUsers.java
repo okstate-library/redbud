@@ -35,7 +35,7 @@ public class ChangeExpirationDateOfActiveUsers extends MainProcess {
 
 		try {
 
-			printScreen("New expiry date" + DateUtil.getCustomDate(), Constants.ErrorLevel.INFO);
+			printScreen("New expiry date" + DateUtil.get9MonthsAfterTodayDate(), Constants.ErrorLevel.INFO);
 
 			List<PatronGroup> groupList = groupService.getGroupList();
 
@@ -69,7 +69,7 @@ public class ChangeExpirationDateOfActiveUsers extends MainProcess {
 //								printScreen("username " + folioUser.username + " ,New expiration Date "
 //										+ folioUser.expirationDate);
 
-								folioUser.expirationDate = DateUtil.getCustomDate();
+								folioUser.expirationDate = DateUtil.get9MonthsAfterTodayDate();
 
 								if (folioUser.customFields == null
 										|| folioUser.customFields.additionalPatronGroup_4 == null

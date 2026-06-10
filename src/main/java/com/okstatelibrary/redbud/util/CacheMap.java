@@ -30,6 +30,8 @@ public class CacheMap {
 	public static final String process_OCLC_NUmbers_Process = "oclc_Number_Process";
 
 	public static final String process_Execute_Inactive_Users = "Process_Execute_Inactive_Users";
+	
+	public static final String process_Execute_User_Integration = "Process_Execute_User_Integration";
 
 	public static final String process_Send_Test_Email = "Process_Send_Test_Email";
 

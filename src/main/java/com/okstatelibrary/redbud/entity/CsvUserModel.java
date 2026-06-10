@@ -26,7 +26,7 @@ public class CsvUserModel {
 
 	private String preferedFirstName;
 
-	//private String preferedLastName;
+	// private String preferedLastName;
 
 	private String localPhone;
 
@@ -35,6 +35,8 @@ public class CsvUserModel {
 	private String okeyEmail;
 
 	private String okeyUsername;
+
+	private String expDate;
 
 	/**
 	 * @return the institution
@@ -230,27 +232,53 @@ public class CsvUserModel {
 		this.okeyUsername = okeyUsername;
 	}
 
-	public CsvUserModel(String value) {
+	/**
+	 * @return the expDate
+	 */
+	public String getExpDate() {
+		return expDate;
+	}
+
+	/**
+	 * @param expDate the expDate to set
+	 */
+	public void setExpDate(String expDate) {
+		this.expDate = expDate;
+	}
+
+	public CsvUserModel(boolean isExpireUser, String value) {
 
 		try {
 
-			String[] cvsValues = value.split(",");
+			if (!isExpireUser) {
 
-			//System.out.println("Length of the array" + cvsValues.length);
+				String[] cvsValues = value.split(",");
 
-			this.setInstitution(cvsValues[0].trim());
-			this.setBannerId(cvsValues[1].trim());
-			this.setISOCode(cvsValues[2].trim());
-			this.setUserGroup(cvsValues[3].trim());
-			this.setFirstName(cvsValues[4].trim());
-			this.setMiddleName(cvsValues[5].trim());
-			this.setLastName(cvsValues[6].trim());
-			this.setPreferedFirstName(cvsValues[7].trim());
-			//this.setPreferedLastName(cvsValues[8].trim());
-			this.setLocalPhone(cvsValues[9].trim());
-			this.setWorkPhone(cvsValues[10].trim());
-			this.setOkeyEmail(cvsValues[11].trim());
-			this.setOkeyUsername(cvsValues[12].trim());
+				this.setInstitution(cvsValues[0].trim());
+				this.setBannerId(cvsValues[1].trim());
+				this.setISOCode(cvsValues[2].trim());
+				this.setUserGroup(cvsValues[3].trim());
+				this.setFirstName(cvsValues[4].trim());
+				this.setMiddleName(cvsValues[5].trim());
+				this.setLastName(cvsValues[6].trim());
+				this.setPreferedFirstName(cvsValues[7].trim());
+				// this.setPreferedLastName(cvsValues[8].trim());
+				this.setLocalPhone(cvsValues[9].trim());
+				this.setWorkPhone(cvsValues[10].trim());
+				this.setOkeyEmail(cvsValues[11].trim());
+				this.setOkeyUsername(cvsValues[12].trim());
+
+				if (cvsValues.length == 14) {
+					this.setExpDate(cvsValues[13].trim());
+				}
+
+			} else {
+				String[] cvsValues = value.split(",");
+
+				// this.setInstitution(cvsValues[0].trim());
+				this.setBannerId(cvsValues[0].trim());
+				this.setExpDate(cvsValues[1].trim());
+			}
 
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
@@ -262,6 +290,10 @@ public class CsvUserModel {
 
 	@Override
 	public String toString() {
-		return "CSV: " + this.getBannerId() + "  -  " + this.getFirstName() + "  -  " + this.getUserGroup();
+		return "(CSV)" + this.getBannerId() + " - " + this.getISOCode() + " - " + this.okeyUsername + "  -  "
+				+ this.getFirstName() + " - " + this.getLastName() + "  -  " + this.getMainUserGroup() + "  -  "
+				+ this.getUserGroup();
+
 	}
+
 }

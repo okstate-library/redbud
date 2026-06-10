@@ -230,7 +230,7 @@ public class SettingsController {
 		return "files";
 	}
 
-	@GetMapping("/UserIntegration")
+	@GetMapping("/executeUserIntegration")
 	public String executeUserIntegration(Principal principal, Model model) {
 		User user = userService.findByUsername(principal.getName());
 
@@ -242,19 +242,21 @@ public class SettingsController {
 
 				public void run() {
 
-					CacheMap.set("ProcessRunning", CacheMap.running);
+					CacheMap.set(CacheMap.process_Execute_User_Integration, CacheMap.running);
 
-					UserIntegrationProcess oprocess = new UserIntegrationProcess();
+					UserIntegrationProcess2 oprocess = new UserIntegrationProcess2();
 
 					oprocess.printScreen(
 							"Beeper starts for user integration process manually " + DateUtil.getTodayDateAndTime(),
 							Constants.ErrorLevel.INFO);
 
-					oprocess.copyFiles();
+					//oprocess.copyFiles("add_update");
+
+					//oprocess.copyFiles("inactive");
 
 					oprocess.manipulate(groupService);
 
-					CacheMap.set("ProcessRunning", CacheMap.idle);
+					CacheMap.set(CacheMap.process_Execute_User_Integration, CacheMap.idle);
 				}
 			});
 
@@ -854,6 +856,9 @@ public class SettingsController {
 					UserProertiesUpdateProcess oprocess = new UserProertiesUpdateProcess();
 
 					try {
+						
+						//oprocess.copyFiles("library_folio");
+						
 						oprocess.manipulate(groupService);
 					} catch (RestClientException | IOException e) {
 						// TODO Auto-generated catch block

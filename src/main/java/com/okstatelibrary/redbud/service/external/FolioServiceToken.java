@@ -2,6 +2,7 @@ package com.okstatelibrary.redbud.service.external;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Arrays;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -10,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
@@ -20,10 +22,10 @@ public class FolioServiceToken {
 //	private Environment env;
 //
 //	String value = env.getProperty("my.property");
-	
+
 	@Value("${folioTenant}")
 	private String value;
-	
+
 	/**
 	 * 
 	 */
@@ -66,9 +68,12 @@ public class FolioServiceToken {
 
 		HttpHeaders headers = new HttpHeaders();
 
-		//System.out.println("AppSystemProperties.FolioTenant --  " + value);
-		
+		// System.out.println("AppSystemProperties.FolioTenant -- " + value);
+
 		headers.add("x-okapi-tenant", AppSystemProperties.FolioTenant); // "fs00001145"); //
+
+		headers.setContentType(MediaType.APPLICATION_JSON);
+		headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
 
 		return headers;
 
@@ -89,9 +94,9 @@ public class FolioServiceToken {
 
 			com.okstatelibrary.redbud.folio.entity.User user = new com.okstatelibrary.redbud.folio.entity.User();
 
-			user.username = AppSystemProperties.FolioUsername; // "systemapi"; //
+			user.username = AppSystemProperties.FolioUsername;
 
-			user.password = AppSystemProperties.FolioPassword; // "ftyQsuuSc#u@v2"; //
+			user.password = AppSystemProperties.FolioPassword;
 
 			HttpEntity<?> request = new HttpEntity<Object>(user, getHttpHeaders());
 
@@ -103,7 +108,7 @@ public class FolioServiceToken {
 
 				// URI uri = new URI(AppSystemProperties.FolioURL + "/authn/login-with-expiry");
 
-				URI uri = new URI("https://okapi-okstate.folio.ebsco.com/authn/login-with-expiry");
+				URI uri = new URI("https://api-okstate.folio.ebsco.com/authn/login-with-expiry");
 
 				ResponseEntity<String> responseEntity = restTemplate.exchange(uri, HttpMethod.POST, request,
 						String.class);

@@ -16,10 +16,12 @@ public class DateUtil {
 
 	private static SimpleDateFormat longDateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
 
-	public static String getCustomDate() {
+	private static SimpleDateFormat longDateFormat2 = new SimpleDateFormat("MM/dd/yyyy");
 
-		return "2026-03-01";
-	}
+//	public static String getActiveUserExpireDate() {
+//
+//		return "2026-03-01"; // "02/27/2026"
+//	}
 
 	public static String get9MonthsAfterTodayDate() {
 
@@ -81,7 +83,7 @@ public class DateUtil {
 
 		return new java.sql.Date(millis).toString();
 	}
-	
+
 	public static int getCurrentHour() {
 
 		Calendar rightNow = Calendar.getInstance();
@@ -204,6 +206,18 @@ public class DateUtil {
 		return null;
 	}
 
+	public static Date getLongDate2(String date) {
+		try {
+			return longDateFormat2.parse(date);
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	
+
 	public static Date getShortDate2(String date) {
 		try {
 			return dateFormat.parse(date);
@@ -234,6 +248,6 @@ public class DateUtil {
 		} catch (ParseException e) {
 			return false;
 		}
-	}	
-	
+	}
+
 }

@@ -1,6 +1,12 @@
 package com.okstatelibrary.redbud.operations;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -90,51 +96,56 @@ public class MainProcess {
 		}
 	}
 
-	public void copyFiles() {
+	public void copyFiles(String fileName) {
 
 		try {
+
 			for (CsvFileModel csvFileModel : Constants.csvFileModels) {
 
-				File file = getLastModified(AppSystemProperties.SftpFilePath + csvFileModel.csvFilePath + "/files/");
+				// Cut paste all the folders in the operational folder to the completed folder
 
-				if (file != null) {
+				String operationalFloderPath = AppSystemProperties.CvsFilePath + "/" + csvFileModel.csvFilePath;
 
-					printScreen(file.getName(), Constants.ErrorLevel.INFO);
+				Path completedFolder = Paths.get(operationalFloderPath + "/done");
 
-					// Already Manipulated Files are moving to done folder.
+				Path operationalFolder = Paths.get(operationalFloderPath);
 
-					File alreadyDoneFilesPath = new File(AppSystemProperties.CvsFilePath + csvFileModel.csvFilePath);
+				Files.list(operationalFolder).filter(Files::isRegularFile)
+						.filter(path -> path.toString().toLowerCase().endsWith(".csv"))
+						.filter(path -> path.getFileName().toString().toLowerCase().contains(fileName))
+						.forEach(file -> {
+							try {
+								Files.move(file, completedFolder.resolve(file.getFileName()),
+										StandardCopyOption.REPLACE_EXISTING);
 
-					File[] listOfAlreadyDoneFiles = alreadyDoneFilesPath.listFiles();
+								System.out.println("Moved: " + file.getFileName());
 
-					for (File alreadyDoneFile : listOfAlreadyDoneFiles) {
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						});
 
-						if (alreadyDoneFile.getName().contains(".csv")) {
+				// Moving the files in the sftp folders to the operational folder.
 
-							printScreen("Already Done Fies " + alreadyDoneFile.getName() + " -- "
-									+ alreadyDoneFile.getAbsolutePath(), Constants.ErrorLevel.INFO);
+				String sftpFolderPath = AppSystemProperties.SftpFilePath + csvFileModel.csvFilePath + "/files/";
 
-							File doneFilesDestination = new File(AppSystemProperties.CvsFilePath + "/"
-									+ csvFileModel.csvFilePath + "/done/" + alreadyDoneFile.getName());
+				Path sftpFolder = Paths.get(sftpFolderPath);
 
-							alreadyDoneFile.renameTo(doneFilesDestination);
+				Files.list(sftpFolder).filter(Files::isRegularFile)
+						.filter(path -> path.toString().toLowerCase().endsWith(".csv"))
+						.filter(path -> path.getFileName().toString().toLowerCase().contains(fileName)).
+						forEach(file -> {
+							try {
 
-							printScreen("File Added to " + doneFilesDestination.getAbsolutePath(),
-									Constants.ErrorLevel.INFO);
-						}
-					}
+								Files.move(file, operationalFolder.resolve(file.getFileName()),
+										StandardCopyOption.REPLACE_EXISTING);
 
-					// Cut and Paste the latest file to the csv Folder from the sftp folder.
+								System.out.println("Moved: " + file.getFileName());
 
-					File destination = new File(AppSystemProperties.CvsFilePath + "/" + csvFileModel.csvFilePath + "/"
-							+ csvFileModel.csvFilePath + "_" + DateUtil.getTodayDate() + ".csv");
-
-					if (!destination.exists()) {
-
-						file.renameTo(destination);
-					}
-
-				}
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						});
 
 			}
 
@@ -151,6 +162,7 @@ public class MainProcess {
 
 	//
 	public static File getLastModified(String directoryFilePath) {
+
 		File directory = new File(directoryFilePath);
 
 		File[] files = directory.listFiles(File::isFile);
@@ -160,6 +172,7 @@ public class MainProcess {
 		File chosenFile = null;
 
 		if (files != null) {
+
 			for (File file : files) {
 
 				if (file.lastModified() > lastModifiedTime && file.getName().contains(".csv")) {

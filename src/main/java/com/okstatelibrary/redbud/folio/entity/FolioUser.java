@@ -24,9 +24,8 @@ public class FolioUser {
 	@Override
 	public String toString() {
 
-		return this.externalSystemId + " - " + this.barcode + " - " + this.username + " - " + this.personal.firstName
-				+ " " + this.personal.lastName + "  -  " + this.customFields != null
-						? this.customFields.additionalPatronGroup_4
-						: "";
+		return "(FOLIO)" + this.externalSystemId + " - " + this.barcode + " - " + this.username + " - "
+				+ this.personal.firstName + " " + this.personal.lastName + "  -  "
+				+ (this.customFields != null ? this.customFields.additionalPatronGroup_4 : "");
 	}
 }

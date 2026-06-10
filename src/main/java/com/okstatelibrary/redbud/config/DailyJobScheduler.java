@@ -14,7 +14,7 @@ import org.springframework.web.client.RestClientException;
 import com.okstatelibrary.redbud.operations.CirculationLogProcess;
 import com.okstatelibrary.redbud.operations.InstitutionRecordCountProcess;
 import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
-import com.okstatelibrary.redbud.operations.UserProertiesUpdateProcess;
+import com.okstatelibrary.redbud.operations.UserIntegrationProcess2;
 import com.okstatelibrary.redbud.service.CirculationLogService;
 import com.okstatelibrary.redbud.service.GroupService;
 import com.okstatelibrary.redbud.service.InstitutionRecordService;
@@ -67,6 +67,7 @@ public class DailyJobScheduler {
 	@Autowired
 	private CirculationLogService circulationLogService;
 
+	@Autowired
 	private GroupService groupService;
 
 	/**
@@ -76,19 +77,21 @@ public class DailyJobScheduler {
 	 * executor queue.
 	 * </p>
 	 */
-	@Scheduled(cron = "0 00 1 * * ?") // Runs daily at 1:00 AM
+	@Scheduled(cron = "0 30 1 * * ?") // Runs daily at 1:30 AM
 	public void executeDailyTasksInQueue() {
+		
 		if (AppSystemProperties.ScheduleCornJobsRunStatus) {
 			queue.execute(this::runInstitutionalResourcesCounting);
-			queue.execute(this::runUserPropertyChangeJob);
+			queue.execute(this::runUserIntegrationJob);
 			queue.execute(this::runCirculationJob);
-			// queue.execute(this::runOCLCJob); // Optional, currently disabled
+
 		}
 	}
 
 	@Scheduled(cron = "0 0 1 1 * *") // MIN HOUR DAY MONTH DAYOFWEEK YEAR
 	public void runMonthlyTask() {
-		
+
+		// queue.execute(this::runOCLCJob); // Optional, currently disabled
 	}
 
 	/**
@@ -129,43 +132,18 @@ public class DailyJobScheduler {
 			Thread myThread = new Thread(() -> {
 				CacheMap.set("UserIntegrationProcess", "true");
 
-				UserIntegrationProcess oprocess = new UserIntegrationProcess();
+				UserIntegrationProcess2 oprocess = new UserIntegrationProcess2();
+
 				oprocess.printScreen("Beeper starts for user integration process " + DateUtil.getTodayDateAndTime(),
 						Constants.ErrorLevel.INFO);
 
-				oprocess.copyFiles();
+				oprocess.copyFiles("add_update");
+
+				oprocess.copyFiles("inactive");
+
 				oprocess.manipulate(groupService);
 
 				CacheMap.set("UserIntegrationProcess", "stop");
-			});
-			myThread.start();
-		} catch (Exception e1) {
-			LOG.error(e1.getMessage());
-		}
-	}
-
-	/**
-	 * Executes a job that updates user properties. Uses
-	 * {@link UserProertiesUpdateProcess} for processing.
-	 */
-	private void runUserPropertyChangeJob() {
-		try {
-			Thread myThread = new Thread(() -> {
-				CacheMap.set("UserPropertiesUpdateProcess", "true");
-
-				UserProertiesUpdateProcess oprocess = new UserProertiesUpdateProcess();
-				oprocess.printScreen("Beeper starts for user property update job " + DateUtil.getTodayDateAndTime(),
-						Constants.ErrorLevel.INFO);
-
-				oprocess.copyFiles();
-
-				try {
-					oprocess.manipulate(groupService);
-				} catch (RestClientException | IOException e) {
-					e.printStackTrace();
-				}
-
-				CacheMap.set("UserPropertiesUpdateProcess", "stop");
 			});
 			myThread.start();
 		} catch (Exception e1) {

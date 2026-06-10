@@ -43,13 +43,16 @@ public class OCLCMetadataProcess extends MainProcess {
 
 		// OCLC operation is running only for "Oklahoma State University, Stillwater"
 
-		for (Campus campus : campusService.getCampusListByInstitutionId("b3439a37-ec18-4d3f-a1a0-88a404b8062c")) {
+		outerloop: for (Campus campus : campusService
+				.getCampusListByInstitutionId("b3439a37-ec18-4d3f-a1a0-88a404b8062c")) {
 
 			for (Library library : libraryService.getLibraryListByCampusId(campus.getCampus_id())) {
 
 				for (Location location : locationService.getLocationListByLibraryId(library.getLibrary_id())) {
 
-					if (!location.getLocation_id().contentEquals("4e4331ec-d652-4591-af7f-4c0dc6ddf485")) {
+					// System.out.println("location id " + location.getLocation_id());
+
+					if (location.getLocation_id().contentEquals("912064a8-6296-4d35-8c91-48722c5ddc59")) {
 
 						System.out.println("campus-" + campus.getCampus_name() + "," + "library-"
 								+ library.getLibrary_name() + "," + "location-" + location.getLocation_name() + ",");
@@ -58,14 +61,11 @@ public class OCLCMetadataProcess extends MainProcess {
 
 						System.out.println("End of location  --  " + location.getLocation_name());
 
-						break;
+						break outerloop;
 					}
 				}
 
-				break;
 			}
-
-			break;
 
 		}
 
@@ -91,15 +91,15 @@ public class OCLCMetadataProcess extends MainProcess {
 
 			int count = 0;
 
-			for (HoldingsRecord selectedHolding : holdingList) {
+			for (HoldingsRecord inventory_holding : holdingList) {
 
-				Set<String> oclcNumbers = folioService.getInventoryInstance(selectedHolding.getInstanceId());
+				Set<String> oclcNumbers = folioService.getInventoryInstance(inventory_holding.getInstanceId());
 
 				count++;
 
 				if (oclcNumbers.size() > 1) {
 
-					System.out.println("oclcNumbers.size() > 1" + " Folio id " + selectedHolding.getInstanceId());
+					System.out.println("oclcNumbers.size() > 1" + " Folio id " + inventory_holding.getInstanceId());
 				}
 
 				for (String oclcNumber : oclcNumbers) {
@@ -110,11 +110,11 @@ public class OCLCMetadataProcess extends MainProcess {
 
 					if (holdingRoot != null && holdingRoot.holdings != null && holdingRoot.holdings.size() > 0) {
 
-						for (Holding holding : holdingRoot.holdings) {
+						for (Holding oclc_holding : holdingRoot.holdings) {
 
-							String controlNumber = holding.currentControlNumber;
+							String controlNumber = oclc_holding.currentControlNumber;
 
-							if (!holding.holdingSet && !selectedHolding.discoverySuppress) {
+							if (!oclc_holding.holdingSet && !inventory_holding.discoverySuppress) {
 
 //								System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
 //										+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
@@ -122,14 +122,15 @@ public class OCLCMetadataProcess extends MainProcess {
 
 								if (!setHoldigsList.contains(controlNumber)) {
 
-									System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
-											+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
-											+ " Folio id " + selectedHolding.getInstanceId());
+									System.out.println(
+											"holdingSet is " + oclc_holding.holdingSet + " discoverySuppress is "
+													+ inventory_holding.discoverySuppress + " oclcNummber " + oclcNumber
+													+ " Folio id " + inventory_holding.getInstanceId());
 
 									setHoldigsList.add(controlNumber);
 								}
 
-							} else if (holding.holdingSet && selectedHolding.discoverySuppress) {
+							} else if (oclc_holding.holdingSet && inventory_holding.discoverySuppress) {
 
 //								System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
 //										+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
@@ -137,9 +138,10 @@ public class OCLCMetadataProcess extends MainProcess {
 
 								if (!unSetHoldigsList.contains(controlNumber)) {
 
-									System.out.println("holdingSet is " + holding.holdingSet + " discoverySuppress is "
-											+ selectedHolding.discoverySuppress + " oclcNummber " + oclcNumber
-											+ " Folio id " + selectedHolding.getInstanceId());
+									System.out.println(
+											"holdingSet is " + oclc_holding.holdingSet + " discoverySuppress is "
+													+ inventory_holding.discoverySuppress + " oclcNummber " + oclcNumber
+													+ " Folio id " + inventory_holding.getInstanceId());
 
 									unSetHoldigsList.add(controlNumber);
 								}
@@ -153,7 +155,7 @@ public class OCLCMetadataProcess extends MainProcess {
 				if (count % 1000 == 0) {
 
 					System.out.println("Process record Count" + count);
-					
+
 				}
 
 			}

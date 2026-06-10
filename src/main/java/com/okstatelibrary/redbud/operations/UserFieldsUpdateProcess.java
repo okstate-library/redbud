@@ -71,7 +71,7 @@ public class UserFieldsUpdateProcess extends MainProcess {
 
 								userGroupUserCount++;
 
-								FolioUser folioUser = folioService.getUsersByExternalSystemId(exterNalSystemId);
+								FolioUser folioUser = folioService.getUserByExternalSystemId(exterNalSystemId);
 
 								// FolioUser folioUser = folioService.getUsersByBarcode(barCode);
 

@@ -366,9 +366,7 @@
 									th:text="${library.library_name}"></option>
 							</select>
 						</div>
-						<div class="col-xs-2">
-							
-						</div>
+						<div class="col-xs-2"></div>
 						<div class="col-xs-2">
 							<button type="submit" id="executeCirculationLogByLocation"
 								disabled class="btn btn-success btn-md btn-block">Execute</button>
@@ -641,6 +639,35 @@
 		</div>
 
 		<div id="user" class="tab-pane fade">
+
+			<div class="row top-buffer container-border">
+				<h4>
+					<b>User Integration Process</b>
+				</h4>
+				<h5>
+					<i>#ManualTask #ScheduleTask</i>
+				</h5>
+				<form method="get"
+					th:action="@{/settings/executeUserIntegration}">
+
+					<div class="row">
+						<div class="col-xs-8">Every day</div>
+						<div class="col-xs-2">
+							<button type="submit" id="btnExecuteUserIntegration" disabled
+								class="btn btn-success btn-md btn-block">Execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('btnExecuteUserIntegration').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_Execute_User_Integration}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
 
 			<div class="row top-buffer container-border">
 				<h4>

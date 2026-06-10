@@ -13,36 +13,34 @@ public class SubReportModel {
 
 	public String patronGroupName;
 
-	// New users
+	// New users details
 
-	public int newUsersFromCSVCount;
+	public int setNewUserCount;
 
-	public int newUsersFromCSVAddedFolioCount;
+	public int setNewUserSucessCount;
 
-	public int newUsersFromCSVAddedFolioErrorCount;
+	public int setNewUserErrorCount;
 
-	public List<String> existingUserModified;
+	//public List<String> existingUserModified;
 
-	public List<String> newUsersFromCSVAddedFolioErrorUserList;
+	public List<String> setNewUserErrorUserList;
 
 	// Existing users
 	public int usersInFolioAndCsvCount;
 
-	public int modifiedUsersInFolioAndCsvCount;
+	public int modifiedSucessUserCount;
 
-	public int modifiedUsersInFolioAndCsvErrorCount;
+	public int modifiedErrorUserCount;
 
-	public List<String> modifiedUsersInFolioAndCsvUserList;
-	
-	public List<String> modifiedUsersInFolioAndCsvErrorUserList;
+	public List<String> modifiedErrorUserList;
 
-	// The Folio Users most of the time need to
-	public int usersInFoliOnlyCount;
+	// Details related to the user's status convert to inactive
+	public int setToInactiveUserCount;
 
-	public int modifiedUsersInFoliOnlyCount;
+	public int setToInactiveSucessUserCount;
 
-	public int modifiedUsersInFoliOnlyErrorCount;
+	public int setToInactiveErrorUserCount;
 
-	public List<String> modifiedUsersInFoliOnlyErrorUserList;
+	public List<String> setToInactiveErrorUserList;
 
 }

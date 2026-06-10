@@ -5,6 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+import org.hibernate.internal.util.StringHelper;
 import org.springframework.web.client.RestClientException;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -15,7 +19,6 @@ import com.okstatelibrary.redbud.service.*;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
 import com.okstatelibrary.redbud.util.Constants;
 import com.okstatelibrary.redbud.util.DateUtil;
-import com.okstatelibrary.redbud.util.StringHelper;
 
 public class UserProertiesUpdateProcess extends MainProcess {
 
@@ -27,24 +30,13 @@ public class UserProertiesUpdateProcess extends MainProcess {
 	public void manipulate(GroupService groupService)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		
 		System.out.println("UserProertiesUpdateProcess is start running");
-		
+	
 		messageList = new ArrayList<>();
 
 		messageList.add("User properties Update Process" + "<br/>");
 
 		messageList.add("Start Time " + DateUtil.getTodayDateAndTime() + "<br/>");
-
-		// Remove comments in order to run the patron group changes
-//		FolioPatronGroup foliGroups = null;
-//
-//		try {
-//			foliGroups = folioService.getPatronGroups();
-//		} catch (RestClientException | IOException e1) {
-//			// TODO Auto-generated catch block
-//			e1.printStackTrace();
-//		}
 
 		for (CsvFileModel csvFileModel : Constants.csvFileModels) {
 
@@ -60,104 +52,123 @@ public class UserProertiesUpdateProcess extends MainProcess {
 
 			int count = 0;
 
-			for (CsvUserModel csvUserModel : csvUserList) {
+			for (CsvUserModel csvUser : csvUserList) {
 
 				count++;
-
-//				if (count < 45000) {
-//					continue;
-//				}
 
 				if (count % 500 == 0) {
 					messageList.add("record count " + count);
 					System.out.println("record count " + count);
 				}
 
-//					
-				String[] customFields = csvUserModel.getUserGroup().split(";");
+				if (count < 3500) {
+					continue;
+				}
 
-				String currentUserGroup = customFields[0];
+				try {
 
-				// Remove comments in order to run the patron group changes
-//				Usergroup futureUserGroup = foliGroups.usergroups.stream()
-//						.filter(selGroup -> selGroup.group.toLowerCase().equals(currentUserGroup.toLowerCase()))
-//						.findFirst().get();
+					FolioUser folio_user = folioService.getUserByExternalSystemId(csvUser.getBannerId());
 
-//					System.out.println(csvUserModel.getBannerId() + " - " + csvUserModel.getFirstName() + " "
-//							+ csvUserModel.getLastName() + " - " + csvUserModel.getUserGroup());
+					if (folio_user != null) {
 
-				FolioUser folioUser = folioService.getUserByExternalSystemId(csvUserModel.getBannerId());
-
-				if (folioUser != null) {
-
-					try {
-
-						boolean isUserStatusChanged = false;
-
-						// Remove comments in order to run the patron group changes
-						// Checking the patron group and if there is an difference updating the Folio.
-
-//						if (!futureUserGroup.id.equals(folioUser.patronGroup)) {
+						String customField = (folio_user.customFields != null
+								&& !StringHelper.isEmptyOrWhiteSpace(folio_user.customFields.additionalPatronGroup_4))
+										? folio_user.customFields.additionalPatronGroup_4
+										: "";
 //
-//							// Update Code
-//							folioUser.patronGroup = futureUserGroup.id;
+//						printScreen(exist_user.externalSystemId + " " + newUser.getBannerId(),
+//								Constants.ErrorLevel.INFO);
+//						printScreen(exist_user.barcode + " " + newUser.getISOCode(), Constants.ErrorLevel.INFO);
+//						printScreen(customField + " " + newUser.getUserGroup(), Constants.ErrorLevel.INFO);
+//						printScreen(exist_user.username + " " + newUser.getOkeyUsername(), Constants.ErrorLevel.INFO);
+
+//						printScreen(Objects.equals(exist_user.externalSystemId.trim(),
+//								newUser.getBannerId().trim()),
+//								Constants.ErrorLevel.INFO);
+
+						List<String> differences = new ArrayList<>();
+
+						if (!Objects.equals(folio_user.externalSystemId, csvUser.getBannerId())) {
+
+							differences.add("externalSystemId: " + folio_user.externalSystemId + " -> "
+									+ csvUser.getBannerId());
+						}
 //
-//							CustomFields newCustommFields = new CustomFields();
-//							newCustommFields.additionalPatronGroup_4 = csvUserModel.getUserGroup();
-//							folioUser.customFields = newCustommFields;
+						if (!StringHelper.isEmptyOrWhiteSpace(csvUser.getISOCode())
+								&& !Objects.equals(folio_user.barcode, csvUser.getISOCode())) {
+
+							differences.add("barcode: " + folio_user.barcode + " -> " + csvUser.getISOCode());
+						}
+
+						if (!Objects.equals(customField, csvUser.getUserGroup())) {
+
+							differences.add("userGroup: " + customField + " -> " + csvUser.getUserGroup());
+						}
+
+						if (!Objects.equals(folio_user.username, csvUser.getOkeyUsername())) {
+
+							differences.add("username: " + folio_user.username + " -> " + csvUser.getOkeyUsername());
+						}
+
+						// At any moment user group is not changing at edit modeOnly user group change
+
+//						Optional<PatronGroup> selectedUserGroup = groupList.stream()
+//								.filter(selGroup -> selGroup.getInstitutionCode() != null && selGroup.isFolioOnly() == 0
+//										&& selGroup.getFolioGroupName().equals(csvUser.getMainUserGroup()))
+//								.findFirst();
+//						
+//						if (!Objects.equals(folio_user.patronGroup, selectedUserGroup.get().getFolioGroupId())) {
 //
-//							folioUser.metadata = getMetadata(folioUser.metadata);
+//							differences.add("patronGroup Change id " + folio_user.patronGroup + " -> "
+//									+ selectedUserGroup.get().getFolioGroupId());
 //
-//							isUserStatusChanged = true;
-//
-//							updateFolioUser(folioUser, csvUserModel, " - Update Patron group");
-//
+//							differences.add("patronGroup Change name " + csvUser.getUserGroup() + " -> "
+//									+ selectedUserGroup.get().getFolioGroupName());
 //						}
 
-						// Check for the bar codes are. If those are null and difference and update
-						// FOLIO
+						if (!differences.isEmpty()) {
 
-						if (!StringHelper.isStringNullOrEmpty(csvUserModel.getISOCode())
-								&& !StringHelper.isStringNullOrEmpty(folioUser.barcode)
-								&& !folioUser.barcode.contentEquals(csvUserModel.getISOCode())) {
+							differences.forEach(System.out::println);
 
-							isUserStatusChanged = true;
+							printScreen("Edit User " + csvUser.toString() + folio_user.toString(),
+									Constants.ErrorLevel.INFO);
 
-							folioUser.barcode = csvUserModel.getISOCode();
+							if (!folio_user.active) {
+								folio_user.active = true;
 
-							updateFolioUser(folioUser, csvUserModel, " - Update Barcode");
+								folio_user.expirationDate = DateUtil.get9MonthsAfterTodayDate();
+							}
 
-						} else if (!StringHelper.isStringNullOrEmpty(csvUserModel.getISOCode())
-								&& StringHelper.isStringNullOrEmpty(folioUser.barcode)) {
+							if (StringHelper.isEmptyOrWhiteSpace(csvUser.getISOCode())) {
+								folio_user.barcode = csvUser.getBannerId();
+							} else {
+								folio_user.barcode = csvUser.getISOCode();
+							}
 
-							isUserStatusChanged = true;
+							folio_user.username = csvUser.getOkeyUsername();
 
-							folioUser.barcode = csvUserModel.getISOCode();
+							CustomFields newCustommFields = new CustomFields();
+							newCustommFields.additionalPatronGroup_4 = csvUser.getUserGroup();
+							folio_user.customFields = newCustommFields;
 
-							updateFolioUser(folioUser, csvUserModel, " - Update Barcode");
+							folio_user.metadata = getMetadata(folio_user.metadata);
 
-						} else if (StringHelper.isStringNullOrEmpty(csvUserModel.getISOCode())
-								|| StringHelper.isStringNullOrEmpty(folioUser.barcode)) {
+							if (!folioService.updateUser(folio_user)) {
+								printScreen("Error modify only Folio User " + folio_user, Constants.ErrorLevel.INFO);
 
-							System.out.println(csvUserModel.getBannerId() + ", " + csvUserModel.getFirstName() + " "
-									+ csvUserModel.getLastName() + " - Bar code NUll");
+							} else {
+								printScreen("User updated " + folio_user, Constants.ErrorLevel.INFO);
+							}
+
 						}
-
-						// Check the user status and if inactive change in to active.
-
-						if (!isUserStatusChanged) {
-
-							updateFolioUser(folioUser, csvUserModel, " - Update Status");
-						}
-
-					} catch (RestClientException e) {
-
-						e.printStackTrace();
-
-						System.out.println(csvUserModel.getBannerId() + "- " + csvUserModel.getFirstName() + " "
-								+ csvUserModel.getLastName() + " - " + currentUserGroup);
-
 					}
+
+				} catch (RestClientException e) {
+
+					e.printStackTrace();
+
+					printScreen("Error User " + csvUser.getBannerId(), Constants.ErrorLevel.INFO);
+
 				}
 
 			}
@@ -185,27 +196,6 @@ public class UserProertiesUpdateProcess extends MainProcess {
 
 	}
 
-	private void updateFolioUser(FolioUser folioUser, CsvUserModel csvUserModel, String updateCriteria) {
-
-		folioUser.expirationDate = DateUtil.get9MonthsAfterTodayDate();
-
-		folioUser.metadata = getMetadata(folioUser.metadata);
-
-		if (!folioService.updateUser(folioUser)) {
-
-			printScreen("Error modify only Folio " + updateCriteria + folioUser, Constants.ErrorLevel.INFO);
-
-			messageList.add("Error modify only Folio " + updateCriteria + folioUser);
-
-		} else {
-
-			System.out.println(folioUser.barcode + folioUser.expirationDate + folioUser.externalSystemId);
-			
-			messageList.add(csvUserModel.getBannerId() + ", " + csvUserModel.getFirstName() + " "
-					+ csvUserModel.getLastName() + updateCriteria);
-		}
-	}
-
 	// Get the users reading the csv file.
 	public ArrayList<CsvUserModel> getCsvUsers(String filePath) {
 
@@ -219,7 +209,7 @@ public class UserProertiesUpdateProcess extends MainProcess {
 
 			File csvFile = listOfFiles[i];
 
-			if (csvFile.isFile() && csvFile.getName().contains(".csv")) {
+			if (csvFile.isFile() && csvFile.getName().contains("library_folio")) {
 
 				String line = "";
 
@@ -240,7 +230,7 @@ public class UserProertiesUpdateProcess extends MainProcess {
 
 						try {
 
-							CsvUserModel csvModel = new CsvUserModel(line);
+							CsvUserModel csvModel = new CsvUserModel(false, line);
 
 							csvUserList.add(csvModel);
 
