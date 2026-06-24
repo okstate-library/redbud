@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
@@ -64,6 +65,19 @@ public class DateUtil {
 			return date + "T00:00:00.000Z";
 		}
 		return date + "T23:59:59.000Z";
+	}
+
+	public static Date getYesterdayDateWithTime(boolean isMorning) throws ParseException {
+		ZoneId zone = ZoneId.systemDefault();
+
+		LocalDate yesterday = LocalDate.now(zone).minusDays(1);
+
+		if (isMorning) {
+			return Date.from(yesterday.atStartOfDay(zone).toInstant());
+		}
+
+		return Date.from(yesterday.atTime(23, 59, 59).atZone(zone).toInstant());
+
 	}
 
 	public static String getTodayDateAndTime() {
@@ -215,8 +229,6 @@ public class DateUtil {
 		}
 		return null;
 	}
-
-	
 
 	public static Date getShortDate2(String date) {
 		try {

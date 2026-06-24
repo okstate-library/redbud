@@ -15,10 +15,13 @@ import com.okstatelibrary.redbud.operations.CirculationLogProcess;
 import com.okstatelibrary.redbud.operations.InstitutionRecordCountProcess;
 import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
 import com.okstatelibrary.redbud.operations.UserIntegrationProcess2;
+import com.okstatelibrary.redbud.operations.UserNotesPopulateProcess;
 import com.okstatelibrary.redbud.service.CirculationLogService;
 import com.okstatelibrary.redbud.service.GroupService;
 import com.okstatelibrary.redbud.service.InstitutionRecordService;
 import com.okstatelibrary.redbud.service.LocationService;
+import com.okstatelibrary.redbud.service.ReportUserNoteService;
+import com.okstatelibrary.redbud.service.UserNoteTypeService;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
 import com.okstatelibrary.redbud.util.CacheMap;
 import com.okstatelibrary.redbud.util.Constants;
@@ -62,6 +65,12 @@ public class DailyJobScheduler {
 	private LocationService locationService;
 
 	@Autowired
+	private ReportUserNoteService reportUserNoteService;
+
+	@Autowired
+	private UserNoteTypeService userNoteTypeService;
+
+	@Autowired
 	private InstitutionRecordService institutionalHoldingsService;
 
 	@Autowired
@@ -79,11 +88,13 @@ public class DailyJobScheduler {
 	 */
 	@Scheduled(cron = "0 30 1 * * ?") // Runs daily at 1:30 AM
 	public void executeDailyTasksInQueue() {
-		
+
 		if (AppSystemProperties.ScheduleCornJobsRunStatus) {
+
 			queue.execute(this::runInstitutionalResourcesCounting);
 			queue.execute(this::runUserIntegrationJob);
 			queue.execute(this::runCirculationJob);
+			queue.execute(this::runUserNotePopulateJob);
 
 		}
 	}
@@ -167,6 +178,32 @@ public class DailyJobScheduler {
 				try {
 					oprocess.manipulate(locationService, true, "0");
 				} catch (RestClientException | IOException e) {
+					e.printStackTrace();
+				}
+
+				CacheMap.set("Running-CirculationJob", "stop");
+			});
+			myThread.start();
+		} catch (Exception e1) {
+			LOG.error(e1.getMessage());
+		}
+	}
+
+	private void runUserNotePopulateJob() {
+		try {
+			Thread myThread = new Thread(() -> {
+				CacheMap.set("Running-CirculationJob", "true");
+
+				UserNotesPopulateProcess oprocess = new UserNotesPopulateProcess(reportUserNoteService,
+						userNoteTypeService);
+
+				oprocess.printScreen("Beeper starts for Circulation data extraction " + DateUtil.getTodayDateAndTime(),
+						Constants.ErrorLevel.INFO);
+
+				try {
+					oprocess.manipulate(true);
+
+				} catch (RestClientException e) {
 					e.printStackTrace();
 				}
 

@@ -621,3 +621,14 @@ Data Table styling
 .ribbon-info {
 	background-color: orange;
 }
+
+
+#userNoteDataTable {
+    table-layout: fixed;
+}
+
+#userNoteDataTable td,
+#userNoteDataTable th {
+    word-break: break-word;
+    white-space: normal;
+}

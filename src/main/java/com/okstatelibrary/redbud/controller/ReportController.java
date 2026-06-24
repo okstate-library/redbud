@@ -6,6 +6,7 @@ import com.okstatelibrary.redbud.entity.Institution;
 import com.okstatelibrary.redbud.entity.InstitutionRecord;
 import com.okstatelibrary.redbud.entity.Location;
 import com.okstatelibrary.redbud.entity.PatronGroup;
+import com.okstatelibrary.redbud.entity.ReportUserNote;
 import com.okstatelibrary.redbud.entity.User;
 import com.okstatelibrary.redbud.enums.LoanAction;
 import com.okstatelibrary.redbud.folio.entity.Account;
@@ -24,15 +25,19 @@ import com.okstatelibrary.redbud.service.InstitutionService;
 import com.okstatelibrary.redbud.service.InstitutionRecordService;
 import com.okstatelibrary.redbud.service.LibraryService;
 import com.okstatelibrary.redbud.service.LocationService;
+import com.okstatelibrary.redbud.service.ReportUserNoteService;
 import com.okstatelibrary.redbud.service.ServicePointService;
+import com.okstatelibrary.redbud.service.UserNoteTypeService;
 import com.okstatelibrary.redbud.service.UserService;
 import com.okstatelibrary.redbud.service.external.FolioService;
 import com.okstatelibrary.redbud.util.DateUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -72,6 +77,9 @@ public class ReportController {
 	private InstitutionService institutionService;
 
 	@Autowired
+	private UserNoteTypeService userNoteTypeService;
+
+	@Autowired
 	private CampusService campusService;
 
 	@Autowired
@@ -85,6 +93,9 @@ public class ReportController {
 
 	@Autowired
 	private InstitutionRecordService institutionRecordService;
+
+	@Autowired
+	private ReportUserNoteService reportUserNoteService;
 
 	private String notApplicable = "N/A";
 
@@ -771,6 +782,41 @@ public class ReportController {
 //		model.addAttribute("user", user);
 
 		return records; // "reports/institutionRecords";
+	}
+
+	@GetMapping("/userNotes")
+	private String getUserNotes(Principal principal, Model model) throws IOException {
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("noteTypeList", userNoteTypeService.getUserNoteTypeList());
+
+		model.addAttribute("user", user);
+
+		return "reports/usernotes";
+	}
+
+	@RequestMapping(value = "/usernotes/data", method = RequestMethod.GET)
+	private @ResponseBody List<ReportUserNote> getUserNotes(@RequestParam(required = false) String noteTypeId)
+			throws RestClientException, IOException {
+
+		System.out.print("noteTypeId -- " + noteTypeId);
+
+		List<ReportUserNote> userNotes = reportUserNoteService.getReportUserNoteList(noteTypeId);
+
+		return userNotes;
+	}
+
+	@RequestMapping("/usernotes/data/{id}")
+	public @ResponseBody ResponseEntity<java.lang.String> deleteUserNote(@PathVariable String id) {
+
+		System.out.println("Deleting note: " + id);
+
+		folioService.deleteUserNote(id);
+
+		reportUserNoteService.deleteReportUserNote(id);
+
+		return ResponseEntity.ok("Deleted successfully");
 	}
 
 }

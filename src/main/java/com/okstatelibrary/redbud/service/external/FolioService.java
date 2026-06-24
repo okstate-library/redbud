@@ -2,6 +2,7 @@ package com.okstatelibrary.redbud.service.external;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.*;
 
@@ -38,6 +39,7 @@ import com.okstatelibrary.redbud.folio.entity.manualblock.ManualBlock;
 import com.okstatelibrary.redbud.folio.entity.request.Request;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
 import com.okstatelibrary.redbud.util.Constants;
+import com.okstatelibrary.redbud.util.DateUtil;
 
 @Service
 public class FolioService extends FolioServiceToken {
@@ -496,6 +498,62 @@ public class FolioService extends FolioServiceToken {
 			// System.out.println("Total records- " + response.getBody().totalRecords);
 
 			return response.getBody().loans;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	public ArrayList<UserNote> getUserNotes(String userNoteType, boolean isCompareDateRange)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "notes?query=type.Id==" + userNoteType + "&limit=1";
+
+			ResponseEntity<UserNoteRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					UserNoteRoot.class);
+
+			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+
+			ArrayList<UserNote> pairList = new ArrayList<>();
+
+			System.out.println("totalIterations - " + totalIterations);
+
+			for (int iterations = 0; iterations < totalIterations; iterations++) {
+
+				int offset = iterations * apiRecordlimit;
+
+				url = AppSystemProperties.FolioURL + "notes?query=type.Id==" + userNoteType + "&limit=" + apiRecordlimit
+						+ "&offset=" + offset;
+
+				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), UserNoteRoot.class);
+
+				if (isCompareDateRange) {
+					for (UserNote note : response.getBody().notes) {
+						if (note.metadata != null && note.metadata.createdDate != null) {
+							Date createdDate = note.metadata.createdDate;
+
+							if (!createdDate.before(DateUtil.getYesterdayDateWithTime(true))
+									&& !createdDate.after(DateUtil.getYesterdayDateWithTime(false))) {
+
+								System.out
+										.println("Matched Note: " + note.id + note.title + note.domain + note.content);
+
+								pairList.add(note);
+							}
+						}
+					}
+				} else {
+					pairList.addAll(response.getBody().notes);
+				}
+
+			}
+
+			return pairList;
 
 		} catch (Exception e) {
 			// TODO: handle exception
@@ -1895,6 +1953,26 @@ public class FolioService extends FolioServiceToken {
 			e.getMessage();
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	public boolean deleteUserNote(String id) {
+		try {
+
+			String url = AppSystemProperties.FolioURL + "notes/" + id;
+
+			ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE, getHttpRequest(),
+					String.class);
+
+			String returnCode = response.getStatusCode().toString();
+
+			return returnCode.equals("204 NO_CONTENT") ? true : false;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return false;
 		}
 	}
 

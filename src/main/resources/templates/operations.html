@@ -647,8 +647,7 @@
 				<h5>
 					<i>#ManualTask #ScheduleTask</i>
 				</h5>
-				<form method="get"
-					th:action="@{/settings/executeUserIntegration}">
+				<form method="get" th:action="@{/settings/executeUserIntegration}">
 
 					<div class="row">
 						<div class="col-xs-8">Every day</div>
@@ -821,6 +820,71 @@
 				</form>
 
 			</div>
+
+			<div class="row top-buffer container-border">
+				<h4>
+					<b>Populate User Notes </b>
+				</h4>
+				<h5>
+					<i>#ScheduleTask #ManualTask</i>
+				</h5>
+				<form method="post"
+					th:action="@{/settings/userNotesPopulateProcess}">
+
+					<div class="row">
+						<div class="col-xs-8">Collects all the user notes after
+							truncating table.</div>
+
+						<div class="col-xs-2">
+							<button type="submit" id="executeuserNotesPopulateProcess"
+								name="executeuserNotesPopulateProcess" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeuserNotesPopulateProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_User_Notes_Populatesl}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+
+			<div class="row top-buffer container-border">
+				<h4>
+					<b>Populate User Notes - Runs Daily Schedule Task</b>
+				</h4>
+				<h5>
+					<i>#ManualTask</i>
+				</h5>
+				<form method="post"
+					th:action="@{/settings/userNotesPopulateDailyProcess}">
+
+					<div class="row">
+						<div class="col-xs-8">Get the user notes from
+							[[${yesterday_start_time}]] to [[${yesterday_end_time}]]</div>
+
+						<div class="col-xs-2">
+							<button type="submit" id="executeUserNotesPopulateDailyProcess"
+								name="executeUserNotesPopulateDailyProcess" disabled
+								class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeUserNotesPopulateDailyProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_User_Notes_Daily_Populates}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+
 		</div>
 
 		<div id="user-patron-group" class="tab-pane fade">
@@ -832,7 +896,7 @@
 				<h5>
 					<i>#ManualTask</i>
 				</h5>
-				<form method="get" th:action="@{/settings/changePatronGroup}">
+				<form method="post" th:action="@{/settings/changePatronGroup}">
 
 					<div class="row">
 						<div class="col-xs-8">Change patron group depending on

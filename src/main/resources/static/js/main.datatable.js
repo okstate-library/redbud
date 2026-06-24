@@ -23,6 +23,106 @@ function formatAuthorEditionPublishedYear(d) {
 			( d.statement != null ? '<dl>' + '<dt>Statement</dt>' + '<dd>'+ d.statement+'</dd>' + '</dl>': '' ));
 }
 
+function callUserNoteRecordsReportAjaxRequest()
+{
+	
+	var e = document.getElementById("noteTypeDropDown");
+	var noteTypeId = e.value;
+
+	if (noteTypeId != 0) {
+		
+	
+		$.ajax({
+			type : "GET",
+			cache : false,
+			url : '/reports/usernotes/data',
+			data : {
+				"noteTypeId" : noteTypeId
+			},
+			beforeSend : function() {
+				$('#loader').removeClass('hidden') // Loader
+			},
+			success : function(data) {
+	
+				$('#userNoteDataTable').dataTable().fnDestroy();
+				
+				var table = $('#userNoteDataTable').DataTable(
+						{
+	
+							dom : 'Bfrtip',
+							buttons : [ 'excel', 'print' ],
+							data : data,
+							order : [ [ 1, 'asc' ] ],
+							dom : 'Blfrtip',
+	// orderCellsTop : true,
+							fixedHeader : true,
+							autoWidth : false,
+	
+							"columnDefs" : [ {
+								"width" : "100px",
+								title : "Created Date",
+								"targets" : 0
+							},{
+								"width" : "100px",
+								title : "Primary Identifier",
+								"targets" : 1
+							}, {
+								"width" : "100px",
+								title : "User",
+								"targets" : 2
+							}, {
+								"width" : "250px",
+								title : "Title",
+								"targets" : 3
+							}, {
+								"width" : "400px",
+								title : "Content",
+								"targets" : 4
+							} ,
+							{
+								"width" : "100px",
+								title : "Delete",
+								"targets" : 5
+							}],
+							columns : [ {
+								"data" : "createdDate",
+								render: function(data, type, row) {
+	
+							        if (!data) {
+							            return '';
+							        }
+	
+							        return data.split('T')[0];
+							    }
+							},{
+								"data" : "primaryId"
+							}, {
+								"data" : "name"
+							}, {
+								"data" : "title"
+							}, {
+								"data" : "content"
+							} ,{
+								"data" : "noteId",
+								render : getDeleteLink,
+							}],
+	
+							"lengthMenu" : [ [ 10, 50, 100, 200, -1 ],
+									[ 10, 50, 100, 200, "All" ] ],
+							"pageLength" : 10,
+						});
+				
+				// table.columns.adjust().draw();
+	
+			},
+			complete : function() {
+				// class and hiding the spinner.
+				$('#loader').addClass('hidden')
+			},
+		});
+	}
+}
+
 
 function callInstitutionRecordsReportAjaxRequest()
 {
@@ -816,7 +916,7 @@ function callCirculationLogReportAjaxRequest() {
 		},
 		success : function(data) {
 
-			//console.log(JSON.stringify(data));
+			// console.log(JSON.stringify(data));
 			
 			$('#circulationLogTable').dataTable().fnDestroy();
 
@@ -1179,7 +1279,9 @@ function getShortDateWithTime(data) {
 }
 
 function getShortDate(data) {
-	return new Date(data).toLocaleDateString();
+	var date = new Date(data);
+
+    return date.toLocaleDateString('en-US');
 }
 
 function getFullName(data) {
@@ -1195,3 +1297,33 @@ function getLoanDate(data) {
 		return data;
 	}
 }
+
+function getDeleteLink(data) {
+
+	return   '<a href="#" onclick="confirmDelete(\'' + data + '\'); return false;"> Delete</a>';
+	
+}
+
+function confirmDelete(id) {
+
+    if (confirm("Are you sure you want to delete this record?")) {
+     	
+        $.ajax({
+            url: '/reports/usernotes/data/' + id,
+            type: 'DELETE',
+
+            success: function(response) {
+                alert("Record deleted successfully.");
+
+                callUserNoteRecordsReportAjaxRequest();
+//                $('#userNoteDataTable').DataTable().ajax.reload();
+            },
+
+            error: function(xhr) {
+                alert("Failed to delete record.");
+            }
+        });
+    }
+}
+
+

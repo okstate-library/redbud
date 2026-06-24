@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.client.RestClientException;
@@ -73,8 +74,14 @@ public class SettingsController {
 	@Autowired
 	private CirculationLoanService circulationLoanService;
 
+	@Autowired
+	private ReportUserNoteService reportUserNoteService;
+
+	@Autowired
+	private UserNoteTypeService userNoteTypeService;
+
 	@GetMapping("/operations")
-	public String operations(Principal principal, Model model) throws IOException {
+	public String operations(Principal principal, Model model) throws IOException, ParseException {
 		User user = userService.findByUsername(principal.getName());
 
 		model.addAttribute("user", user);
@@ -94,6 +101,10 @@ public class SettingsController {
 		model.addAttribute("libraryList", libraryService.getLibraryList());
 
 		model.addAttribute("locationList", locationService.getLocationList());
+
+		model.addAttribute("yesterday_start_time", DateUtil.getYesterdayDateWithTime(true));
+		
+		model.addAttribute("yesterday_end_time", DateUtil.getYesterdayDateWithTime(false));
 
 		return "operations";
 	}
@@ -250,9 +261,9 @@ public class SettingsController {
 							"Beeper starts for user integration process manually " + DateUtil.getTodayDateAndTime(),
 							Constants.ErrorLevel.INFO);
 
-					//oprocess.copyFiles("add_update");
+					// oprocess.copyFiles("add_update");
 
-					//oprocess.copyFiles("inactive");
+					// oprocess.copyFiles("inactive");
 
 					oprocess.manipulate(groupService);
 
@@ -520,7 +531,7 @@ public class SettingsController {
 	public String circulationLoanDailyProcess(Principal principal, Model model) throws IOException {
 
 		User user = userService.findByUsername(principal.getName());
-		
+
 		model.addAttribute("user", user);
 
 		try {
@@ -598,7 +609,8 @@ public class SettingsController {
 
 							oprocess.manipulate(locationService, false, libraryDropDown);
 
-							CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location, CacheMap.idle);
+							CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction_By_Location,
+									CacheMap.idle);
 
 						} catch (RestClientException | IOException e) {
 
@@ -614,23 +626,21 @@ public class SettingsController {
 				});
 
 				myThread.start();
-				
+
 				System.out.println("libraryDropDown -- " + libraryDropDown);
 
 			} catch (Exception e1) {
 				LOG.error(e1.getMessage());
 			}
 		} else {
-			
-			
+
 			Thread myThread = new Thread(new Runnable() {
 
 				public void run() {
 
 					CacheMap.set(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.running);
 
-					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction,
-							CacheMap.running);
+					model.addAttribute(CacheMap.process_CirculationLog_API_Data_Extraction, CacheMap.running);
 
 					CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
 
@@ -654,7 +664,7 @@ public class SettingsController {
 			});
 
 			myThread.start();
-							
+
 			System.out.println("libraryDropDown -- " + libraryDropDown);
 		}
 
@@ -767,7 +777,6 @@ public class SettingsController {
 
 		System.out.println("***************CheckUserStatusProcess*****************");
 
-		
 		User user = userService.findByUsername(principal.getName());
 
 		model.addAttribute("user", user);
@@ -856,9 +865,9 @@ public class SettingsController {
 					UserProertiesUpdateProcess oprocess = new UserProertiesUpdateProcess();
 
 					try {
-						
-						//oprocess.copyFiles("library_folio");
-						
+
+						// oprocess.copyFiles("library_folio");
+
 						oprocess.manipulate(groupService);
 					} catch (RestClientException | IOException e) {
 						// TODO Auto-generated catch block
@@ -946,6 +955,82 @@ public class SettingsController {
 					oprocess.manipulate(groupService);
 
 					CacheMap.set("ProcessRunning", CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+	@PostMapping("/userNotesPopulateProcess")
+	public String userNotesPopulateProcess(Principal principal, Model model) {
+
+		System.out.println(" user Notes Populate Process  ");
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_User_Notes_Populates, CacheMap.running);
+
+					UserNotesPopulateProcess oprocess = new UserNotesPopulateProcess(reportUserNoteService,
+							userNoteTypeService);
+
+					oprocess.manipulate(false);
+
+					CacheMap.set(CacheMap.process_User_Notes_Populates, CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+
+	@PostMapping("/userNotesPopulateDailyProcess")
+	public String userNotesPopulateDailyProcess(Principal principal, Model model) {
+
+		System.out.println(" user Notes Populate Process  ");
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_User_Notes_Daily_Populates, CacheMap.running);
+
+					UserNotesPopulateProcess oprocess = new UserNotesPopulateProcess(reportUserNoteService,
+							userNoteTypeService);
+
+					oprocess.manipulate(true);
+
+					CacheMap.set(CacheMap.process_User_Notes_Daily_Populates, CacheMap.idle);
 				}
 			});
 
@@ -1092,7 +1177,7 @@ public class SettingsController {
 
 		return "operations";
 	}
-	
+
 	@GetMapping("/arlReportingProcess")
 	public String arlReportingProcess(Principal principal, Model model) {
 
@@ -1137,7 +1222,6 @@ public class SettingsController {
 		return "operations";
 	}
 
-	
 	@GetMapping("/rfidReportingProcess")
 	public String rfidReportingProcess(Principal principal, Model model) {
 
@@ -1181,8 +1265,7 @@ public class SettingsController {
 
 		return "operations";
 	}
-	
-	
+
 	@GetMapping("/updateCirculationLogRecordProperties")
 	public String updateCirculationLogRecordProperties(Principal principal, Model model) {
 
