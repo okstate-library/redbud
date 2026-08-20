@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.okstatelibrary.redbud.entity.*;
+import com.okstatelibrary.redbud.enums.UserStatusCheck;
 import com.okstatelibrary.redbud.folio.entity.*;
 import com.okstatelibrary.redbud.service.*;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
@@ -76,7 +77,8 @@ public class UserIntegrationProcess extends MainProcess {
 							printScreen(group.getFolioGroupId() + "   " + group.getFolioGroupName(),
 									Constants.ErrorLevel.INFO);
 
-							Root folioRoot = folioService.getUsersbyPatronGroup(group.getFolioGroupId());
+							Root folioRoot = folioService.getUsersbyPatronGroup(group.getFolioGroupId(),
+									UserStatusCheck.TRUE);
 
 							List<CsvUserModel> users = csvRoot.users.stream()
 									.filter(selUser -> selUser.getMainUserGroup().equals(group.getFolioGroupName()))
@@ -85,9 +87,9 @@ public class UserIntegrationProcess extends MainProcess {
 							printScreen("Folio Users count - " + folioRoot.users.size() + " CSV Users count - "
 									+ users.size(), Constants.ErrorLevel.INFO);
 
-							// **********************
-							// USERS IN CSV FILE ONLY
-							// **********************
+							// ********************************
+							// USERS IN CSV FILE ONLY NEW USERS
+							// ********************************
 
 							printScreen("**************************************", Constants.ErrorLevel.INFO);
 							printScreen("** New Users ***", Constants.ErrorLevel.INFO);
@@ -105,7 +107,7 @@ public class UserIntegrationProcess extends MainProcess {
 							// newUsersFromCSV.forEach(System.out::println);
 
 							subReport.setNewUserCount = newUsersFromCSV.size();
-							//subReport.existingUserModified = new ArrayList<String>();
+							// subReport.existingUserModified = new ArrayList<String>();
 							subReport.setNewUserErrorUserList = new ArrayList<String>();
 
 							for (CsvUserModel newUser : newUsersFromCSV) {
@@ -117,7 +119,7 @@ public class UserIntegrationProcess extends MainProcess {
 								newFolioUser.barcode = newUser.getISOCode();
 								newFolioUser.patronGroup = group.getFolioGroupId();
 								newFolioUser.username = newUser.getOkeyUsername();
-								newFolioUser.expirationDate = DateUtil.get9MonthsAfterTodayDate();
+								newFolioUser.expirationDate = DateUtil.getActiveUserExpireDate();
 
 								Personal newPersonal = new Personal();
 								newPersonal.firstName = newUser.getFirstName();
@@ -162,7 +164,7 @@ public class UserIntegrationProcess extends MainProcess {
 
 												folioService.updateUser(exist_user);
 
-												//subReport.existingUserModified.add(exist_user.toString());
+												// subReport.existingUserModified.add(exist_user.toString());
 
 											} else {
 												printScreen(" User not Added " + newFolioUser,
@@ -435,8 +437,7 @@ public class UserIntegrationProcess extends MainProcess {
 //
 //					}
 
-					if (subReport.setNewUserErrorUserList != null
-							&& subReport.setNewUserErrorUserList.size() > 0)
+					if (subReport.setNewUserErrorUserList != null && subReport.setNewUserErrorUserList.size() > 0)
 
 					{
 						strBuilder.append("<u>From CSV - New users  - Add error users</u><br/>");
@@ -448,8 +449,7 @@ public class UserIntegrationProcess extends MainProcess {
 
 					}
 
-					if (subReport.modifiedErrorUserList != null
-							&& subReport.modifiedErrorUserList.size() > 0)
+					if (subReport.modifiedErrorUserList != null && subReport.modifiedErrorUserList.size() > 0)
 
 					{
 
@@ -462,8 +462,7 @@ public class UserIntegrationProcess extends MainProcess {
 						strBuilder.append("<br/><br/>");
 					}
 
-					if (subReport.setToInactiveErrorUserList != null
-							&& subReport.setToInactiveErrorUserList.size() > 0)
+					if (subReport.setToInactiveErrorUserList != null && subReport.setToInactiveErrorUserList.size() > 0)
 
 					{
 

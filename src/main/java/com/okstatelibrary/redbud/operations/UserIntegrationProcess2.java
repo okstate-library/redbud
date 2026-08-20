@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import org.hibernate.internal.util.StringHelper;
 
 import com.okstatelibrary.redbud.entity.*;
+import com.okstatelibrary.redbud.enums.UserStatusCheck;
 import com.okstatelibrary.redbud.folio.entity.*;
 import com.okstatelibrary.redbud.service.*;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
@@ -94,7 +95,7 @@ public class UserIntegrationProcess2 extends MainProcess {
 							printScreen(group.getFolioGroupId() + "   " + group.getFolioGroupName(),
 									Constants.ErrorLevel.INFO);
 
-							Root folioRoot = folioService.getUsersbyPatronGroup(group.getFolioGroupId());
+							Root folioRoot = folioService.getUsersbyPatronGroup(group.getFolioGroupId() , UserStatusCheck.BOTH);
 
 							List<CsvUserModel> csvUsers = csvRoot.users.stream()
 									.filter(selUser -> selUser.getMainUserGroup().equals(group.getFolioGroupName()))
@@ -168,24 +169,24 @@ public class UserIntegrationProcess2 extends MainProcess {
 
 										printScreen("New User " + newUser.toString(), Constants.ErrorLevel.INFO);
 
-										String errorMessage = folioService.createUser(newFolioUser);
-
-										if (isStringNullOrEmpty(errorMessage)) {
-
-											printScreen("Added folio user " + newFolioUser.toString(),
-													Constants.ErrorLevel.INFO);
-
-											subReport.setNewUserSucessCount++;
-										} else {
-
-											printScreen(" Error user adding" + newFolioUser,
-													Constants.ErrorLevel.ERROR);
-
-											subReport.setNewUserErrorCount++;
-
-											subReport.setNewUserErrorUserList
-													.add(newFolioUser.toString() + " error : " + errorMessage);
-										}
+//										String errorMessage = folioService.createUser(newFolioUser);
+//
+//										if (isStringNullOrEmpty(errorMessage)) {
+//
+//											printScreen("Added folio user " + newFolioUser.toString(),
+//													Constants.ErrorLevel.INFO);
+//
+//											subReport.setNewUserSucessCount++;
+//										} else {
+//
+//											printScreen(" Error user adding" + newFolioUser,
+//													Constants.ErrorLevel.ERROR);
+//
+//											subReport.setNewUserErrorCount++;
+//
+//											subReport.setNewUserErrorUserList
+//													.add(newFolioUser.toString() + " error : " + errorMessage);
+//										}
 
 									} else {
 										subReport.setNewUserErrorCount++;
@@ -245,16 +246,16 @@ public class UserIntegrationProcess2 extends MainProcess {
 													+ modifyUser.getISOCode());
 										}
 
-										String customField = (exist_user.customFields != null && !StringHelper
-												.isEmptyOrWhiteSpace(exist_user.customFields.additionalPatronGroup_4))
-														? exist_user.customFields.additionalPatronGroup_4
-														: "";
-
-										if (!Objects.equals(customField, modifyUser.getUserGroup())) {
-
-											differences.add(
-													"userGroup: " + customField + " -> " + modifyUser.getUserGroup());
-										}
+//										String customField = (exist_user.customFields != null && !StringHelper
+//												.isEmptyOrWhiteSpace(exist_user.customFields.additionalPatronGroup_4))
+//														? exist_user.customFields.additionalPatronGroup_4
+//														: "";
+//
+//										if (!Objects.equals(customField, modifyUser.getUserGroup())) {
+//
+//											differences.add(
+//													"userGroup: " + customField + " -> " + modifyUser.getUserGroup());
+//										}
 
 										if (!Objects.equals(exist_user.username, modifyUser.getOkeyUsername())) {
 
@@ -275,7 +276,7 @@ public class UserIntegrationProcess2 extends MainProcess {
 											if (!exist_user.active) {
 
 												exist_user.active = true;
-												exist_user.expirationDate = DateUtil.get9MonthsAfterTodayDate();
+												exist_user.expirationDate = DateUtil.getActiveUserExpireDate();// .get9MonthsAfterTodayDate();
 
 											}
 

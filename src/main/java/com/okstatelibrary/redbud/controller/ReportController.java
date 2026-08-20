@@ -306,7 +306,7 @@ public class ReportController {
 					patronBlock = filterpatronBlockRoot;
 				} else {
 
-					patronBlock = folioService.getAutomatedPatronBlocks(loan.userId);
+					patronBlock = folioService.getAutomatedPatronBlocksByUser(loan.userId);
 					patronBlock.userId = loan.userId;
 
 					filteredPatronBlockRootList.add(patronBlock);
@@ -398,7 +398,7 @@ public class ReportController {
 					patronBlock = filterpatronBlockRoot;
 				} else {
 
-					patronBlock = folioService.getAutomatedPatronBlocks(account.userId);
+					patronBlock = folioService.getAutomatedPatronBlocksByUser(account.userId);
 					patronBlock.userId = account.userId;
 
 					filteredPatronBlockRootList.add(patronBlock);
@@ -486,7 +486,7 @@ public class ReportController {
 					patronBlock = filterpatronBlockRoot;
 				} else {
 
-					patronBlock = folioService.getAutomatedPatronBlocks(account.userId);
+					patronBlock = folioService.getAutomatedPatronBlocksByUser(account.userId);
 					patronBlock.userId = account.userId;
 
 					filteredPatronBlockRootList.add(patronBlock);
@@ -548,8 +548,17 @@ public class ReportController {
 
 				if (loan.borrower.barcode != null && !loan.borrower.barcode.trim().isEmpty()) {
 
-					loan.borrower.externalSystemId = folioService
-							.getUsersByBarcode(loan.borrower.barcode).externalSystemId;
+					System.out.println("barcode :" + loan.borrower.barcode);
+
+					FolioUser folioUser = folioService.getUsersByBarcode(loan.borrower.barcode);
+
+					if (folioUser != null) {
+						loan.borrower.externalSystemId = folioUser.externalSystemId;
+					} else
+
+					{
+						loan.borrower.externalSystemId = loan.borrower.barcode;
+					}
 				} else {
 					loan.borrower.externalSystemId = notApplicable;
 				}

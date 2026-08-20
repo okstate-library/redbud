@@ -282,7 +282,45 @@ public class SettingsController {
 
 		return "operations";
 	}
+	
+	
+	@GetMapping("/executeDeleteInactiveUsers")
+	public String executeDeleteInactiveUsers(Principal principal, Model model) {
+		User user = userService.findByUsername(principal.getName());
 
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_Execute_Delete_Inactive_Users, CacheMap.running);
+
+					DeleteInctiveUsers oprocess = new DeleteInctiveUsers();
+
+					oprocess.printScreen("Beeper starts for inactive user process" + DateUtil.getTodayDateAndTime(),
+							Constants.ErrorLevel.INFO);
+
+					oprocess.manipulate(groupService);
+
+					CacheMap.set(CacheMap.process_Execute_Delete_Inactive_Users, CacheMap.idle);
+				}
+			});
+
+			myThread.start();
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
+	
 	@GetMapping("/executeChangeExpirationDateOfActiveUsers")
 	public String executeChangeExpirationDateOfActiveUsers(Principal principal, Model model) {
 		User user = userService.findByUsername(principal.getName());

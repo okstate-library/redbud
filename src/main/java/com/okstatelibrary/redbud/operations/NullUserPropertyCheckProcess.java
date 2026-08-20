@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.okstatelibrary.redbud.entity.*;
+import com.okstatelibrary.redbud.enums.UserStatusCheck;
 import com.okstatelibrary.redbud.folio.entity.*;
 import com.okstatelibrary.redbud.service.*;
 import com.okstatelibrary.redbud.util.Constants;
@@ -26,9 +27,8 @@ public class NullUserPropertyCheckProcess extends MainProcess {
 
 			System.out.println("Start");
 
-			
 			System.out.println("User id , username,  name , status");
-			
+
 			for (CsvFileModel csvFileModel : Constants.csvFileModels) {
 
 				for (String institueCode : csvFileModel.institueCodes) {
@@ -49,11 +49,11 @@ public class NullUserPropertyCheckProcess extends MainProcess {
 //						System.out.println(
 //								"Folio Users count - " + group.getFolioGroupName() + " " + folioRoot.users.size());
 ////
-						
 
 						for (PatronGroup group : selGroupList) {
 
-							Root folioRoot = folioService.getUsersbyPatronGroup(group.getFolioGroupId());
+							Root folioRoot = folioService.getUsersbyPatronGroup(group.getFolioGroupId(),
+									UserStatusCheck.TRUE);
 
 							for (FolioUser folioUser : folioRoot.users) {
 

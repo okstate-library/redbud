@@ -19,10 +19,10 @@ public class DateUtil {
 
 	private static SimpleDateFormat longDateFormat2 = new SimpleDateFormat("MM/dd/yyyy");
 
-//	public static String getActiveUserExpireDate() {
-//
-//		return "2026-03-01"; // "02/27/2026"
-//	}
+	public static String getActiveUserExpireDate() {
+
+		return "2027-06-01"; // "02/27/2026"
+	}
 
 	public static String get9MonthsAfterTodayDate() {
 

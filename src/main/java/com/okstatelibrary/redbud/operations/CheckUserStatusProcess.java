@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import com.okstatelibrary.redbud.entity.*;
+import com.okstatelibrary.redbud.enums.UserStatusCheck;
 import com.okstatelibrary.redbud.folio.entity.*;
 import com.okstatelibrary.redbud.service.*;
 import com.okstatelibrary.redbud.util.Constants;
@@ -115,7 +116,8 @@ public class CheckUserStatusProcess extends MainProcess {
 
 						for (PatronGroup group : selGroupList) {
 
-							Root folioRoot = folioService.getUsersbyPatronGroup(group.getFolioGroupId());
+							Root folioRoot = folioService.getUsersbyPatronGroup(group.getFolioGroupId(),
+									UserStatusCheck.TRUE);
 
 							printScreen("Folio Users count - " + group.getFolioGroupName() + " - "
 									+ folioRoot.users.size());

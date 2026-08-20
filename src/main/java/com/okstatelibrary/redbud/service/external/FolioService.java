@@ -23,6 +23,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
+import com.okstatelibrary.redbud.enums.UserStatusCheck;
 import com.okstatelibrary.redbud.folio.entity.*;
 import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord;
 import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord2;
@@ -411,6 +412,43 @@ public class FolioService extends FolioServiceToken {
 
 			System.err.println("Error: FolioService : getHoldingRecordByHoldingId " + e.getMessage());
 
+			return null;
+		}
+	}
+
+	public ArrayList<Loan> getAllOpenLoans()
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String mainUrl = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"open\")&limit=";
+
+			System.out.println("mainUrl -- " + mainUrl);
+
+			ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + zeroRecordCount, HttpMethod.GET,
+					getHttpRequest(), CirculationRoot.class);
+
+			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+
+			ArrayList<Loan> loans = new ArrayList<>();
+
+			for (int iterations = 0; iterations < totalIterations; iterations++) {
+
+				int offset = iterations * apiRecordlimit;
+
+				String url = mainUrl + apiRecordlimit + "&offset=" + offset;
+
+				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
+
+				loans.addAll(response.getBody().loans);
+			}
+
+			return loans;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
 			return null;
 		}
 	}
@@ -1506,13 +1544,27 @@ public class FolioService extends FolioServiceToken {
 	///
 	// Get users by the institute code -
 	///
-	public Root getUsersbyPatronGroup(String patronGroup)
+	public Root getUsersbyPatronGroup(String patronGroup, UserStatusCheck status)
 			throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
 		try {
 
-			String url = AppSystemProperties.FolioURL + "users?query=patronGroup=" + patronGroup
-					+ "  and active==\"true\"&limit=100000";
+			String url = AppSystemProperties.FolioURL + "users?query=patronGroup=" + patronGroup;
+
+			switch (status) {
+			case TRUE:
+				url += " and active==\"true\"";
+				break;
+
+			case FALSE:
+				url = " and active==\"false\"";
+				break;
+
+			default:
+				break;
+			}
+
+			url += "&limit=100000";
 
 			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
@@ -1589,6 +1641,57 @@ public class FolioService extends FolioServiceToken {
 		}
 	}
 
+	public ArrayList<ManualBlock> getAllManualBlocks()
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "manualblocks?limit=500";
+
+			ResponseEntity<ManualBlockRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					ManualBlockRoot.class);
+
+			return response.getBody().manualblocks;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	/**
+	 * 
+	 * @param userId
+	 * @return
+	 * @throws JsonParseException
+	 * @throws JsonMappingException
+	 * @throws RestClientException
+	 * @throws IOException
+	 */
+	public PatronBlockRoot getAutomatedPatronBlocksByUser(String userId)
+			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+		try {
+
+			String url = AppSystemProperties.FolioURL + "automated-patron-blocks/" + userId;
+
+			// System.out.println(url);
+
+			ResponseEntity<PatronBlockRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+					PatronBlockRoot.class);
+
+			return response.getBody();
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return null;
+		}
+	}
+
 	///
 	// Get over due accounts by the institute code -
 	///
@@ -1622,28 +1725,6 @@ public class FolioService extends FolioServiceToken {
 			}
 
 			return accounts;
-
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	public PatronBlockRoot getAutomatedPatronBlocks(String userId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
-
-		try {
-
-			String url = AppSystemProperties.FolioURL + "automated-patron-blocks/" + userId;
-
-			// System.out.println(url);
-
-			ResponseEntity<PatronBlockRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					PatronBlockRoot.class);
-
-			return response.getBody();
 
 		} catch (Exception e) {
 			// TODO: handle exception

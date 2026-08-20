@@ -701,6 +701,37 @@
 			</div>
 
 			<div class="row top-buffer container-border">
+				<h4>
+					<b>Delete inactive users.</b>
+				</h4>
+				<h5>
+					<i>#ManualTask</i>
+				</h5>
+				<form method="get"
+					th:action="@{/settings/executeDeleteInactiveUsers}">
+
+					<div class="row">
+						<div class="col-xs-8">When the users are inactive for one
+							year it's better to delete from the FOLIO.</div>
+						<div class="col-xs-2">
+							<button type="submit" id="executeDeleteInactiveUsers" disabled
+								class="btn btn-success btn-md btn-block">Execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+								onchange="document.getElementById('executeDeleteInactiveUsers').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Process_Execute_Delete_Inactive_Users}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+
+
+			<div class="row top-buffer container-border">
 
 				<form method="get" th:action="@{/settings/convertinactiveusers}">
 
