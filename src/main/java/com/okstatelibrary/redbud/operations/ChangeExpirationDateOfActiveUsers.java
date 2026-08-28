@@ -46,37 +46,37 @@ public class ChangeExpirationDateOfActiveUsers extends MainProcess {
 							Root folioRoot = folioService.getUsersbyPatronGroup(group.getFolioGroupId(),
 									UserStatusCheck.TRUE);
 
-							printScreen(
-									"Folio Users count - " + group.getFolioGroupName() + " " + folioRoot.users.size());
+//							printScreen(
+//									"Folio Users count - " + group.getFolioGroupName() + " " + folioRoot.users.size());
 
 							int userCount = 0;
 
 							for (FolioUser folioUser : folioRoot.users) {
 
-//								String expiryDate = folioUser.expirationDate != null
-//										? folioUser.expirationDate.split("T")[0]
-//										: "date null";
+								String expiryDate = folioUser.expirationDate != null
+										? folioUser.expirationDate.split("T")[0]
+										: "date null";
 
-//								printScreen(folioUser.externalSystemId + ", " + folioUser.barcode + ", "
-//										+ folioUser.username + ", " + expiryDate);
+								printScreen(folioUser.externalSystemId + ", " + folioUser.barcode + ", "
+										+ folioUser.username + ", " + expiryDate);
 
-								folioUser.expirationDate = DateUtil.getActiveUserExpireDate(); // get9MonthsAfterTodayDate();
-
-								folioUser.metadata = getMetadata(folioUser.metadata);
-
-								if (!folioService.updateUser(folioUser)) {
-
-									printScreen("Error modify only Folio User " + folioUser, Constants.ErrorLevel.INFO);
-
-								} else {
-									userCount++;
-								}
+//								folioUser.expirationDate = DateUtil.getActiveUserExpireDate(); // get9MonthsAfterTodayDate();
+//
+//								folioUser.metadata = getMetadata(folioUser.metadata);
+//
+//								if (!folioService.updateUser(folioUser)) {
+//
+//									printScreen("Error modify only Folio User " + folioUser, Constants.ErrorLevel.INFO);
+//
+//								} else {
+//									userCount++;
+//								}
 
 								// break;
 							}
 
-							printScreen("Number of users updated of expiry date " + userCount,
-									Constants.ErrorLevel.INFO);
+//							printScreen("Number of users updated of expiry date " + userCount,
+//									Constants.ErrorLevel.INFO);
 
 							// break;
 						}

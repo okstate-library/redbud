@@ -255,7 +255,7 @@ public class SettingsController {
 
 					CacheMap.set(CacheMap.process_Execute_User_Integration, CacheMap.running);
 
-					UserIntegrationProcess2 oprocess = new UserIntegrationProcess2();
+					UserIntegrationProcess oprocess = new UserIntegrationProcess();
 
 					oprocess.printScreen(
 							"Beeper starts for user integration process manually " + DateUtil.getTodayDateAndTime(),

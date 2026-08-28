@@ -2,7 +2,6 @@ package com.okstatelibrary.redbud.service.external;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.*;
 
@@ -22,7 +21,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.okstatelibrary.redbud.enums.UserStatusCheck;
 import com.okstatelibrary.redbud.folio.entity.*;
 import com.okstatelibrary.redbud.folio.entity.holding.HoldingsRecord;
@@ -2041,6 +2039,26 @@ public class FolioService extends FolioServiceToken {
 		try {
 
 			String url = AppSystemProperties.FolioURL + "notes/" + id;
+
+			ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE, getHttpRequest(),
+					String.class);
+
+			String returnCode = response.getStatusCode().toString();
+
+			return returnCode.equals("204 NO_CONTENT") ? true : false;
+
+		} catch (Exception e) {
+			// TODO: handle exception
+			e.getMessage();
+			e.printStackTrace();
+			return false;
+		}
+	}
+	
+	public boolean deleteUser(String userId) {
+		try {
+
+			String url = AppSystemProperties.FolioURL + "users/" + userId;
 
 			ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE, getHttpRequest(),
 					String.class);

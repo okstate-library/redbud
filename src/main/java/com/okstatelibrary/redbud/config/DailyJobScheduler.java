@@ -14,7 +14,7 @@ import org.springframework.web.client.RestClientException;
 import com.okstatelibrary.redbud.operations.CirculationLogProcess;
 import com.okstatelibrary.redbud.operations.InstitutionRecordCountProcess;
 import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
-import com.okstatelibrary.redbud.operations.UserIntegrationProcess2;
+import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
 import com.okstatelibrary.redbud.operations.UserNotesPopulateProcess;
 import com.okstatelibrary.redbud.service.CirculationLogService;
 import com.okstatelibrary.redbud.service.GroupService;
@@ -143,7 +143,7 @@ public class DailyJobScheduler {
 			Thread myThread = new Thread(() -> {
 				CacheMap.set("UserIntegrationProcess", "true");
 
-				UserIntegrationProcess2 oprocess = new UserIntegrationProcess2();
+				UserIntegrationProcess oprocess = new UserIntegrationProcess();
 
 				oprocess.printScreen("Beeper starts for user integration process " + DateUtil.getTodayDateAndTime(),
 						Constants.ErrorLevel.INFO);

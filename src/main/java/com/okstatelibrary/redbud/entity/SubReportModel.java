@@ -15,32 +15,21 @@ public class SubReportModel {
 
 	// New users details
 
-	public int setNewUserCount;
+	public int possibleNewUserCount;
 
 	public int setNewUserSucessCount;
 
 	public int setNewUserErrorCount;
 
-	//public List<String> existingUserModified;
-
 	public List<String> setNewUserErrorUserList;
 
 	// Existing users
-	public int usersInFolioAndCsvCount;
+	public int possibleModifiedUserCount;
 
 	public int modifiedSucessUserCount;
 
 	public int modifiedErrorUserCount;
 
 	public List<String> modifiedErrorUserList;
-
-	// Details related to the user's status convert to inactive
-	public int setToInactiveUserCount;
-
-	public int setToInactiveSucessUserCount;
-
-	public int setToInactiveErrorUserCount;
-
-	public List<String> setToInactiveErrorUserList;
 
 }

@@ -51,86 +51,88 @@ public class LoanDueDateUpdateProcess extends MainProcess {
 
 // 		Code  segment 1 - User details
 
-		String userId = "38aee6d1-15a0-41ae-be50-d4286634770e"; // "e5483ea8-6ad8-5602-8365-7abf255a0825"; // Known user
-																// id
+		// String userId = "38aee6d1-15a0-41ae-be50-d4286634770e"; //
+		// "e5483ea8-6ad8-5602-8365-7abf255a0825"; // Known user
+		// id
 
-		FolioUser user = folioService.getUsersById(userId);
+		// FolioUser user = folioService.getUsersById(userId);
 
-		// for (FolioUser user : userRoot.users) {
+		for (FolioUser user : userRoot.users) {
 
-		// System.out.println(" Username " + user.username);
+			// System.out.println(" Username " + user.username);
 
-		ArrayList<Loan> loans = folioService.getLoansByUser(user.id);
+			ArrayList<Loan> loans = folioService.getLoansByUser(user.id);
 
-		// System.out.println("Loaan Count- " + loans.size());
+			// System.out.println("Loaan Count- " + loans.size());
 
-		ArrayList<Loan> sortedLoans = new ArrayList<Loan>();
+			ArrayList<Loan> sortedLoans = new ArrayList<Loan>();
 
-		for (Loan loan : loans) {
+			for (Loan loan : loans) {
 
-			if (loan.loanPolicyId.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")//
-					&& !loan.itemEffectiveLocationIdAtCheckOut.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")) {
+				if (loan.loanPolicyId.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")//
+						&& !loan.itemEffectiveLocationIdAtCheckOut.equals("7abd2943-08a0-4ca1-8cc8-6a1f116e8763")) {
 
-				boolean isIn = false;
+					boolean isIn = false;
 
-				for (Request request : requests) {
+					for (Request request : requests) {
 
-					if (request.itemId.equals(loan.itemId)) {
-						isIn = true;
+						if (request.itemId.equals(loan.itemId)) {
+							isIn = true;
+						}
 					}
-				}
 
-				if (!isIn) {
-					sortedLoans.add(loan);
+					if (!isIn) {
+						sortedLoans.add(loan);
+					}
+
 				}
 
 			}
 
-		}
+			if (sortedLoans.size() > 0) {
 
-		if (sortedLoans.size() > 0) {
+				// Task 3. Get the list of users having loan detais.
 
-			// Task 3. Get the list of users having loan detais.
+				System.out.println(user.id + "," + user.personal.email + "," + user.personal.firstName + " "
+						+ user.personal.lastName + "," + loans.size() + "," + +sortedLoans.size());
 
-			System.out.println(user.id + "," + user.personal.email + "," + user.personal.firstName + " "
-					+ user.personal.lastName + "," + loans.size() + "," + +sortedLoans.size());
+				// Task 4. To remove the comments before running.
+				// Sending the email with replacing to a lib-dls and after sending add the
+				// replace to old email.
 
-			// Task 4. To remove the comments before running.
-			// Sending the email with replacing to a lib-dls and after sending add the
-			// replace to old email.
+				String userEmail = user.personal.email;
 
-			String userEmail = user.personal.email;
+				user.personal.email = "lib-dls@okstate.edu";
 
-			user.personal.email = "lib-dls@okstate.edu";
+				folioService.updateUser(user);
 
-			folioService.updateUser(user);
+				// Thread.sleep(3000);
 
-			// Thread.sleep(3000);
+				for (Loan loan : sortedLoans) {
 
-			for (Loan loan : sortedLoans) {
+					//System.out.println(loan.id);// + " - " + loan.getDueDate());
 
-				System.out.println(loan.id);// + " - " + loan.getDueDate());
+					loan.actionComment = "faculty auto-renewal spring 2026";
+					loan.setDueDate("2027-03-01T04:59:59.000+00:00");
 
-				loan.actionComment = "faculty auto-renewal spring 2026";
-				loan.setDueDate("2026-09-02T04:59:59.000+00:00");
+					if (!folioService.updateLoan(loan)) {
+						System.out.println("Error with updating loan");
+					}
 
-				if (!folioService.updateLoan(loan)) {
-					System.out.println("Error with updating loan");
+					// Loan updateedLaon = folioService.getLoansByLoanId(loan.id);
+
+					// System.out.println("new duedate" + updateedLaon.getDueDate());
 				}
 
-				// Loan updateedLaon = folioService.getLoansByLoanId(loan.id);
+				Thread.sleep(3000);
 
-				// System.out.println("new duedate" + updateedLaon.getDueDate());
+				user.personal.email = userEmail;
+
+				folioService.updateUser(user);
+
 			}
 
-			Thread.sleep(3000);
-
-			user.personal.email = userEmail;
-
-			folioService.updateUser(user);
-
 		}
-		// }
 
 		System.out.println("End");
 

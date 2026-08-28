@@ -6,9 +6,12 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.hibernate.internal.util.StringHelper;
+
 import com.okstatelibrary.redbud.entity.*;
-import com.okstatelibrary.redbud.enums.UserStatusCheck;
 import com.okstatelibrary.redbud.folio.entity.*;
 import com.okstatelibrary.redbud.service.*;
 import com.okstatelibrary.redbud.util.AppSystemProperties;
@@ -20,18 +23,29 @@ public class UserIntegrationProcess extends MainProcess {
 	// Stores the Start time
 	protected String startTime;
 
+	public ArrayList<CsvUserModel> inactiveUsers;
+
 	public void manipulate(GroupService groupService) {
 
 		printScreen("UserIntegrationProcess Starts", Constants.ErrorLevel.INFO);
 
 		startTime = DateUtil.getTodayDateAndTime();
 
+		inactiveUsers = new ArrayList<CsvUserModel>();
+
 		ArrayList<CsvRoot> csvUserList = new ArrayList<CsvRoot>();
 
 		try {
+
+			ReportModel report = new ReportModel();
+
+			report.subReports = new ArrayList<SubReportModel>();
+
 			List<PatronGroup> groupList = groupService.getGroupList();
 
 			for (CsvFileModel csvFileModel : Constants.csvFileModels) {
+
+				printScreen("Main Folder " + csvFileModel.csvFilePath, Constants.ErrorLevel.INFO);
 
 				for (String instituteCode : csvFileModel.institueCodes) {
 
@@ -40,17 +54,25 @@ public class UserIntegrationProcess extends MainProcess {
 
 				String filePath = AppSystemProperties.CvsFilePath + csvFileModel.csvFilePath;
 
+				report.fileName = filePath;
+
+				printScreen("FilePath : " + filePath, Constants.ErrorLevel.INFO);
+
 				csvUserList = getCsvUsers(csvUserList, filePath);
+
+				printScreen("Users need to set inactive count " + inactiveUsers.size(), Constants.ErrorLevel.INFO);
 
 				for (String institueCode : csvFileModel.institueCodes) {
 
 					CsvRoot csvRoot = csvUserList.stream().filter(selRoot -> selRoot.institution.equals(institueCode))
 							.findAny().orElse(null);
 
-					printScreen(institueCode + "  " + csvRoot.users.size(), Constants.ErrorLevel.INFO);
+					printScreen("########################################################", Constants.ErrorLevel.INFO);
+
+					printScreen("Campus : " + institueCode + " : total # users in csv:" + csvRoot.users.size(),
+							Constants.ErrorLevel.INFO);
 
 					if (csvUserList == null || csvRoot.users.size() == 0) {
-
 						break;
 					}
 
@@ -58,116 +80,91 @@ public class UserIntegrationProcess extends MainProcess {
 							.filter(selGroup -> selGroup.getInstitutionCode() != null
 									&& selGroup.getInstitutionCode().equals(institueCode)
 									&& selGroup.isFolioOnly() == 0)
-//									&& selGroup.getFolioGroupName().equals("OKS-OSU-faculty")
+							// && selGroup.getFolioGroupName().equals("OKS-OSU-student-und"))
 //									&& selGroup.getInstitutionGroup().equals("FACULTY-V"))
 							.collect(Collectors.toList());
 
 					try {
 
-						ReportModel report = csvRoot.report;
-
-						report.fileName = filePath;
-
-						report.subReports = new ArrayList<SubReportModel>();
-
 						for (PatronGroup group : selGroupList) {
 
 							SubReportModel subReport = new SubReportModel(institueCode, group.getFolioGroupName());
 
+							printScreen("", Constants.ErrorLevel.INFO);
 							printScreen(group.getFolioGroupId() + "   " + group.getFolioGroupName(),
 									Constants.ErrorLevel.INFO);
 
-							Root folioRoot = folioService.getUsersbyPatronGroup(group.getFolioGroupId(),
-									UserStatusCheck.TRUE);
-
-							List<CsvUserModel> users = csvRoot.users.stream()
+							List<CsvUserModel> csvUsers = csvRoot.users.stream()
 									.filter(selUser -> selUser.getMainUserGroup().equals(group.getFolioGroupName()))
 									.collect(Collectors.toList());
 
-							printScreen("Folio Users count - " + folioRoot.users.size() + " CSV Users count - "
-									+ users.size(), Constants.ErrorLevel.INFO);
-
-							// ********************************
-							// USERS IN CSV FILE ONLY NEW USERS
-							// ********************************
-
 							printScreen("**************************************", Constants.ErrorLevel.INFO);
-							printScreen("** New Users ***", Constants.ErrorLevel.INFO);
+							printScreen("** New/modify users - need to add/modify in FOLIO ***",
+									Constants.ErrorLevel.INFO);
 							printScreen("**************************************", Constants.ErrorLevel.INFO);
 
-							List<CsvUserModel> newUsersFromCSV = users.stream()
-									.filter(o1 -> folioRoot.users.stream()
-											.noneMatch(o2 -> o2.externalSystemId != null
-													&& !o2.externalSystemId.trim().isEmpty()
-													&& o2.externalSystemId.equals(o1.getBannerId())))
-									.collect(Collectors.toList());
+							printScreen("New users from CSV " + csvUsers.size(), Constants.ErrorLevel.INFO);
 
-							printScreen("New users from CSV " + newUsersFromCSV.size(), Constants.ErrorLevel.INFO);
-
-							// newUsersFromCSV.forEach(System.out::println);
-
-							subReport.setNewUserCount = newUsersFromCSV.size();
-							// subReport.existingUserModified = new ArrayList<String>();
 							subReport.setNewUserErrorUserList = new ArrayList<String>();
+							subReport.modifiedErrorUserList = new ArrayList<String>();
 
-							for (CsvUserModel newUser : newUsersFromCSV) {
+							FolioUser exist_user = null;
 
-								FolioUser newFolioUser = new FolioUser();
-
-								newFolioUser.active = true;
-								newFolioUser.externalSystemId = newUser.getBannerId();
-								newFolioUser.barcode = newUser.getISOCode();
-								newFolioUser.patronGroup = group.getFolioGroupId();
-								newFolioUser.username = newUser.getOkeyUsername();
-								newFolioUser.expirationDate = DateUtil.getActiveUserExpireDate();
-
-								Personal newPersonal = new Personal();
-								newPersonal.firstName = newUser.getFirstName();
-								newPersonal.lastName = newUser.getLastName();
-								newPersonal.middleName = newUser.getMiddleName();
-								newPersonal.email = newUser.getOkeyEmail();
-								newPersonal.preferredFirstName = newUser.getPreferedFirstName();
-								newPersonal.mobilePhone = newUser.getLocalPhone();
-								newPersonal.phone = newUser.getWorkPhone();
-								newFolioUser.personal = newPersonal;
-
-								CustomFields newCustommFields = new CustomFields();
-								newCustommFields.additionalPatronGroup_4 = newUser.getUserGroup();
-								newFolioUser.customFields = newCustommFields;
-
-								newFolioUser.metadata = getMetadata(newFolioUser.metadata);
+							for (CsvUserModel csvUser : csvUsers) {
 
 								try {
 
-									String errorMessage = folioService.createUser(newFolioUser);
+									// printScreen("CSV User " + csvUser.toString(), Constants.ErrorLevel.INFO);
 
-									if (isStringNullOrEmpty(errorMessage)) {
+									exist_user = folioService.getUserByExternalSystemId(csvUser.getBannerId());
 
-										printScreen("Added folio user id " + newFolioUser.username,
-												Constants.ErrorLevel.INFO);
+									// Adding a new user to the system
 
-										subReport.setNewUserSucessCount++;
-									} else {
+									try {
 
-										if (errorMessage.contains("user_exists")) {
+										if (exist_user == null) {
 
-											FolioUser exist_user = folioService
-													.getUserByExternalSystemId(newFolioUser.externalSystemId);
+											subReport.possibleNewUserCount++;
 
-											if (exist_user != null) {
+											printScreen("Possible new User " + csvUser.toString(),
+													Constants.ErrorLevel.INFO);
 
-												exist_user.active = true;
+											FolioUser newFolioUser = new FolioUser();
 
-												newCustommFields = new CustomFields();
-												newCustommFields.additionalPatronGroup_4 = newUser.getUserGroup();
-												exist_user.customFields = newCustommFields;
+											newFolioUser.active = true;
+											newFolioUser.externalSystemId = csvUser.getBannerId();
+											newFolioUser.barcode = csvUser.getISOCode();
+											newFolioUser.patronGroup = group.getFolioGroupId();
+											newFolioUser.username = csvUser.getOkeyUsername();
+											newFolioUser.expirationDate = DateUtil.get9MonthsAfterTodayDate();
 
-												folioService.updateUser(exist_user);
+											Personal newPersonal = new Personal();
+											newPersonal.firstName = csvUser.getFirstName();
+											newPersonal.lastName = csvUser.getLastName();
+											newPersonal.middleName = csvUser.getMiddleName();
+											newPersonal.email = csvUser.getOkeyEmail();
+											newPersonal.preferredFirstName = csvUser.getPreferedFirstName();
+											newPersonal.mobilePhone = csvUser.getLocalPhone();
+											newPersonal.phone = csvUser.getWorkPhone();
+											newFolioUser.personal = newPersonal;
 
-												// subReport.existingUserModified.add(exist_user.toString());
+											CustomFields newCustommFields = new CustomFields();
+											newCustommFields.additionalPatronGroup_4 = csvUser.getUserGroup();
+											newFolioUser.customFields = newCustommFields;
 
+											newFolioUser.metadata = getMetadata(newFolioUser.metadata);
+
+											String errorMessage = folioService.createUser(newFolioUser);
+
+											if (isStringNullOrEmpty(errorMessage)) {
+
+												printScreen("Added folio user " + newFolioUser.toString(),
+														Constants.ErrorLevel.INFO);
+
+												subReport.setNewUserSucessCount++;
 											} else {
-												printScreen(" User not Added " + newFolioUser,
+
+												printScreen(" Error user adding" + newFolioUser,
 														Constants.ErrorLevel.ERROR);
 
 												subReport.setNewUserErrorCount++;
@@ -175,189 +172,129 @@ public class UserIntegrationProcess extends MainProcess {
 												subReport.setNewUserErrorUserList
 														.add(newFolioUser.toString() + " error : " + errorMessage);
 											}
-
-										} else {
-
-											printScreen(" User not Added " + newFolioUser, Constants.ErrorLevel.ERROR);
-
-											subReport.setNewUserErrorCount++;
-
-											subReport.setNewUserErrorUserList
-													.add(newFolioUser.toString() + " error : " + errorMessage);
 										}
 
+									} catch (Exception e1) {
+
+										subReport.setNewUserErrorCount++;
+
+										subReport.setNewUserErrorUserList.add(csvUser.toString());
+									}
+
+									// Editing an existing user
+
+									if (exist_user != null) {
+
+										try {
+
+											subReport.possibleModifiedUserCount++;
+
+											// printScreen("Exist User " + exist_user.toString(),
+											// Constants.ErrorLevel.INFO);
+
+											List<String> differences = new ArrayList<>();
+
+											// Checking the difference between external id in FOLIO and csv list
+											if (!Objects.equals(exist_user.externalSystemId, csvUser.getBannerId())) {
+
+												differences.add("externalSystemId: " + exist_user.externalSystemId
+														+ " -> " + csvUser.getBannerId());
+											}
+
+											// Checking the difference between barcode in FOLIO and csv list
+											if (!StringHelper.isEmptyOrWhiteSpace(csvUser.getISOCode())
+													&& !Objects.equals(exist_user.barcode, csvUser.getISOCode())) {
+
+												differences.add("barcode: " + exist_user.barcode + " -> "
+														+ csvUser.getISOCode());
+
+												// Bar code update
+												if (StringHelper.isEmptyOrWhiteSpace(csvUser.getISOCode())) {
+													exist_user.barcode = csvUser.getBannerId();
+												} else {
+													exist_user.barcode = csvUser.getISOCode();
+												}
+
+											}
+
+											// Checking the difference between username in FOLIO and csv list
+											if (!Objects.equals(exist_user.username, csvUser.getOkeyUsername())) {
+
+												differences.add("username: " + exist_user.username + " -> "
+														+ csvUser.getOkeyUsername());
+
+												exist_user.username = csvUser.getOkeyUsername();
+											}
+
+											// Checking the difference between user's status in FOLIO and csv list
+											if (!Objects.equals(exist_user.active, true)) {
+
+												differences.add("status: " + exist_user.username + " -> "
+														+ csvUser.getOkeyUsername());
+
+												exist_user.active = true;
+												exist_user.expirationDate = DateUtil.getActiveUserExpireDate();
+
+											}
+
+											// Checking the difference between user's patron's group name in FOLIO and
+											// csv
+											// list
+											String customField = (exist_user.customFields != null
+													&& !StringHelper.isEmptyOrWhiteSpace(
+															exist_user.customFields.additionalPatronGroup_4))
+																	? exist_user.customFields.additionalPatronGroup_4
+																	: "";
+
+											if (!Objects.equals(customField, csvUser.getUserGroup())) {
+
+												differences.add(
+														"userGroup: " + customField + " -> " + csvUser.getUserGroup());
+
+												CustomFields newCustommFields = new CustomFields();
+												newCustommFields = new CustomFields();
+												newCustommFields.additionalPatronGroup_4 = csvUser.getUserGroup();
+
+												exist_user.customFields = newCustommFields;
+											}
+
+											// If there is any different update
+											if (!differences.isEmpty()) {
+
+												differences.forEach(System.out::println);
+
+												printScreen("Possible edit User " + csvUser.toString() + "\\n"
+														+ exist_user.toString(), Constants.ErrorLevel.INFO);
+
+												if (!folioService.updateUser(exist_user)) {
+													printScreen("Error modify only Folio User " + exist_user,
+															Constants.ErrorLevel.INFO);
+
+													subReport.modifiedErrorUserCount++;
+													subReport.modifiedErrorUserList.add(exist_user.toString());
+
+												} else {
+													subReport.modifiedSucessUserCount++;
+												}
+
+											}
+
+										} catch (Exception e1) {
+
+											subReport.modifiedErrorUserCount++;
+
+											subReport.modifiedErrorUserList.add(csvUser.getBannerId());
+										}
 									}
 
 								} catch (Exception e1) {
-									// TODO Auto-generated catch block
+
 									e1.printStackTrace();
-
-									subReport.setNewUserErrorCount++;
-
-									subReport.setNewUserErrorUserList.add(newFolioUser.toString());
 								}
 
 							}
 
-							// comment on 4/11/2026 to test for new users
-//							// **********************
-//							// USERS IN FOLIO AND CSV FILE
-//							// -- The existing users expire date is going change.
-//							// **********************
-//
-//							printScreen("**************************************", Constants.ErrorLevel.INFO);
-//							printScreen("** Users in both CSV file and Folio***", Constants.ErrorLevel.INFO);
-//							printScreen("**************************************", Constants.ErrorLevel.INFO);
-//
-//							List<FolioUser> userInFolioAndCsv = folioRoot.users.stream().filter(o1 -> users.stream()
-//									.anyMatch(o2 -> o1.externalSystemId != null && !o1.externalSystemId.trim().isEmpty()
-//											&& o1.externalSystemId.equals(o2.getBannerId())))
-//									.collect(Collectors.toList());
-//
-//							List<CsvUserModel> userInFolioAndCsv2 = users.stream().filter(o1 -> folioRoot.users.stream()
-//									.anyMatch(o2 -> o2.externalSystemId != null && !o2.externalSystemId.trim().isEmpty()
-//											&& o2.externalSystemId.equals(o1.getBannerId())))
-//									.collect(Collectors.toList());
-//
-//							subReport.usersInFolioAndCsvCount = userInFolioAndCsv.size();
-//							subReport.modifiedUsersInFolioAndCsvErrorUserList = new ArrayList<String>();
-//
-//							printScreen("user In Folio And Csv " + userInFolioAndCsv.size() + " -- "
-//									+ userInFolioAndCsv2.size(), Constants.ErrorLevel.INFO);
-//
-//							for (FolioUser folioUser : userInFolioAndCsv) {
-//
-//								CsvUserModel commonCSVModel = userInFolioAndCsv2.stream()
-//										.filter(u -> u.getBannerId().equals(folioUser.externalSystemId)).findAny()
-//										.orElse(null);
-//
-//								try {
-//
-//									if (commonCSVModel != null) {
-//
-//										if (commonCSVModel.getISOCode() != null
-//												&& !commonCSVModel.getISOCode().trim().isEmpty()) {
-//											folioUser.barcode = commonCSVModel.getISOCode();
-//										}
-//
-//										folioUser.externalSystemId = commonCSVModel.getBannerId();
-//
-//										folioUser.username = commonCSVModel.getOkeyUsername();
-//										folioUser.expirationDate = DateUtil.get9MonthsAfterTodayDate();
-//
-//										Personal newPersonal = new Personal();
-//										newPersonal.firstName = commonCSVModel.getFirstName();
-//										newPersonal.lastName = commonCSVModel.getLastName();
-//										newPersonal.middleName = commonCSVModel.getMiddleName();
-//										newPersonal.email = commonCSVModel.getOkeyEmail();
-//										newPersonal.preferredFirstName = commonCSVModel.getPreferedFirstName();
-//										newPersonal.mobilePhone = commonCSVModel.getLocalPhone();
-//										newPersonal.phone = commonCSVModel.getWorkPhone();
-//
-//										folioUser.personal = newPersonal;
-//
-//										CustomFields newCustommFields = new CustomFields();
-//										newCustommFields.additionalPatronGroup_4 = commonCSVModel.getUserGroup();
-//
-//										folioUser.customFields = newCustommFields;
-//
-//										folioUser.metadata = getMetadata(folioUser.metadata);
-//
-//										printScreen("Common user updatinng " + commonCSVModel,
-//												Constants.ErrorLevel.INFO);
-//
-////										if (!folioService.updateUser(folioUser)) {
-////											printScreen("Error modify Folio User " + folioUser,
-////													Constants.ErrorLevel.ERROR);
-////
-////											subReport.modifiedUsersInFolioAndCsvErrorCount++;
-////
-////											subReport.modifiedUsersInFolioAndCsvErrorUserList.add(folioUser.toString());
-////
-////										} else {
-////											printScreen("Folio User modified " + folioUser, Constants.ErrorLevel.INFO);
-////											subReport.modifiedUsersInFolioAndCsvCount++;
-////
-////										}
-//
-//									} else {
-//										printScreen("Common user null " + commonCSVModel, Constants.ErrorLevel.ERROR);
-//									}
-//
-//								} catch (Exception e1) {
-//									// TODO Auto-generated catch block
-//									e1.printStackTrace();
-//
-//									printScreen("commonCSVModel" + commonCSVModel, Constants.ErrorLevel.ERROR);
-//
-//									subReport.modifiedUsersInFolioAndCsvErrorCount++;
-//
-//									subReport.modifiedUsersInFolioAndCsvErrorUserList.add(folioUser.toString());
-//								}
-//
-//							}
-//
-//							// **********************
-//							// USERS IN FOLIO ONLY Users should be set expired.
-//							// **********************
-//
-//							printScreen("**************************************", Constants.ErrorLevel.INFO);
-//							printScreen("**** USERS IN FOLIO ONLY**************", Constants.ErrorLevel.INFO);
-//							printScreen("**************************************", Constants.ErrorLevel.INFO);
-//
-//							List<FolioUser> userInFoliOnly = folioRoot.users.stream()
-//									.filter(element -> !userInFolioAndCsv.contains(element))
-//									.collect(Collectors.toList());
-//
-//							subReport.usersInFoliOnlyCount = userInFoliOnly.size();
-//
-//							subReport.modifiedUsersInFoliOnlyErrorUserList = new ArrayList<String>();
-//
-//							printScreen("user InFolio Except Csv " + userInFoliOnly.size(), Constants.ErrorLevel.INFO);
-//
-//							// userInFoliOnly.forEach(System.out::println);
-//
-//							for (FolioUser folioUser : userInFoliOnly) {
-//
-//								try {
-//
-//									folioUser.active = false;
-//
-//									// Error occurred when updating the user to inactive status
-//									// need to add a dummy record.
-//									CustomFields newCustommFields = new CustomFields();
-//									newCustommFields.additionalPatronGroup_4 = Constants.expired_user_cutom_field;
-//									folioUser.customFields = newCustommFields;
-//
-//									folioUser.metadata = getMetadata(folioUser.metadata);
-//
-////									if (!folioService.updateUser(folioUser)) {
-////										printScreen("Error modify only Folio User " + folioUser,
-////												Constants.ErrorLevel.INFO);
-////
-////										subReport.modifiedUsersInFoliOnlyErrorCount++;
-////										subReport.modifiedUsersInFoliOnlyErrorUserList
-////												.add(folioUser.toString());
-////									} else {
-////										printScreen("Only Folio User modified " + folioUser,
-////												Constants.ErrorLevel.INFO);
-////										subReport.modifiedUsersInFoliOnlyCount++;
-////									}
-//
-//								} catch (Exception e1) {
-//
-//									e1.printStackTrace();
-//
-//									printScreen("Error modifying Folio  user" + folioUser, Constants.ErrorLevel.ERROR);
-//
-//									subReport.modifiedUsersInFoliOnlyErrorCount++;
-//									subReport.modifiedUsersInFoliOnlyErrorUserList.add(folioUser.toString());
-//								}
-//
-//							}
-
 							report.subReports.add(subReport);
-
 						}
 
 					} catch (Exception e1) {
@@ -369,9 +306,11 @@ public class UserIntegrationProcess extends MainProcess {
 
 			}
 
-			emailReport(csvUserList);
+			report = inactiveUsers(inactiveUsers, report);
 
-			printScreen("UserIntegrationProcess Starts", Constants.ErrorLevel.INFO);
+			emailReport(report);
+
+			printScreen("UserIntegrationProcess Ends", Constants.ErrorLevel.INFO);
 
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
@@ -380,103 +319,154 @@ public class UserIntegrationProcess extends MainProcess {
 
 	}
 
+	// **********************
+	// Expired user - in Folio user status is updated to inactive and later we are
+	// going to delete the record.
+	// **********************
+
+	private ReportModel inactiveUsers(ArrayList<CsvUserModel> inactiveUsers, ReportModel report) {
+
+		printScreen("**********************************************************************",
+				Constants.ErrorLevel.INFO);
+		printScreen("** Inactive Users - need to change the status to inactive to FOLIO ***",
+				Constants.ErrorLevel.INFO);
+		printScreen("**********************************************************************",
+				Constants.ErrorLevel.INFO);
+
+		printScreen("Users need to inactive " + inactiveUsers.size(), Constants.ErrorLevel.INFO);
+
+		report.setToInactiveErrorUserList = new ArrayList<String>();
+
+		for (CsvUserModel csvUser : inactiveUsers) {
+
+			try {
+
+				FolioUser exist_user = folioService.getUserByExternalSystemId(csvUser.getBannerId());
+
+				if (exist_user != null && exist_user.active) {
+
+					printScreen("Possible Inactive User " + exist_user.toString() + "\\n" + exist_user.toString(),
+							Constants.ErrorLevel.INFO);
+
+					exist_user.active = false;
+
+					// Error occurred when updating the user to inactive status
+					// need to add a dummy record.
+					CustomFields newCustommFields = new CustomFields();
+					newCustommFields.additionalPatronGroup_4 = Constants.expired_user_cutom_field;
+					exist_user.customFields = newCustommFields;
+
+					if (!folioService.updateUser(exist_user)) {
+
+						printScreen("Error modify only Folio User " + exist_user, Constants.ErrorLevel.INFO);
+
+						report.setToInactiveErrorUserCount++;
+						report.setToInactiveErrorUserList.add(exist_user.toString());
+					} else {
+						printScreen("Only Folio User modified " + exist_user, Constants.ErrorLevel.INFO);
+
+						report.setToInactiveSucessUserCount++;
+					}
+
+				} else {
+					printScreen("Error modifying Folio  user banner id" + csvUser.getBannerId(),
+							Constants.ErrorLevel.ERROR);
+
+					report.setToInactiveErrorUserCount++;
+					report.setToInactiveErrorUserList.add("Banner id " + csvUser.getBannerId());
+				}
+
+			} catch (Exception e1) {
+
+				e1.printStackTrace();
+
+				printScreen("Error inactive user " + csvUser.toString(), Constants.ErrorLevel.ERROR);
+
+			}
+
+		}
+
+		return report;
+
+	}
+
 	// Send the email to the system.
-	private void emailReport(ArrayList<CsvRoot> csvRoots) {
+	private void emailReport(ReportModel reportModel) {
 
 		StringBuilder strBuilder = new StringBuilder();
 
 		strBuilder.append("Start time:" + startTime + "\n");
 
-		for (CsvRoot csvRoot : csvRoots) {
+		if (reportModel != null && reportModel.fileName != null) {
+			strBuilder.append("<br/><br/>");
 
-			if (csvRoot.report != null && csvRoot.report.fileName != null) {
-				strBuilder.append("<br/><br/>");
+			strBuilder.append("File name -" + reportModel.fileName + "\n");
 
-				strBuilder.append("File name -" + csvRoot.report.fileName + "\n");
+		}
 
-			}
+		// Email body for the users added and modified.
 
-			if (csvRoot.report != null && csvRoot.report.subReports != null && csvRoot.report.subReports.size() > 0) {
+		for (SubReportModel subReport : reportModel.subReports) {
 
-				strBuilder.append("<br/><br/>");
+			strBuilder.append("<br/><br/>");
 
-				for (SubReportModel subReport : csvRoot.report.subReports) {
+			strBuilder.append(" Institute  <b> " + subReport.institueCodes + "</b> Patron Group <b> "
+					+ subReport.patronGroupName + "</b><br/>");
 
-					strBuilder.append(" Institute  <b> " + subReport.institueCodes + "</b> Patron Group <b> "
-							+ subReport.patronGroupName + "</b><br/>");
+			strBuilder.append("<table width='80%' border='1' align='center'>");
 
-					strBuilder.append("<table width='80%' border='1' align='center'>");
+			strBuilder.append(
+					"<tr> <td> Users/Source </td> <td> Possible count </td> <td> Done count </td> <td> Error count </td></tr>");
 
-					strBuilder.append(
-							"<tr> <td> Source</td> <td> Possible count </td> <td> Done count </td> <td> Error count </td></tr>");
+			strBuilder.append("<tr><td> New users  </td><td>" + subReport.possibleNewUserCount + "</td><td> "
+					+ subReport.setNewUserSucessCount + "</td><td> " + subReport.setNewUserErrorCount + "</td></tr>");
 
-					strBuilder.append("<tr><td> From CSV - New users </td><td>" + subReport.setNewUserCount
-							+ "</td><td> " + subReport.setNewUserSucessCount + "</td><td> "
-							+ subReport.setNewUserErrorCount + "</td></tr>");
+			strBuilder.append("<tr><td>Modified Users </td><td>" + subReport.possibleModifiedUserCount + " </td><td>"
+					+ subReport.modifiedSucessUserCount + " </td><td>" + subReport.modifiedErrorUserCount
+					+ "</td></tr>");
 
-					strBuilder.append("<tr><td>Users in CSV & Folio</td><td>" + subReport.usersInFolioAndCsvCount
-							+ " </td><td>" + subReport.modifiedSucessUserCount + " </td><td>"
-							+ subReport.modifiedErrorUserCount + "</td></tr>");
+			strBuilder.append("</table>");
 
-					strBuilder.append("<tr><td> Only Folio users</td><td>" + subReport.setToInactiveUserCount
-							+ " </td><td>" + subReport.setToInactiveSucessUserCount + " </td><td>"
-							+ subReport.setToInactiveErrorUserCount + "</td></tr> </table>");
+			strBuilder.append("</hr>");
 
-					strBuilder.append("<br/><br/>");
+			int index = 1;
 
-					// Users in two Different user groups in Folio and CSV file
-//					if (subReport.existingUserModified != null && subReport.existingUserModified.size() > 0)
-//
-//					{
-//						strBuilder.append("<u>Users in two Different user groups in Folio and CSV file</u><br/>");
-//
-//						for (String str : subReport.existingUserModified) {
-//							strBuilder.append(str + "<br/>");
-//						}
-//						strBuilder.append("<br/><br/>");
-//
-//					}
+			if (subReport.setNewUserErrorUserList != null && subReport.setNewUserErrorUserList.size() > 0)
 
-					if (subReport.setNewUserErrorUserList != null && subReport.setNewUserErrorUserList.size() > 0)
+			{
+				strBuilder.append("<u> Error occured when adding new users, user list. </u><br/>");
 
-					{
-						strBuilder.append("<u>From CSV - New users  - Add error users</u><br/>");
-
-						for (String str : subReport.setNewUserErrorUserList) {
-							strBuilder.append(str + "<br/>");
-						}
-						strBuilder.append("<br/><br/>");
-
-					}
-
-					if (subReport.modifiedErrorUserList != null && subReport.modifiedErrorUserList.size() > 0)
-
-					{
-
-						strBuilder.append("<u>Users in CSV & Folio - Modified error users</u><br/>");
-
-						for (String str : subReport.modifiedErrorUserList) {
-							strBuilder.append(str + "<br/>");
-						}
-
-						strBuilder.append("<br/><br/>");
-					}
-
-					if (subReport.setToInactiveErrorUserList != null && subReport.setToInactiveErrorUserList.size() > 0)
-
-					{
-
-						strBuilder.append("<u>Only Folio users - error users</u><br/>");
-
-						for (String str : subReport.setToInactiveErrorUserList) {
-							strBuilder.append(str + "<br/>");
-						}
-
-						strBuilder.append("<br/><br/>");
-					}
+				for (String str : subReport.setNewUserErrorUserList) {
+					strBuilder.append(index++ + ". " + str + "<br/>");
 				}
+				strBuilder.append("<br/><br/>");
+
 			}
 
+			strBuilder.append("</hr>");
+			index = 1;
+
+			if (subReport.modifiedErrorUserList != null && subReport.modifiedErrorUserList.size() > 0) {
+				strBuilder.append("<u>Error occured when modifying existing users</u><br/>");
+
+				for (String str : subReport.modifiedErrorUserList) {
+					strBuilder.append(index++ + ". " + str + "<br/>");
+				}
+
+				strBuilder.append("<br/><br/>");
+			}
+
+		}
+
+		strBuilder.append("</hr>");
+
+		// Email body for the inactive user status changes.
+
+		strBuilder.append("<u> Users Inactive Error</u><br/>");
+
+		for (String inactiveUserError : reportModel.setToInactiveErrorUserList) {
+
+			strBuilder.append(inactiveUserError + "<br/>");
 		}
 
 		strBuilder.append("End time: " + DateUtil.getTodayDateAndTime());
@@ -496,7 +486,7 @@ public class UserIntegrationProcess extends MainProcess {
 
 			File csvFile = listOfFiles[i];
 
-			if (csvFile.isFile() && csvFile.getName().contains(".csv")) {
+			if (csvFile.isFile() && csvFile.getName().contains("library_active_users")) {
 
 				String line = "";
 
@@ -529,7 +519,6 @@ public class UserIntegrationProcess extends MainProcess {
 
 								if (root != null) {
 									root.users.add(csvModel);
-								} else {
 								}
 
 							}
@@ -537,10 +526,47 @@ public class UserIntegrationProcess extends MainProcess {
 						} catch (ArrayIndexOutOfBoundsException e) {
 
 							if (rootForReport != null) {
-								ReportModel report = rootForReport.report;
-								report.columnIndexErrorRows++;
+								// ReportModel report = rootForReport.report;
+								// report.columnIndexErrorRows++;
 							} else {
 								e.printStackTrace();
+							}
+
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+
+					}
+
+				} catch (IOException e) {
+
+					e.printStackTrace();
+				}
+
+			} else if (csvFile.isFile() && csvFile.getName().contains("inactive")) {
+
+				String line = "";
+
+				try {
+
+					// parsing a CSV file into BufferedReader class constructor
+					@SuppressWarnings("resource")
+					BufferedReader br = new BufferedReader(new FileReader(csvFile));
+
+					while ((line = br.readLine()) != null) // returns a Boolean value
+					{
+						String csvInstitution = line.split(",")[0];
+
+						if (csvInstitution.equals("BANNER_ID")) {
+							continue;
+						}
+
+						try {
+
+							CsvUserModel csvModel = new CsvUserModel(true, line);
+
+							if (csvModel != null) {
+								inactiveUsers.add(csvModel);
 							}
 
 						} catch (Exception e) {
