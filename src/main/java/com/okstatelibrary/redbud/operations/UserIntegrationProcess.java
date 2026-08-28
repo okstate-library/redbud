@@ -69,7 +69,7 @@ public class UserIntegrationProcess extends MainProcess {
 
 					printScreen("########################################################", Constants.ErrorLevel.INFO);
 
-					printScreen("Campus : " + institueCode + " : total # users in csv:" + csvRoot.users.size(),
+					printScreen("Campus : " + institueCode + " : # users in csv: " + csvRoot.users.size(),
 							Constants.ErrorLevel.INFO);
 
 					if (csvUserList == null || csvRoot.users.size() == 0) {
@@ -90,20 +90,16 @@ public class UserIntegrationProcess extends MainProcess {
 
 							SubReportModel subReport = new SubReportModel(institueCode, group.getFolioGroupName());
 
-							printScreen("", Constants.ErrorLevel.INFO);
-							printScreen(group.getFolioGroupId() + "   " + group.getFolioGroupName(),
-									Constants.ErrorLevel.INFO);
+							printScreen("**************************************", Constants.ErrorLevel.INFO);
 
 							List<CsvUserModel> csvUsers = csvRoot.users.stream()
 									.filter(selUser -> selUser.getMainUserGroup().equals(group.getFolioGroupName()))
 									.collect(Collectors.toList());
 
-							printScreen("**************************************", Constants.ErrorLevel.INFO);
-							printScreen("** New/modify users - need to add/modify in FOLIO ***",
-									Constants.ErrorLevel.INFO);
-							printScreen("**************************************", Constants.ErrorLevel.INFO);
+							printScreen("Group : " + group.getFolioGroupId() + group.getFolioGroupName()
+									+ " # users in csv: " + csvUsers.size(), Constants.ErrorLevel.INFO);
 
-							printScreen("New users from CSV " + csvUsers.size(), Constants.ErrorLevel.INFO);
+							printScreen("**************************************", Constants.ErrorLevel.INFO);
 
 							subReport.setNewUserErrorUserList = new ArrayList<String>();
 							subReport.modifiedErrorUserList = new ArrayList<String>();
@@ -114,7 +110,7 @@ public class UserIntegrationProcess extends MainProcess {
 
 								try {
 
-									// printScreen("CSV User " + csvUser.toString(), Constants.ErrorLevel.INFO);
+									//printScreen("CSV User " + csvUser.toString(), Constants.ErrorLevel.INFO);
 
 									exist_user = folioService.getUserByExternalSystemId(csvUser.getBannerId());
 
@@ -123,12 +119,12 @@ public class UserIntegrationProcess extends MainProcess {
 									try {
 
 										if (exist_user == null) {
-
-											subReport.possibleNewUserCount++;
-
+											
 											printScreen("Possible new User " + csvUser.toString(),
 													Constants.ErrorLevel.INFO);
-
+											
+											subReport.possibleNewUserCount++;
+											
 											FolioUser newFolioUser = new FolioUser();
 
 											newFolioUser.active = true;
@@ -301,6 +297,8 @@ public class UserIntegrationProcess extends MainProcess {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
+					
+					printScreen("########################################################", Constants.ErrorLevel.INFO);
 
 				}
 
@@ -439,7 +437,8 @@ public class UserIntegrationProcess extends MainProcess {
 				for (String str : subReport.setNewUserErrorUserList) {
 					strBuilder.append(index++ + ". " + str + "<br/>");
 				}
-				strBuilder.append("<br/><br/>");
+				
+				strBuilder.append("<br/>");
 
 			}
 
@@ -453,7 +452,7 @@ public class UserIntegrationProcess extends MainProcess {
 					strBuilder.append(index++ + ". " + str + "<br/>");
 				}
 
-				strBuilder.append("<br/><br/>");
+				strBuilder.append("<br/>");
 			}
 
 		}
