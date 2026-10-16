@@ -40,18 +40,19 @@
 
 
 	<ul class="nav nav-tabs">
-		<li class="active"><a data-toggle="tab" href="#general">General</a></li>
-		<li><a data-toggle="tab" href="#cicrlog">Circulation Log</a></li>
-		<li><a data-toggle="tab" href="#cicrloan">Circulation Loan</a></li>
-		<li><a data-toggle="tab" href="#user">User</a></li>
-		<li><a data-toggle="tab" href="#user-patron-group">User
+		<li class="active"><a data-toggle="tab" href="#general-tab">General</a></li>
+		<li><a data-toggle="tab" href="#cicr-log-tab">Circulation Log</a></li>
+		<li><a data-toggle="tab" href="#cicr-loan-tab">Circulation Loan</a></li>
+		<li><a data-toggle="tab" href="#item-tab">Item</a></li>
+		<li><a data-toggle="tab" href="#user-tab">User</a></li>
+		<li><a data-toggle="tab" href="#user-patron-group-tab">User
 				Patron Group</a></li>
-		<li><a data-toggle="tab" href="#settings">Settings</a></li>
+		<li><a data-toggle="tab" href="#settings-tab">Settings</a></li>
 	</ul>
 
 	<div class="tab-content">
 
-		<div id="general" class="tab-pane fade in active">
+		<div id="general-tab" class="tab-pane fade in active">
 
 			<div class="row top-buffer container-border">
 				<h4>
@@ -282,7 +283,7 @@
 
 		</div>
 
-		<div id="cicrlog" class="tab-pane fade">
+		<div id="cicr-log-tab" class="tab-pane fade">
 
 			<div class="row top-buffer container-border">
 				<h4>
@@ -454,42 +455,10 @@
 
 			</div>
 
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Find items in a specific location for not used</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/neverCirculatedItemsSearchProcess}">
 
-					<div class="row">
-						<div class="col-xs-8">Search items that never used for
-							circulations</div>
-
-						<div class="col-xs-2">
-							<button type="submit"
-								id="executeNeverCirculatedItemsSearchProcess"
-								name="executeNeverCirculatedItemsSearchProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeNeverCirculatedItemsSearchProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Never_Circulated_Items_Search_Process}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
 		</div>
 
-
-		<div id="cicrloan" class="tab-pane fade">
+		<div id="cicr-loan-tab" class="tab-pane fade">
 
 			<div class="row top-buffer container-border">
 				<h4>
@@ -638,7 +607,75 @@
 			</div>
 		</div>
 
-		<div id="user" class="tab-pane fade">
+		<div id="item-tab" class="tab-pane fade">
+			<div class="row top-buffer container-border">
+				<h4>
+					<b>Find items in a specific location for not used</b>
+				</h4>
+				<h5>
+					<i>#ManualTask</i>
+				</h5>
+				<form method="get"
+				      th:action="@{/settings/neverCirculatedItemsSearchProcess}">
+
+					<div class="row">
+						<div class="col-xs-8">Search items that never used for
+							circulations</div>
+
+						<div class="col-xs-2">
+							<button type="submit"
+							        id="executeNeverCirculatedItemsSearchProcess"
+							        name="executeNeverCirculatedItemsSearchProcess" disabled
+							        class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+							       onchange="document.getElementById('executeNeverCirculatedItemsSearchProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Never_Circulated_Items_Search_Process}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+
+			<div class="row top-buffer container-border">
+				<h4>
+					<b>Effective location 'OKS-OSU LAB' should also have the Permanent location OKS-OSU LAB</b>
+				</h4>
+				<h5>
+					<i>#ManualTask</i>
+				</h5>
+				<form method="get"
+				      th:action="@{/settings/changeItemLocationProcess}">
+
+					<div class="row">
+						<div class="col-xs-8">Search items that never used for
+							circulations</div>
+
+						<div class="col-xs-2">
+							<button type="submit"
+							        id="executeChangeItemLocationProcess"
+							        name="executeChangeItemLocationProcess" disabled
+							        class="btn btn-success btn-md btn-block">execute</button>
+						</div>
+						<div class="col-xs-1">
+							<input type="checkbox"
+							       onchange="document.getElementById('executeChangeItemLocationProcess').disabled = !this.checked;" />
+						</div>
+						<div class="col-xs-1">
+							<h5 th:text="${Change_Item_Location_Process}"></h5>
+						</div>
+
+					</div>
+				</form>
+
+			</div>
+		</div>
+
+		<div id="user-tab" class="tab-pane fade">
 
 			<div class="row top-buffer container-border">
 				<h4>
@@ -918,7 +955,7 @@
 
 		</div>
 
-		<div id="user-patron-group" class="tab-pane fade">
+		<div id="user-patron-group-tab" class="tab-pane fade">
 
 			<div class="row top-buffer container-border">
 				<h4>
@@ -1020,7 +1057,7 @@
 
 		</div>
 
-		<div id="settings" class="tab-pane fade">
+		<div id="settings-tab" class="tab-pane fade">
 
 			<div class="row top-buffer container-border">
 				<h4>
@@ -1100,11 +1137,9 @@
 <div th:replace="common/header :: body-bottom-scripts"></div>
 <script>
 	$("#executeCirculationLogByLocation").click(function() {
-
 		if (libraryDropDown.value == 0 || locationDropDown.value == 0) {
 			alert("Please select a value from at least one dropdown.");
 		}
-
 	});
 </script>
 </body>

@@ -118,7 +118,7 @@ public class InstitutionRecordCountProcess extends MainProcess {
 
 		strBuilder.append("<br/> End time: " + DateUtil.getTodayDateAndTime());
 
-		this.sendEmaill("Running Institutional Holdings Counting process ", strBuilder.toString());
+		this.sendEmail("Running Institutional Holdings Counting process ", strBuilder.toString());
 
 	}
 

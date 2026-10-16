@@ -128,8 +128,8 @@ public class SettingsController {
 		model.addAttribute(CacheMap.process_StaffNote_Update_Process,
 				CacheMap.get(CacheMap.process_StaffNote_Update_Process));
 
-		model.addAttribute(CacheMap.process_Never_Circulated_Items_Seacrh_Process,
-				CacheMap.get(CacheMap.process_Never_Circulated_Items_Seacrh_Process));
+		model.addAttribute(CacheMap.process_Never_Circulated_Items_Search_Process,
+				CacheMap.get(CacheMap.process_Never_Circulated_Items_Search_Process));
 
 		model.addAttribute(CacheMap.process_CirculationLoan_API_Data_Extraction_By_Location,
 				CacheMap.get(CacheMap.process_CirculationLoan_API_Data_Extraction_By_Location));
@@ -731,7 +731,7 @@ public class SettingsController {
 
 					try {
 
-						oprocess.sendEmaill("Test Title", "Test Message");
+						oprocess.sendEmail("Test Title", "Test Message");
 
 					} catch (RestClientException e) {
 						// TODO Auto-generated catch block
@@ -1371,21 +1371,21 @@ public class SettingsController {
 
 				public void run() {
 
-					CacheMap.set(CacheMap.process_Never_Circulated_Items_Seacrh_Process, CacheMap.running);
+					CacheMap.set(CacheMap.process_Never_Circulated_Items_Search_Process, CacheMap.running);
 
-					model.addAttribute(CacheMap.process_Never_Circulated_Items_Seacrh_Process, CacheMap.running);
+					model.addAttribute(CacheMap.process_Never_Circulated_Items_Search_Process, CacheMap.running);
 
-					NeverCirculatedItemsSearchProces oprocess = new NeverCirculatedItemsSearchProces();
+					NeverCirculatedItemsSearchProcess oProcess = new NeverCirculatedItemsSearchProcess();
 
 					try {
-						oprocess.manipulate(institutionService, campusService, libraryService, locationService,
+						oProcess.manipulate(institutionService, campusService, libraryService, locationService,
 								servicePointService, circulationLogService);
 
-						CacheMap.set(CacheMap.process_Never_Circulated_Items_Seacrh_Process, CacheMap.idle);
+						CacheMap.set(CacheMap.process_Never_Circulated_Items_Search_Process, CacheMap.idle);
 
 					} catch (RestClientException | IOException e) {
 
-						CacheMap.set(CacheMap.process_Never_Circulated_Items_Seacrh_Process,
+						CacheMap.set(CacheMap.process_Never_Circulated_Items_Search_Process,
 								CacheMap.error + e.getMessage());
 
 						e.printStackTrace();
@@ -1396,8 +1396,8 @@ public class SettingsController {
 
 			myThread.start();
 
-			model.addAttribute(CacheMap.process_Never_Circulated_Items_Seacrh_Process,
-					CacheMap.get(CacheMap.process_Never_Circulated_Items_Seacrh_Process));
+			model.addAttribute(CacheMap.process_Never_Circulated_Items_Search_Process,
+					CacheMap.get(CacheMap.process_Never_Circulated_Items_Search_Process));
 
 		} catch (Exception e1) {
 			// TODO Auto-generated catch block
@@ -1409,4 +1409,57 @@ public class SettingsController {
 		return "operations";
 	}
 
+	@GetMapping("/changeItemLocationProcess")
+	public String changeItemLocationProcess(Principal principal, Model model) {
+
+		System.out.println("Running changeItemLocationProcess");
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_Change_Item_Location_Process, CacheMap.running);
+
+					model.addAttribute(CacheMap.process_Change_Item_Location_Process, CacheMap.running);
+
+					ChangeItemLocationProcess oProcess = new ChangeItemLocationProcess();
+
+					try {
+
+						oProcess.manipulate(institutionService, campusService, libraryService, locationService,
+								servicePointService, circulationLogService);
+
+						CacheMap.set(CacheMap.process_Change_Item_Location_Process, CacheMap.idle);
+
+					} catch (RestClientException | IOException e) {
+
+						CacheMap.set(CacheMap.process_Change_Item_Location_Process,
+								CacheMap.error + e.getMessage());
+
+						e.printStackTrace();
+					}
+
+				}
+			});
+
+			myThread.start();
+
+			model.addAttribute(CacheMap.process_Change_Item_Location_Process,
+					CacheMap.get(CacheMap.process_Change_Item_Location_Process));
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
 }

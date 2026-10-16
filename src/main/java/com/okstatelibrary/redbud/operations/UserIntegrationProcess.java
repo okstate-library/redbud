@@ -96,8 +96,8 @@ public class UserIntegrationProcess extends MainProcess {
 									.filter(selUser -> selUser.getMainUserGroup().equals(group.getFolioGroupName()))
 									.collect(Collectors.toList());
 
-							printScreen("Group : " + group.getFolioGroupId() + group.getFolioGroupName()
-									+ " # users in csv: " + csvUsers.size(), Constants.ErrorLevel.INFO);
+							printScreen("Group : " + group.getFolioGroupName() + " # users in csv: " + csvUsers.size(),
+									Constants.ErrorLevel.INFO);
 
 							printScreen("**************************************", Constants.ErrorLevel.INFO);
 
@@ -110,7 +110,7 @@ public class UserIntegrationProcess extends MainProcess {
 
 								try {
 
-									//printScreen("CSV User " + csvUser.toString(), Constants.ErrorLevel.INFO);
+									// printScreen("CSV User " + csvUser.toString(), Constants.ErrorLevel.INFO);
 
 									exist_user = folioService.getUserByExternalSystemId(csvUser.getBannerId());
 
@@ -119,12 +119,12 @@ public class UserIntegrationProcess extends MainProcess {
 									try {
 
 										if (exist_user == null) {
-											
+
 											printScreen("Possible new User " + csvUser.toString(),
 													Constants.ErrorLevel.INFO);
-											
+
 											subReport.possibleNewUserCount++;
-											
+
 											FolioUser newFolioUser = new FolioUser();
 
 											newFolioUser.active = true;
@@ -297,7 +297,7 @@ public class UserIntegrationProcess extends MainProcess {
 						// TODO Auto-generated catch block
 						e1.printStackTrace();
 					}
-					
+
 					printScreen("########################################################", Constants.ErrorLevel.INFO);
 
 				}
@@ -437,7 +437,7 @@ public class UserIntegrationProcess extends MainProcess {
 				for (String str : subReport.setNewUserErrorUserList) {
 					strBuilder.append(index++ + ". " + str + "<br/>");
 				}
-				
+
 				strBuilder.append("<br/>");
 
 			}
@@ -470,7 +470,7 @@ public class UserIntegrationProcess extends MainProcess {
 
 		strBuilder.append("End time: " + DateUtil.getTodayDateAndTime());
 
-		this.sendEmaill("CSV Reading Process ", strBuilder.toString());
+		this.sendEmail("CSV Reading Process ", strBuilder.toString());
 
 	}
 
@@ -485,7 +485,7 @@ public class UserIntegrationProcess extends MainProcess {
 
 			File csvFile = listOfFiles[i];
 
-			if (csvFile.isFile() && csvFile.getName().contains("library_active_users")) {
+			if (csvFile.isFile() && csvFile.getName().contains("add_update")) {
 
 				String line = "";
 

@@ -47,8 +47,10 @@ public class CacheMap {
 	
 	public static final String process_StaffNote_Update_Process = "StaffNote_Update_Process";
 
-	public static final String process_Never_Circulated_Items_Seacrh_Process = "Never_Circulated_Items_Search_Process";
-	
+	public static final String process_Never_Circulated_Items_Search_Process = "Never_Circulated_Items_Search_Process";
+
+	public static final String process_Change_Item_Location_Process = "Change_Item_Location_Process";
+
 	public static final String process_User_Notes_Populates = "Process_User_Notes_Populates";
 	
 	public static final String process_User_Notes_Daily_Populates = "Process_User_Notes_Daily_Populates";

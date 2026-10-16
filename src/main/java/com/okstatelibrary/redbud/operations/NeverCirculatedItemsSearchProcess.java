@@ -16,7 +16,7 @@ import com.okstatelibrary.redbud.service.LocationService;
 import com.okstatelibrary.redbud.service.ServicePointService;
 import com.okstatelibrary.redbud.util.DateUtil;
 
-public class NeverCirculatedItemsSearchProces extends MainProcess {
+public class NeverCirculatedItemsSearchProcess extends MainProcess {
 
 	protected String startTime;
 

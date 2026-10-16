@@ -22,10 +22,12 @@ import com.okstatelibrary.redbud.util.DateUtil;
 
 public class MainProcess {
 
+	// Stores the Start time
+	protected String startTime;
+
 	protected static FolioService folioService;
 
 	public MainProcess() {
-
 		folioService = new FolioService();
 	}
 
@@ -81,7 +83,7 @@ public class MainProcess {
 		return true;
 	}
 
-	public void sendEmaill(String title, String message) {
+	public void sendEmail(String title, String message) {
 		try {
 
 			EmailService emailService = new EmailService();

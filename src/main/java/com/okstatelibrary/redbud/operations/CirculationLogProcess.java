@@ -83,7 +83,7 @@ public class CirculationLogProcess extends MainProcess {
 
 		lines.append("End time:" + DateUtil.getTodayDateAndTime() + "<br/>");
 
-		sendEmaill("Circulation log daily data migration " + timePeriod, lines.toString());
+		sendEmail("Circulation log daily data migration " + timePeriod, lines.toString());
 
 		printScreen(" End of the process ", Constants.ErrorLevel.INFO);
 

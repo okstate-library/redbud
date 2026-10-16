@@ -192,7 +192,7 @@ public class UserProertiesUpdateProcess extends MainProcess {
 
 		strBuilder.append("<br/> End time: " + DateUtil.getTodayDateAndTime());
 
-		this.sendEmaill("Users Property Update Process ", strBuilder.toString());
+		this.sendEmail("Users Property Update Process ", strBuilder.toString());
 
 	}
 

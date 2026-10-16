@@ -86,7 +86,7 @@ public class UpdateCirculationLogRecordsProcess extends MainProcess {
 
 						} else {
 
-							System.out.println("  No circulationLog and itemid-" + item.id + " holdingRecord.id-"
+							System.out.println(" No circulationLog and item id-" + item.id + " holdingRecord.id-"
 									+ holdingRecord.id);
 						}
 					}

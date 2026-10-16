@@ -70,7 +70,7 @@ public class DateUtil {
 	public static Date getYesterdayDateWithTime(boolean isMorning) throws ParseException {
 		ZoneId zone = ZoneId.systemDefault();
 
-		LocalDate yesterday = LocalDate.now(zone).minusDays(1);
+		LocalDate yesterday = LocalDate.now(zone); //.minusDays(1);
 
 		if (isMorning) {
 			return Date.from(yesterday.atStartOfDay(zone).toInstant());

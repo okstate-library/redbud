@@ -5,6 +5,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.*;
 
+import com.okstatelibrary.redbud.folio.entity.inventory.PermanentLocation;
+import com.okstatelibrary.redbud.util.ObjectComparator;
+import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -43,156 +46,155 @@ import com.okstatelibrary.redbud.util.DateUtil;
 @Service
 public class FolioService extends FolioServiceToken {
 
-	/**
-	 * Logger
-	 */
-	private static final Logger LOG = LoggerFactory.getLogger(FolioService.class);
+    /**
+     * Logger
+     */
+    private static final Logger LOG = LoggerFactory.getLogger(FolioService.class);
 
-	private RestTemplate restTemplate = new RestTemplate();
+    private RestTemplate restTemplate = new RestTemplate();
 
-	ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = new ObjectMapper();
 
-	private HttpHeaders getHttpHeaders() {
+    private HttpHeaders getHttpHeaders() {
 
-		HttpHeaders headers = new HttpHeaders();
+        HttpHeaders headers = new HttpHeaders();
 
-		headers.add("x-okapi-tenant", AppSystemProperties.FolioTenant);
+        headers.add("x-okapi-tenant", AppSystemProperties.FolioTenant);
 
-		headers.add("x-okapi-token", FolioServiceToken.authToken);
+        headers.add("x-okapi-token", FolioServiceToken.authToken);
 
-		headers.add("Content-Type", "application/json");
+        headers.add("Content-Type", "application/json");
 
-		return headers;
+        return headers;
 
-	}
+    }
 
-	private HttpEntity<String> getHttpRequest() {
+    private HttpEntity<String> getHttpRequest() {
 
-		return new HttpEntity<String>(getHttpHeaders());
-	}
+        return new HttpEntity<String>(getHttpHeaders());
+    }
 
-	private int apiRecordlimit = 1000;
+    private int apiRecordlimit = 1000;
 
-	private String zeroRecordCount = "0";
+    private String zeroRecordCount = "0";
 
-	public boolean updateLoan(Loan payload) {
+    public boolean updateLoan(Loan payload) {
 
-		HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
+        HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "circulation/loans/" + payload.id;
+            String url = AppSystemProperties.FolioURL + "circulation/loans/" + payload.id;
 
-			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
+            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
 
-			String returnCode = responseEntity.getStatusCode().toString();
+            String returnCode = responseEntity.getStatusCode().toString();
 
-			return returnCode.equals("204 NO_CONTENT") ? true : false;
+            return returnCode.equals("204 NO_CONTENT") ? true : false;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("updateLoan - " + payload.id);
+            System.out.println("updateLoan - " + payload.id);
 
-			System.err.println("Error: FolioService : updateLoan " + e.getMessage());
+            System.err.println("Error: FolioService : updateLoan " + e.getMessage());
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 
-	public ArrayList<Item> getItembyBarcode(String barcode)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+    public ArrayList<Item> getItembyBarcode(String barcode)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "inventory/items?query=(barcode ==" + barcode + ")";
+            String url = AppSystemProperties.FolioURL + "inventory/items?query=(barcode ==" + barcode + ")";
 
-			ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					ItemRoot.class);
+            ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    ItemRoot.class);
 
-			// System.out.println("Total records- " + response.getBody());
+            // System.out.println("Total records- " + response.getBody());
 
-			return response.getBody().items;
+            return response.getBody().items;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.err.println("Error: FolioService : getItembyBarcode " + e.getMessage());
+            System.err.println("Error: FolioService : getItembyBarcode " + e.getMessage());
 
-			return null;
-		}
-	}
+            return null;
+        }
+    }
 
-	public ArrayList<Item> getItemsByLocationId(String locationID, String locationName, String status)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+    public ArrayList<Item> getUpdateItemsByLocationAndUpdateItem(String locationID)
+            throws RestClientException {
 
-		try {
+        try {
 
-			String mainUrl = AppSystemProperties.FolioURL + "inventory/items?limit=%s&query=(effectiveLocationId=="
-					+ locationID + " and (enumeration<>\"\" OR volume<>\"\")  )sortby id";
+            String mainUrl = AppSystemProperties.FolioURL + "inventory/items?limit=%s&query=(" +
+                    "effectiveLocationId==" + locationID + " )";
 
-			// System.out.println("mainUrl - " + String.format(mainUrl, "0"));
+            // System.out.println("mainUrl - " + String.format(mainUrl, "0"));
 
-			ResponseEntity<ItemRoot> response = restTemplate.exchange(String.format(mainUrl, "0"), HttpMethod.GET,
-					getHttpRequest(), ItemRoot.class);
+            ResponseEntity<ItemRoot> response = restTemplate.exchange(String.format(mainUrl, "0"), HttpMethod.GET,
+                    getHttpRequest(), ItemRoot.class);
 
-			apiRecordlimit = 100;
+            apiRecordlimit = 100;
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
-			int totalCount = (int) response.getBody().totalRecords;
+            int totalCount = (int) response.getBody().totalRecords;
 
-			System.out.println(status + "," + totalCount);
+            System.out.println("totalIterations" + totalIterations);
 
-			System.out.println("totalIterations" + totalIterations);
+            String itemPutUrl = AppSystemProperties.FolioURL + "inventory/items/";
 
-			if (totalCount > 0) {
+            PermanentLocation permanentLocation = new PermanentLocation();
+            permanentLocation.id = locationID;
 
-				String fileName = locationName + "_" + status + ".csv";
+            if (totalCount > 0) {
 
-				try (FileWriter writer = new FileWriter(fileName)) {
+                for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-					writer.append("ID#CallNUmber#BarCode#Title#EffectiveLocation#PermanentLocation#volume#enumeration"
-							+ "\n");
+                    int offset = iterations * apiRecordlimit;
 
-					for (int iterations = 0; iterations < totalIterations; iterations++) {
+                    String url = String.format(mainUrl, "100") + "&offset=" + offset;
 
-						int offset = iterations * apiRecordlimit;
+                    System.out.println("iterations - " + iterations);
 
-						String url = String.format(mainUrl, "100") + "&offset=" + offset;
+                    response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), ItemRoot.class);
 
-						// System.out.println("url - " + url);
+                    ArrayList<Item> items = response.getBody().items;
 
-						System.out.println("iterations - " + iterations);
+                    System.out.println("Items count - " + items.size());
 
-						response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), ItemRoot.class);
+                    for (Item item : items) {
 
-						// items.addAll(response.getBody().items);
+                        if (item != null) {
 
-						for (Item item : response.getBody().items) {
+                            try {
 
-//						int loanCount = this.getLoanCountByItemId(item.id);
-//
-//						if (loanCount == 0 && item.lastCheckIn == null) {
+                                if (item.permanentLocation == null) {
 
-							// Item item folioService.getItemByItemId(item.id);
+                                    getItem(item.id);
 
-							if (item != null) {
+                                    item.permanentLocation = permanentLocation;
+                                    HttpEntity<?> request = new HttpEntity<Object>(item, getHttpHeaders());
 
-								writer.append(Objects.toString(item.id, "") + "#"
-										+ Objects.toString(item.callNumber, "") + "#"
-										+ Objects.toString(item.barcode, "") + "#"
-										+ Objects.toString(item.title.replace(",", ";"), "") + "#"
-										+ (item.effectiveLocation != null
-												? Objects.toString(item.effectiveLocation.name, "")
-												: "")
-										+ "#"
-										+ (item.permanentLocation != null
-												? Objects.toString(item.permanentLocation.name, "")
-												: "")
-										+ "#" + (item.volume != null ? Objects.toString(item.volume, "") : "") + "#"
-										+ (item.enumeration != null ? Objects.toString(item.enumeration, "") : "")
-										+ "\n");
-							}
-							// }
+                                    ResponseEntity<String> responseEntity = restTemplate.exchange(itemPutUrl + item.id, HttpMethod.PUT, request, String.class);
+
+                                    if (responseEntity.getStatusCode().toString().equals("204 NO_CONTENT")) {
+                                        System.out.println("Item barcode updated " + item.barcode);
+                                    }
+
+                                }
+
+                            } catch (Exception e) {
+                                System.err.println("Error: FolioService : item update error " + e.getMessage() + "item id " + item.id);
+                                e.getMessage();
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    // }
 
 //					if (itemCount % 1000 == 0) {
 //						System.out.println("Item count " + itemCount);
@@ -200,1246 +202,1364 @@ public class FolioService extends FolioServiceToken {
 //
 //					itemCount++;
 
-						}
+                }
 
-						Thread.sleep(2000);
+                Thread.sleep(2000);
 
-					}
 
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+            }
+            return null;
 
-			}
-			return null;
+        } catch (
+                Exception e) {
 
-		} catch (Exception e) {
+            System.err.println("Error: FolioService : getItemsByLocationId " + e.getMessage());
 
-			System.err.println("Error: FolioService : getItemsByLocationId " + e.getMessage());
+            return null;
+        }
 
-			return null;
-		}
+    }
 
-	}
+    public ArrayList<Item> getItemsByLocationId(String locationID, String locationName, String status)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-	public Item getItemByItemId(String itemId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
-		try {
-			String url = AppSystemProperties.FolioURL + "item-storage/items/" + itemId + ")";
+        try {
 
-			ResponseEntity<Item> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Item.class);
+            String mainUrl = AppSystemProperties.FolioURL + "inventory/items?limit=%s&query=(effectiveLocationId=="
+                    + locationID + " and (enumeration<>\"\" OR volume<>\"\")  )sortby id";
 
-			return response.getBody();
+            // System.out.println("mainUrl - " + String.format(mainUrl, "0"));
 
-		} catch (Exception e) {
+            ResponseEntity<ItemRoot> response = restTemplate.exchange(String.format(mainUrl, "0"), HttpMethod.GET,
+                    getHttpRequest(), ItemRoot.class);
 
-			System.err.println("Error: FolioService : getItemByItemId " + e.getMessage());
+            apiRecordlimit = 100;
 
-			return null;
-		}
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
-	}
+            int totalCount = (int) response.getBody().totalRecords;
 
-	public ArrayList<InstanceType> getInstanceTypes()
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
-		try {
-			String url = AppSystemProperties.FolioURL + "instance-types?limit=100";
+            System.out.println(status + "," + totalCount);
 
-			ResponseEntity<InstanceTypeRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					InstanceTypeRoot.class);
+            System.out.println("totalIterations" + totalIterations);
 
-			return response.getBody().instanceTypes;
+            if (totalCount > 0) {
 
-		} catch (Exception e) {
+                String fileName = locationName + "_" + status + ".csv";
 
-			System.err.println("Error: FolioService : getItemByItemId " + e.getMessage());
+                try (FileWriter writer = new FileWriter(fileName)) {
 
-			return null;
-		}
+                    writer.append("ID#CallNUmber#BarCode#Title#EffectiveLocation#PermanentLocation#volume#enumeration"
+                            + "\n");
 
-	}
+                    for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-	public int getInstanceCountByFormatAndType(String formatId, String typeId, String locationId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+                        int offset = iterations * apiRecordlimit;
 
-		String url = AppSystemProperties.FolioURL
-				+ "inventory/instances?limit=00&query=(staffSuppress==false AND discoverySuppress==false AND metadata.createdDate <= \"2025-06-30T00:00:00.000+00:00\"  "
-				+ "AND instanceFormatIds=" + formatId + " AND instanceTypeId =" + typeId
-				+ " AND query=holdingsRecords.permanentLocationId= " + locationId + ")";
+                        String url = String.format(mainUrl, "100") + "&offset=" + offset;
 
-		try {
+                        // System.out.println("url - " + url);
 
-			ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					ItemRoot.class);
+                        System.out.println("iterations - " + iterations);
 
-			return response.getBody().totalRecords;
+                        response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), ItemRoot.class);
 
-		} catch (Exception e) {
+                        // items.addAll(response.getBody().items);
 
-			System.err.println("Error: FolioService : getItembyBarcode " + e.getMessage());
+                        for (Item item : response.getBody().items) {
 
-			return 0;
-		}
+//						int loanCount = this.getLoanCountByItemId(item.id);
+//
+//						if (loanCount == 0 && item.lastCheckIn == null) {
 
-	}
+                            // Item item folioService.getItemByItemId(item.id);
 
-	public ArrayList<InstanceFormat> getInstanceFormats()
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
-		try {
-			String url = AppSystemProperties.FolioURL + "instance-formats?limit=100";
+                            if (item != null) {
 
-			ResponseEntity<InstanceFormatRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					InstanceFormatRoot.class);
+                                writer.append(Objects.toString(item.id, "") + "#"
+                                        + Objects.toString(item.callNumber, "") + "#"
+                                        + Objects.toString(item.barcode, "") + "#"
+                                        + Objects.toString(item.title.replace(",", ";"), "") + "#"
+                                        + (item.effectiveLocation != null
+                                        ? Objects.toString(item.effectiveLocation.name, "")
+                                        : "")
+                                        + "#"
+                                        + (item.permanentLocation != null
+                                        ? Objects.toString(item.permanentLocation.name, "")
+                                        : "")
+                                        + "#" + (item.volume != null ? Objects.toString(item.volume, "") : "") + "#"
+                                        + (item.enumeration != null ? Objects.toString(item.enumeration, "") : "")
+                                        + "\n");
+                            }
+                            // }
 
-			return response.getBody().instanceFormats;
+//					if (itemCount % 1000 == 0) {
+//						System.out.println("Item count " + itemCount);
+//					}
+//
+//					itemCount++;
 
-		} catch (Exception e) {
+                        }
 
-			System.err.println("Error: FolioService : getItemByItemId " + e.getMessage());
+                        Thread.sleep(2000);
 
-			return null;
-		}
+                    }
 
-	}
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-	public int getItemCountByLocationId(String locationID)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
-		try {
-			String url = AppSystemProperties.FolioURL + "inventory/items?query=(effectiveLocationId=" + locationID
-					+ ")&limit=0";
+            }
+            return null;
 
-			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					HoldingRoot.class);
+        } catch (Exception e) {
 
-			return response.getBody().totalRecords;
+            System.err.println("Error: FolioService : getItemsByLocationId " + e.getMessage());
 
-		} catch (Exception e) {
+            return null;
+        }
 
-			System.err.println("Error: FolioService : getItemCountByLocationId " + e.getMessage());
+    }
 
-			return 0;
-		}
+    public Item getItemByItemId(String itemId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        try {
+            String url = AppSystemProperties.FolioURL + "item-storage/items/" + itemId + ")";
 
-	}
+            ResponseEntity<Item> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Item.class);
 
-	/**
-	 * Reads from the inventory items FOLIO API relevant holdings record
-	 * 
-	 * @param holdingRecordId
-	 * @return relevant holding record
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
-	 * @throws RestClientException
-	 * @throws IOException
-	 */
-	public ItemRoot getItemByHoldingRecordId(String holdingRecordId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            return response.getBody();
 
-		try {
+        } catch (Exception e) {
 
-			String url = AppSystemProperties.FolioURL + "inventory/items?query=(holdingsRecordId == " + holdingRecordId
-					+ " )";
+            System.err.println("Error: FolioService : getItemByItemId " + e.getMessage());
 
-			ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					ItemRoot.class);
+            return null;
+        }
 
-			return response.getBody();
+    }
 
-		} catch (Exception e) {
+    public ArrayList<InstanceType> getInstanceTypes()
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        try {
+            String url = AppSystemProperties.FolioURL + "instance-types?limit=100";
 
-			System.err.println("Error: FolioService : getItemByHoldingRecordId " + e.getMessage());
+            ResponseEntity<InstanceTypeRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    InstanceTypeRoot.class);
 
-			return null;
-		}
-	}
+            return response.getBody().instanceTypes;
 
-	/**
-	 * finds the relevant holding records relevant to the holding record id
-	 * 
-	 * @param holdingRecordId
-	 * @return relevant holding record
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
-	 * @throws RestClientException
-	 * @throws IOException
-	 */
-	public HoldingsRecord getHoldingRecordByHoldingId(String holdingRecordId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        } catch (Exception e) {
 
-		try {
+            System.err.println("Error: FolioService : getItemByItemId " + e.getMessage());
 
-			String url = AppSystemProperties.FolioURL + "holdings-storage/holdings/" + holdingRecordId;
+            return null;
+        }
 
-			ResponseEntity<HoldingsRecord> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					HoldingsRecord.class);
+    }
 
-			return response.getBody();
+    public int getInstanceCountByFormatAndType(String formatId, String typeId, String locationId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		} catch (Exception e) {
+        String url = AppSystemProperties.FolioURL
+                + "inventory/instances?limit=00&query=(staffSuppress==false AND discoverySuppress==false AND metadata.createdDate <= \"2025-06-30T00:00:00.000+00:00\"  "
+                + "AND instanceFormatIds=" + formatId + " AND instanceTypeId =" + typeId
+                + " AND query=holdingsRecords.permanentLocationId= " + locationId + ")";
 
-			System.err.println("Error: FolioService : getHoldingRecordByHoldingId " + e.getMessage());
+        try {
 
-			return null;
-		}
-	}
+            ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    ItemRoot.class);
 
-	/**
-	 * 
-	 * @param instanceId
-	 * @return
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
-	 * @throws RestClientException
-	 * @throws IOException
-	 */
-	public ArrayList<Instance> getInstanceByInstanceId(String instanceId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            return response.getBody().totalRecords;
 
-		try {
+        } catch (Exception e) {
 
-			String url = AppSystemProperties.FolioURL + "inventory/instances?query=(id= " + instanceId + ")";
+            System.err.println("Error: FolioService : getItembyBarcode " + e.getMessage());
 
-			ResponseEntity<InstanceRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					InstanceRoot.class);
+            return 0;
+        }
 
-			// System.out.println("Total records- " + response.getBody());
+    }
 
-			return response.getBody().instances;
+    public ArrayList<InstanceFormat> getInstanceFormats()
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        try {
+            String url = AppSystemProperties.FolioURL + "instance-formats?limit=100";
 
-		} catch (Exception e) {
+            ResponseEntity<InstanceFormatRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    InstanceFormatRoot.class);
 
-			System.err.println("Error: FolioService : getHoldingRecordByHoldingId " + e.getMessage());
+            return response.getBody().instanceFormats;
 
-			return null;
-		}
-	}
+        } catch (Exception e) {
 
-	public ArrayList<Loan> getAllOpenLoans()
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            System.err.println("Error: FolioService : getItemByItemId " + e.getMessage());
 
-		try {
+            return null;
+        }
 
-			String mainUrl = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"open\")&limit=";
+    }
 
-			System.out.println("mainUrl -- " + mainUrl);
+    public int getItemCountByLocationId(String locationID)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        try {
+            String url = AppSystemProperties.FolioURL + "inventory/items?query=(effectiveLocationId=" + locationID
+                    + ")&limit=0";
 
-			ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + zeroRecordCount, HttpMethod.GET,
-					getHttpRequest(), CirculationRoot.class);
+            ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    HoldingRoot.class);
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+            return response.getBody().totalRecords;
 
-			ArrayList<Loan> loans = new ArrayList<>();
+        } catch (Exception e) {
 
-			for (int iterations = 0; iterations < totalIterations; iterations++) {
+            System.err.println("Error: FolioService : getItemCountByLocationId " + e.getMessage());
 
-				int offset = iterations * apiRecordlimit;
+            return 0;
+        }
 
-				String url = mainUrl + apiRecordlimit + "&offset=" + offset;
+    }
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
+    /**
+     * Reads from the inventory items FOLIO API relevant holdings record
+     *
+     * @param holdingRecordId
+     * @return relevant holding record
+     * @throws JsonParseException
+     * @throws JsonMappingException
+     * @throws RestClientException
+     * @throws IOException
+     */
+    public ItemRoot getItemByHoldingRecordId(String holdingRecordId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-				loans.addAll(response.getBody().loans);
-			}
+        try {
 
-			return loans;
+            String url = AppSystemProperties.FolioURL + "inventory/items?query=(holdingsRecordId == " + holdingRecordId
+                    + " )";
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    ItemRoot.class);
 
-	public int getLoanCountByItemId(String itemId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            return response.getBody();
 
-		try {
+        } catch (Exception e) {
 
-			String url = AppSystemProperties.FolioURL + "circulation/loans?limit=0&query=(itemId==\"" + itemId + "\")";
+            System.err.println("Error: FolioService : getItemByHoldingRecordId " + e.getMessage());
 
-			// System.out.println("url " + url);
+            return null;
+        }
+    }
 
-			ResponseEntity<LoanRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					LoanRoot.class);
+    /**
+     * finds the relevant holding records relevant to the holding record id
+     *
+     * @param holdingRecordId
+     * @return relevant holding record
+     * @throws JsonParseException
+     * @throws JsonMappingException
+     * @throws RestClientException
+     * @throws IOException
+     */
+    public HoldingsRecord getHoldingRecordByHoldingId(String holdingRecordId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			// System.out.println("Total records- " + response.getBody());
+        try {
 
-			return response.getBody().totalRecords;
+            String url = AppSystemProperties.FolioURL + "holdings-storage/holdings/" + holdingRecordId;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return 0;
-		}
-	}
+            ResponseEntity<HoldingsRecord> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    HoldingsRecord.class);
 
-	public Loan getLoansByLoanId(String loadId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            return response.getBody();
 
-		try {
+        } catch (Exception e) {
 
-			String url = AppSystemProperties.FolioURL + "circulation/loans?query=(id==\"" + loadId + "\")";
+            System.err.println("Error: FolioService : getHoldingRecordByHoldingId " + e.getMessage());
 
-			ResponseEntity<LoanRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					LoanRoot.class);
+            return null;
+        }
+    }
 
-			// System.out.println("Total records- " + response.getBody());
+    /**
+     *
+     * @param instanceId
+     * @return
+     * @throws JsonParseException
+     * @throws JsonMappingException
+     * @throws RestClientException
+     * @throws IOException
+     */
+    public ArrayList<Instance> getInstanceByInstanceId(String instanceId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			return response.getBody().loans.get(0);
+        try {
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            String url = AppSystemProperties.FolioURL + "inventory/instances?query=(id= " + instanceId + ")";
 
-	public ArrayList<Request> getOpenRequests()
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            ResponseEntity<InstanceRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    InstanceRoot.class);
 
-		try {
+            // System.out.println("Total records- " + response.getBody());
 
-			String url = AppSystemProperties.FolioURL
-					+ "circulation/requests?query=(requestType==\"Hold\" and  status ==\"Open - Not yet filled\")&limit=1000";
+            return response.getBody().instances;
 
-			ResponseEntity<RequestRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					RequestRoot.class);
+        } catch (Exception e) {
 
-			// System.out.println("Total records- " + response.getBody().totalRecords);
+            System.err.println("Error: FolioService : getHoldingRecordByHoldingId " + e.getMessage());
 
-			return response.getBody().requests;
+            return null;
+        }
+    }
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+    public ArrayList<Loan> getAllOpenLoans()
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-	public ArrayList<Loan> getLoansByUser(String userId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        try {
 
-		try {
+            String mainUrl = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"open\")&limit=";
 
-			String url = AppSystemProperties.FolioURL + "circulation/loans?limit=1000&query=(userId==\"" + userId
-					+ "\" and status.name = \"open\")";
+            System.out.println("mainUrl -- " + mainUrl);
 
-			ResponseEntity<LoanRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					LoanRoot.class);
+            ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + zeroRecordCount, HttpMethod.GET,
+                    getHttpRequest(), CirculationRoot.class);
 
-			// System.out.println("Total records- " + response.getBody().totalRecords);
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
-			return response.getBody().loans;
+            ArrayList<Loan> loans = new ArrayList<>();
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-	public ArrayList<UserNote> getUserNotes(String userNoteType, boolean isCompareDateRange)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+                int offset = iterations * apiRecordlimit;
 
-		try {
+                String url = mainUrl + apiRecordlimit + "&offset=" + offset;
 
-			String url = AppSystemProperties.FolioURL + "notes?query=type.Id==" + userNoteType + "&limit=1";
+                response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
 
-			ResponseEntity<UserNoteRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					UserNoteRoot.class);
+                loans.addAll(response.getBody().loans);
+            }
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+            return loans;
 
-			ArrayList<UserNote> pairList = new ArrayList<>();
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			System.out.println("totalIterations - " + totalIterations);
+    public int getLoanCountByItemId(String itemId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			for (int iterations = 0; iterations < totalIterations; iterations++) {
+        try {
 
-				int offset = iterations * apiRecordlimit;
+            String url = AppSystemProperties.FolioURL + "circulation/loans?limit=0&query=(itemId==\"" + itemId + "\")";
 
-				url = AppSystemProperties.FolioURL + "notes?query=type.Id==" + userNoteType + "&limit=" + apiRecordlimit
-						+ "&offset=" + offset;
+            // System.out.println("url " + url);
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), UserNoteRoot.class);
+            ResponseEntity<LoanRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    LoanRoot.class);
 
-				if (isCompareDateRange) {
-					for (UserNote note : response.getBody().notes) {
-						if (note.metadata != null && note.metadata.createdDate != null) {
-							Date createdDate = note.metadata.createdDate;
+            // System.out.println("Total records- " + response.getBody());
 
-							if (!createdDate.before(DateUtil.getYesterdayDateWithTime(true))
-									&& !createdDate.after(DateUtil.getYesterdayDateWithTime(false))) {
+            return response.getBody().totalRecords;
 
-								System.out
-										.println("Matched Note: " + note.id + note.title + note.domain + note.content);
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return 0;
+        }
+    }
 
-								pairList.add(note);
-							}
-						}
-					}
-				} else {
-					pairList.addAll(response.getBody().notes);
-				}
+    public Loan getLoansByLoanId(String loadId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			}
+        try {
 
-			return pairList;
+            String url = AppSystemProperties.FolioURL + "circulation/loans?query=(id==\"" + loadId + "\")";
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            ResponseEntity<LoanRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    LoanRoot.class);
 
-	public int getClosedLoansCount() throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            // System.out.println("Total records- " + response.getBody());
 
-		try {
+            return response.getBody().loans.get(0);
 
-			String url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"closed\" )&limit=0";
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					CirculationRoot.class);
+    public ArrayList<Request> getOpenRequests()
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			System.out.println("Total records- " + response.getBody().totalRecords);
+        try {
 
-			return response.getBody().totalRecords;
+            String url = AppSystemProperties.FolioURL
+                    + "circulation/requests?query=(requestType==\"Hold\" and  status ==\"Open - Not yet filled\")&limit=1000";
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return 0;
-		}
-	}
+            ResponseEntity<RequestRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    RequestRoot.class);
 
-	public ArrayList<Loan> getOpenedLoans(String locationId, String startDateTime, String endDateTime,
-			boolean isDailyProcess) throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            // System.out.println("Total records- " + response.getBody().totalRecords);
 
-		try {
+            return response.getBody().requests;
 
-			String mainUrl = "";
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			if (isDailyProcess) {
+    public ArrayList<Loan> getLoansByUser(String userId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-				mainUrl = AppSystemProperties.FolioURL
-						+ "loan-storage/loans?query=(status.name==\"open\" and returnDate>=" + startDateTime
-						+ " AND returnDate<=" + endDateTime + " and itemEffectiveLocationIdAtCheckOut==" + locationId
-						+ ")&limit=";
+        try {
 
-			} else {
-				mainUrl = AppSystemProperties.FolioURL
-						+ "loan-storage/loans?query=(status.name==\"open\" and itemEffectiveLocationIdAtCheckOut=="
-						+ locationId + ")&limit=";
-			}
+            String url = AppSystemProperties.FolioURL + "circulation/loans?limit=1000&query=(userId==\"" + userId
+                    + "\" and status.name = \"open\")";
 
-			System.out.println("mainUrl -- " + mainUrl);
+            ResponseEntity<LoanRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    LoanRoot.class);
 
-			ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + zeroRecordCount, HttpMethod.GET,
-					getHttpRequest(), CirculationRoot.class);
+            // System.out.println("Total records- " + response.getBody().totalRecords);
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+            return response.getBody().loans;
 
-			ArrayList<Loan> loans = new ArrayList<>();
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			for (int iterations = 0; iterations < totalIterations; iterations++) {
+    public ArrayList<UserNote> getUserNotes(String userNoteType, boolean isCompareDateRange)
+            throws RestClientException {
 
-				int offset = iterations * apiRecordlimit;
+        try {
 
-				String url = mainUrl + apiRecordlimit + "&offset=" + offset;
+            String url = AppSystemProperties.FolioURL + "notes?query=type.Id==" + userNoteType + "&limit=1";
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
+            ResponseEntity<UserNoteRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    UserNoteRoot.class);
 
-				loans.addAll(response.getBody().loans);
-			}
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
-			return loans;
+            ArrayList<UserNote> pairList = new ArrayList<>();
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            System.out.println("totalIterations - " + totalIterations);
 
-	public ArrayList<Loan> getClosedLoansByLocation(String locationId, String startDateTime, String endDateTime,
-			boolean isDailyProcess) throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-		try {
-			String mainUrl = "";
+                int offset = iterations * apiRecordlimit;
 
-			if (isDailyProcess) {
+                url = AppSystemProperties.FolioURL + "notes?query=type.Id==" + userNoteType + "&limit=" + apiRecordlimit
+                        + "&offset=" + offset;
 
-				mainUrl = AppSystemProperties.FolioURL
-						+ "loan-storage/loans?query=(status.name==\"closed\" and loanDate>=" + startDateTime
-						+ " AND loanDate<=" + endDateTime + " and itemEffectiveLocationIdAtCheckOut==" + locationId
-						+ ")&limit=";
+                response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), UserNoteRoot.class);
 
-			} else {
-				mainUrl = AppSystemProperties.FolioURL
-						+ "loan-storage/loans?query=(status.name==\"closed\" and itemEffectiveLocationIdAtCheckOut=="
-						+ locationId + ")&limit=";
-			}
+                if (isCompareDateRange) {
+                    for (UserNote note : response.getBody().notes) {
+                        if (note.metadata != null && note.metadata.createdDate != null) {
+                            Date createdDate = note.metadata.createdDate;
 
-			// System.out.println("url- " + mainUrl);
+                            if (!createdDate.before(DateUtil.getYesterdayDateWithTime(true))
+                                    && !createdDate.after(DateUtil.getYesterdayDateWithTime(false))) {
 
-			ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + "0", HttpMethod.GET,
-					getHttpRequest(), CirculationRoot.class);
+                                System.out
+                                        .println("Matched Note: " + note.id + note.title + note.domain + note.content);
 
-			// System.out.println("TotalRecords - " + response.getBody().totalRecords);
+                                pairList.add(note);
+                            }
+                        }
+                    }
+                } else {
+                    pairList.addAll(response.getBody().notes);
+                }
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+            }
 
-			// System.out.println("ClosedLoans totalIterations- " + totalIterations);
+            return pairList;
 
-			ArrayList<Loan> loans = new ArrayList<>();
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			apiRecordlimit = 10000;
+    public int getClosedLoansCount() throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			for (int iterations = 0; iterations < totalIterations; iterations++) {
+        try {
 
-				int offset = iterations * apiRecordlimit;
+            String url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"closed\" )&limit=0";
 
-				String url = mainUrl + apiRecordlimit + "&offset=" + offset;
+            ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    CirculationRoot.class);
 
-				// System.out.println("url- " + url);
+            System.out.println("Total records- " + response.getBody().totalRecords);
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
+            return response.getBody().totalRecords;
 
-				// Collections.addAll(folioUsers, response.getBody());
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return 0;
+        }
+    }
 
-				loans.addAll(response.getBody().loans);
-			}
+    public ArrayList<Loan> getOpenedLoans(String locationId, String startDateTime, String endDateTime,
+                                          boolean isDailyProcess) throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			return loans;
+        try {
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            String mainUrl = "";
 
-	public ArrayList<Loan> getClosedLoans(boolean isClosed, String servicePoint)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            if (isDailyProcess) {
 
-		try {
+                mainUrl = AppSystemProperties.FolioURL
+                        + "loan-storage/loans?query=(status.name==\"open\" and returnDate>=" + startDateTime
+                        + " AND returnDate<=" + endDateTime + " and itemEffectiveLocationIdAtCheckOut==" + locationId
+                        + ")&limit=";
 
-			String url = "";
+            } else {
+                mainUrl = AppSystemProperties.FolioURL
+                        + "loan-storage/loans?query=(status.name==\"open\" and itemEffectiveLocationIdAtCheckOut=="
+                        + locationId + ")&limit=";
+            }
 
-			if (isClosed) {
-				url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=1&query=(status.name==closed)";
+            System.out.println("mainUrl -- " + mainUrl);
 
-			} else {
-				// loan-storage/loans?limit=1&query=(status.name==open)";
+            ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + zeroRecordCount, HttpMethod.GET,
+                    getHttpRequest(), CirculationRoot.class);
 
-				url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"open\" AND "
-						+ "checkoutServicePointId == \"" + servicePoint + "\")&limit=1";
-			}
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
-			System.out.println(url);
+            ArrayList<Loan> loans = new ArrayList<>();
 
-			ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					CirculationRoot.class);
+            for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+                int offset = iterations * apiRecordlimit;
 
-			ArrayList<Loan> loans = new ArrayList<>();
+                String url = mainUrl + apiRecordlimit + "&offset=" + offset;
 
-			for (int iterations = 0; iterations < totalIterations; iterations++) {
+                response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
 
-				response = null;
+                loans.addAll(response.getBody().loans);
+            }
 
-				int offset = iterations * apiRecordlimit;
+            return loans;
 
-				if (isClosed) {
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-					url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=" + apiRecordlimit
-							+ "&query=(status.name==closed)&offset=" + offset;
+    public ArrayList<Loan> getClosedLoansByLocation(String locationId, String startDateTime, String endDateTime,
+                                                    boolean isDailyProcess) throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-				} else {
-					// loan-storage/loans?limit=1&query=(status.name==open)";
+        try {
+            String mainUrl = "";
 
-					url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=" + apiRecordlimit
-							+ "&query=(status.name==\"open\" AND checkoutServicePointId == \"" + servicePoint + "\")";
-				}
+            if (isDailyProcess) {
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
+                mainUrl = AppSystemProperties.FolioURL
+                        + "loan-storage/loans?query=(status.name==\"closed\" and loanDate>=" + startDateTime
+                        + " AND loanDate<=" + endDateTime + " and itemEffectiveLocationIdAtCheckOut==" + locationId
+                        + ")&limit=";
 
-				loans.addAll(response.getBody().loans);
-			}
+            } else {
+                mainUrl = AppSystemProperties.FolioURL
+                        + "loan-storage/loans?query=(status.name==\"closed\" and itemEffectiveLocationIdAtCheckOut=="
+                        + locationId + ")&limit=";
+            }
 
-			return loans;
+            // System.out.println("url- " + mainUrl);
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            ResponseEntity<CirculationRoot> response = restTemplate.exchange(mainUrl + "0", HttpMethod.GET,
+                    getHttpRequest(), CirculationRoot.class);
 
-	public ArrayList<HoldingsRecord2> getInventoryHoldingsByLocation(String locationID)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            // System.out.println("TotalRecords - " + response.getBody().totalRecords);
 
-		try {
-			String url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId="
-					+ locationID + ")&limit=0";
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
-			ResponseEntity<HoldingRoot2> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					HoldingRoot2.class);
+            // System.out.println("ClosedLoans totalIterations- " + totalIterations);
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+            ArrayList<Loan> loans = new ArrayList<>();
 
-			ArrayList<HoldingsRecord2> pairList = new ArrayList<>();
+            apiRecordlimit = 10000;
 
-			System.out.println("totalIterations - " + totalIterations);
+            for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-			// totalIterations = 20;
+                int offset = iterations * apiRecordlimit;
 
-			for (int iterations = 0; iterations < totalIterations; iterations++) {
+                String url = mainUrl + apiRecordlimit + "&offset=" + offset;
 
-				int offset = iterations * apiRecordlimit;
+                // System.out.println("url- " + url);
 
-				url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId="
-						+ locationID + ")&limit=" + apiRecordlimit + "&offset=" + offset;
+                response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), HoldingRoot2.class);
+                // Collections.addAll(folioUsers, response.getBody());
 
-				pairList.addAll(response.getBody().holdingsRecords);
-			}
+                loans.addAll(response.getBody().loans);
+            }
 
-			return pairList;
+            return loans;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	}
+    public ArrayList<Loan> getClosedLoans(boolean isClosed, String servicePoint)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-	public int getInventoryHoldingsCount(String locationID)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
-		try {
-			String url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId= "
-					+ locationID + ")&limit=0";
+        try {
 
-			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					HoldingRoot.class);
+            String url = "";
 
-			return response.getBody().totalRecords;
+            if (isClosed) {
+                url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=1&query=(status.name==closed)";
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return 0;
-		}
+            } else {
+                // loan-storage/loans?limit=1&query=(status.name==open)";
 
-	}
+                url = AppSystemProperties.FolioURL + "loan-storage/loans?query=(status.name==\"open\" AND "
+                        + "checkoutServicePointId == \"" + servicePoint + "\")&limit=1";
+            }
 
-	public ArrayList<HoldingsRecord> getInventoryHoldings(String locationID)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
-		try {
+            System.out.println(url);
 
-			String mainUrl = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId= "
-					+ locationID
-					// + " AND staffSuppress==false " //AND instanceFormatIds <>
-					// \"f5e8210f-7640-459b-a71f-552567f92369\"
-					+ " )&limit=";
+            ResponseEntity<CirculationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    CirculationRoot.class);
 
-			System.out.println("mainUrl - " + mainUrl + zeroRecordCount);
-			// "AND metadata.updatedDate >= " + startDateTime +
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
-			ResponseEntity<HoldingRoot> response = restTemplate.exchange(mainUrl + zeroRecordCount, HttpMethod.GET,
-					getHttpRequest(), HoldingRoot.class);
+            ArrayList<Loan> loans = new ArrayList<>();
 
-			// System.out.print("" + response.getBody().totalRecords);
+            for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+                response = null;
 
-			ArrayList<HoldingsRecord> pairList = new ArrayList<>();
+                int offset = iterations * apiRecordlimit;
 
-			// System.out.println("totalIterations - " + totalIterations);
+                if (isClosed) {
 
-			for (int iterations = 0; iterations < totalIterations; iterations++) {
+                    url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=" + apiRecordlimit
+                            + "&query=(status.name==closed)&offset=" + offset;
 
-				int offset = iterations * apiRecordlimit;
+                } else {
+                    // loan-storage/loans?limit=1&query=(status.name==open)";
 
-				String url = mainUrl + apiRecordlimit + "&offset=" + offset;
+                    url = AppSystemProperties.FolioURL + "loan-storage/loans?limit=" + apiRecordlimit
+                            + "&query=(status.name==\"open\" AND checkoutServicePointId == \"" + servicePoint + "\")";
+                }
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), HoldingRoot.class);
+                response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), CirculationRoot.class);
 
-				pairList.addAll(response.getBody().holdingsRecords);
-			}
+                loans.addAll(response.getBody().loans);
+            }
 
-			return pairList;
+            return loans;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	}
+    public ArrayList<HoldingsRecord2> getInventoryHoldingsByLocation(String locationID)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-	public Set<String> getInventoryInstance(String instanceId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        try {
+            String url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId="
+                    + locationID + ")&limit=0";
 
-		try {
+            ResponseEntity<HoldingRoot2> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    HoldingRoot2.class);
 
-			String url = AppSystemProperties.FolioURL + "inventory/instances?query=(id=" + instanceId + ")";
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
-			// System.out.println("url - " + url);
+            ArrayList<HoldingsRecord2> pairList = new ArrayList<>();
 
-			ResponseEntity<InstanceRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					InstanceRoot.class);
+            System.out.println("totalIterations - " + totalIterations);
 
-			ArrayList<Instance> Instance = response.getBody().instances;
+            // totalIterations = 20;
 
-			Set<String> oclcNumbers = new LinkedHashSet<>();
+            for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-			for (Instance instance : Instance) {
+                int offset = iterations * apiRecordlimit;
 
-				if (!instance.staffSuppress) {
+                url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId="
+                        + locationID + ")&limit=" + apiRecordlimit + "&offset=" + offset;
 
-					for (Identifier identifier : instance.identifiers) {
+                response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), HoldingRoot2.class);
 
-						String originalText = identifier.value;
+                pairList.addAll(response.getBody().holdingsRecords);
+            }
 
-						if (originalText.toLowerCase().contains("(ocolc)")
-								&& identifier.identifierTypeId.equals("439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef")) {
+            return pairList;
 
-							oclcNumbers.add(originalText.replaceAll("\\D+", ""));
-						}
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
 
-					}
-				}
-			}
+    }
 
-			return oclcNumbers;
+    public int getInventoryHoldingsCount(String locationID)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        try {
+            String url = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId= "
+                    + locationID + ")&limit=0";
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    HoldingRoot.class);
 
-	public List<HashMap<String, List<String>>> getInventoryIdentifiers(String startDateTime, String endDateTime)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            return response.getBody().totalRecords;
 
-		try {
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return 0;
+        }
 
-			String url = AppSystemProperties.FolioURL + "inventory/instances?limit=1";
+    }
+
+    public ArrayList<HoldingsRecord> getInventoryHoldings(String locationID)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        try {
+
+            String mainUrl = AppSystemProperties.FolioURL + "holdings-storage/holdings?query=(effectiveLocationId= "
+                    + locationID
+                    // + " AND staffSuppress==false " //AND instanceFormatIds <>
+                    // \"f5e8210f-7640-459b-a71f-552567f92369\"
+                    + " )&limit=";
+
+            System.out.println("mainUrl - " + mainUrl + zeroRecordCount);
+            // "AND metadata.updatedDate >= " + startDateTime +
+
+            ResponseEntity<HoldingRoot> response = restTemplate.exchange(mainUrl + zeroRecordCount, HttpMethod.GET,
+                    getHttpRequest(), HoldingRoot.class);
+
+            // System.out.print("" + response.getBody().totalRecords);
+
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+
+            ArrayList<HoldingsRecord> pairList = new ArrayList<>();
+
+            // System.out.println("totalIterations - " + totalIterations);
+
+            for (int iterations = 0; iterations < totalIterations; iterations++) {
+
+                int offset = iterations * apiRecordlimit;
+
+                String url = mainUrl + apiRecordlimit + "&offset=" + offset;
+
+                response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), HoldingRoot.class);
+
+                pairList.addAll(response.getBody().holdingsRecords);
+            }
+
+            return pairList;
+
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+
+    }
+
+    public Set<String> getInventoryInstance(String instanceId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+        try {
+
+            String url = AppSystemProperties.FolioURL + "inventory/instances?query=(id=" + instanceId + ")";
+
+            // System.out.println("url - " + url);
+
+            ResponseEntity<InstanceRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    InstanceRoot.class);
+
+            ArrayList<Instance> Instance = response.getBody().instances;
+
+            Set<String> oclcNumbers = new LinkedHashSet<>();
+
+            for (Instance instance : Instance) {
+
+                if (!instance.staffSuppress) {
+
+                    for (Identifier identifier : instance.identifiers) {
+
+                        String originalText = identifier.value;
+
+                        if (originalText.toLowerCase().contains("(ocolc)")
+                                && identifier.identifierTypeId.equals("439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef")) {
+
+                            oclcNumbers.add(originalText.replaceAll("\\D+", ""));
+                        }
+
+                    }
+                }
+            }
+
+            return oclcNumbers;
+
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public List<HashMap<String, List<String>>> getInventoryIdentifiers(String startDateTime, String endDateTime)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+        try {
+
+            String url = AppSystemProperties.FolioURL + "inventory/instances?limit=1";
 //					+ "query=(returnDate>=" + startDateTime
 //					+ " AND returnDate<=" + endDateTime + ")&limit=1";
 
-			System.out.println("url- " + url);
+            System.out.println("url- " + url);
 
-			ResponseEntity<InstanceRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					InstanceRoot.class);
+            ResponseEntity<InstanceRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    InstanceRoot.class);
 
-			// System.out.println("response.getBody().totalRecords- " +
-			// response.getBody().totalRecords);
+            // System.out.println("response.getBody().totalRecords- " +
+            // response.getBody().totalRecords);
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
-			List<HashMap<String, List<String>>> pairList = new ArrayList<>();
+            List<HashMap<String, List<String>>> pairList = new ArrayList<>();
 
-			System.out.println("totalIterations - " + totalIterations);
+            System.out.println("totalIterations - " + totalIterations);
 
-			for (int iterations = 0; iterations < 5; iterations++) {
+            for (int iterations = 0; iterations < 5; iterations++) {
 
-				int offset = iterations * apiRecordlimit;
+                int offset = iterations * apiRecordlimit;
 
-				url = AppSystemProperties.FolioURL + "inventory/instances?limit=" + apiRecordlimit + "& offset="
-						+ offset;
+                url = AppSystemProperties.FolioURL + "inventory/instances?limit=" + apiRecordlimit + "& offset="
+                        + offset;
 //						+ "query=(returnDate>=" + startDateTime
 //						+ " AND returnDate<=" + endDateTime + ")&limit=" + 10 + "
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), InstanceRoot.class);
+                response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), InstanceRoot.class);
 
-				ArrayList<Instance> Instance = response.getBody().instances;
+                ArrayList<Instance> Instance = response.getBody().instances;
 
-				// System.out.println("Instance.size - " + Instance.size());
+                // System.out.println("Instance.size - " + Instance.size());
 
-				for (Instance instance : Instance) {
+                for (Instance instance : Instance) {
 
-					HashMap<String, List<String>> map = new HashMap<>();
+                    HashMap<String, List<String>> map = new HashMap<>();
 
-					List<String> list = new ArrayList<String>();
+                    List<String> list = new ArrayList<String>();
 
-					for (Identifier identifier : instance.identifiers) {
+                    for (Identifier identifier : instance.identifiers) {
 
-						String originalText = identifier.value;
+                        String originalText = identifier.value;
 
-						if (originalText.toLowerCase().contains("(ocolc)")) {
+                        if (originalText.toLowerCase().contains("(ocolc)")) {
 
-							list.add(originalText + "#" + originalText.replaceAll("\\D+", ""));
-						}
+                            list.add(originalText + "#" + originalText.replaceAll("\\D+", ""));
+                        }
 
-					}
+                    }
 
-					map.put(instance.id, list);
+                    map.put(instance.id, list);
 
-					pairList.add(map);
-				}
+                    pairList.add(map);
+                }
 
-			}
+            }
 
-			System.out.println("pairList.size - " + pairList.size());
+            System.out.println("pairList.size - " + pairList.size());
 
-			return pairList;
+            return pairList;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	public ItemRoot getInventoryItemById(String holdingsRecordId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+    public ItemRoot getInventoryItemById(String holdingsRecordId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "inventory/items-by-holdings-id?query=(holdingsRecordId=="
-					+ holdingsRecordId + ")";
+            String url = AppSystemProperties.FolioURL + "inventory/items-by-holdings-id?query=(holdingsRecordId=="
+                    + holdingsRecordId + ")";
 
-			// System.out.println("url" + url);
+            // System.out.println("url" + url);
 
-			ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					ItemRoot.class);
+            ResponseEntity<ItemRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    ItemRoot.class);
 
-			// System.out.println(response);
+            // System.out.println(response);
 
-			return response.getBody();
+            return response.getBody();
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	public Item getItem(String itemId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+    public Item getItem(String itemId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "inventory/items/" + itemId;
+            String url = AppSystemProperties.FolioURL + "inventory/items/" + itemId;
 
-			ResponseEntity<Item> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Item.class);
+            ResponseEntity<String> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    getHttpRequest(),
+                    String.class
+            );
 
-			// System.out.println("Total records- " + response.getBody().totalRecords);
+            String json = response.getBody();
 
-			return response.getBody();
+            ResponseEntity<Item> response2 = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Item.class);
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            Item item2 = response2.getBody();
 
-	public boolean updateItem(Item payload) {
+            String fileName = "items/" + item2.barcode + ".csv";
 
-		HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
+            try (FileWriter writer = new FileWriter(fileName)) {
+                writer.append(json);
+            }
 
-		try {
+            return item2;
 
-			String url = AppSystemProperties.FolioURL + "inventory/items/" + payload.id;
+        } catch (Exception e) {
 
-			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
+            System.out.println("Error when getting item " + itemId);
 
-			return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
 
-		} catch (Exception e) {
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			System.out.println("Error update Item - " + payload.id);
+    public boolean updateItem(Item payload) {
 
-			e.getMessage();
+        HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
 
-			e.printStackTrace();
+        try {
 
-			return false;
-		}
-	}
+            String url = AppSystemProperties.FolioURL + "inventory/items/" + payload.id;
 
-	public boolean updateItem4Rfid(Item4Rfid payload) {
+            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
 
-		HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
+            return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
 
-		try {
+        } catch (Exception e) {
 
-			String url = AppSystemProperties.FolioURL + "inventory/items/" + payload.id;
+            System.out.println("Error update Item - " + payload.id);
 
-			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
+            e.getMessage();
 
-			return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
+            e.printStackTrace();
 
-		} catch (Exception e) {
+            return false;
+        }
+    }
 
-			System.out.println("Error update Item - " + payload.id);
+    public boolean updateItem4Rfid(Item4Rfid payload) {
 
-			e.getMessage();
+        HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
 
-			e.printStackTrace();
+        try {
 
-			return false;
-		}
-	}
+            String url = AppSystemProperties.FolioURL + "inventory/items/" + payload.id;
 
-	public boolean updateInventoryItem(Item payload) {
+            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
 
-		HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
+            return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
 
-		try {
+        } catch (Exception e) {
 
-			String url = AppSystemProperties.FolioURL + "inventory/holdings/" + payload.id;
+            System.out.println("Error update Item - " + payload.id);
 
-			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
+            e.getMessage();
 
-			return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
+            e.printStackTrace();
 
-		} catch (Exception e) {
+            return false;
+        }
+    }
 
-			System.out.println("Error update Item - " + payload.id);
+    public boolean updateInventoryItem(Item payload) {
 
-			e.getMessage();
+        HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
 
-			e.printStackTrace();
+        try {
 
-			return false;
-		}
-	}
+            String url = AppSystemProperties.FolioURL + "inventory/holdings/" + payload.id;
 
-	public ArrayList<HoldingsRecord> getHoldingsStorageByLocationIdAndHoldingStaement(String permanentLocationId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
 
-		try {
+            return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
 
-			String url = AppSystemProperties.FolioURL
-					+ "holdings-storage/holdings?limit=1&query=(holdingsStatements <> [] AND permanentLocationId =="
-					+ permanentLocationId + ")";
+        } catch (Exception e) {
 
-			// System.out.println("url- " + url);
+            System.out.println("Error update Item - " + payload.id);
 
-			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					HoldingRoot.class);
+            e.getMessage();
 
-			// System.out.println("response.getBody().totalRecords- " +
-			// response.getBody().totalRecords);
+            e.printStackTrace();
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+            return false;
+        }
+    }
 
-			ArrayList<HoldingsRecord> holdings = new ArrayList<>();
+    public ArrayList<HoldingsRecord> getHoldingsStorageByLocationIdAndHoldingStaement(String permanentLocationId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			// System.out.println("totalIterations - " + totalIterations);
+        try {
 
-			for (int iterations = 0; iterations < totalIterations; iterations++) {
+            String url = AppSystemProperties.FolioURL
+                    + "holdings-storage/holdings?limit=1&query=(holdingsStatements <> [] AND permanentLocationId =="
+                    + permanentLocationId + ")";
 
-				int offset = iterations * apiRecordlimit;
+            // System.out.println("url- " + url);
 
-				url = AppSystemProperties.FolioURL + "holdings-storage/holdings?limit=" + apiRecordlimit
-						+ "&query=(holdingsStatements <> []  AND permanentLocationId ==" + permanentLocationId
-						+ ")& offset=" + offset;
+            ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    HoldingRoot.class);
 
-				// System.out.println("url- " + url);
+            // System.out.println("response.getBody().totalRecords- " +
+            // response.getBody().totalRecords);
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), HoldingRoot.class);
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
-				ArrayList<HoldingsRecord> instances = response.getBody().holdingsRecords;
+            ArrayList<HoldingsRecord> holdings = new ArrayList<>();
 
-				for (HoldingsRecord holdingRecord : instances) {
+            // System.out.println("totalIterations - " + totalIterations);
 
-					if (holdingRecord.holdingsStatements != null && holdingRecord.holdingsStatements.size() > 0) {
+            for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-						// HoldingsStatement holdingsStatement =
-						// holdingRecord.holdingsStatements.get(0);
+                int offset = iterations * apiRecordlimit;
+
+                url = AppSystemProperties.FolioURL + "holdings-storage/holdings?limit=" + apiRecordlimit
+                        + "&query=(holdingsStatements <> []  AND permanentLocationId ==" + permanentLocationId
+                        + ")& offset=" + offset;
+
+                // System.out.println("url- " + url);
+
+                response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), HoldingRoot.class);
+
+                ArrayList<HoldingsRecord> instances = response.getBody().holdingsRecords;
+
+                for (HoldingsRecord holdingRecord : instances) {
+
+                    if (holdingRecord.holdingsStatements != null && holdingRecord.holdingsStatements.size() > 0) {
+
+                        // HoldingsStatement holdingsStatement =
+                        // holdingRecord.holdingsStatements.get(0);
 
 //						if (!StringHelper.isStringNullOrEmpty(holdingsStatement.statement)
 //								|| !StringHelper.isStringNullOrEmpty(holdingsStatement.staffNote)) {
 
-						// System.out.println("holdingRecord.id " + holdingRecord.id);
+                        // System.out.println("holdingRecord.id " + holdingRecord.id);
 
-						// holdings.add(holdingRecord);
-						// }
-					}
+                        // holdings.add(holdingRecord);
+                        // }
+                    }
 
-				}
-			}
+                }
+            }
 
-			return holdings;
+            return holdings;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
 
-	}
+    }
 
-	public HoldingsRecord getHoldingsByHoldingsId(String holdingInstanceId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+    public HoldingsRecord getHoldingsByHoldingsId(String holdingInstanceId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "holdings-storage/holdings/" + holdingInstanceId;
+            String url = AppSystemProperties.FolioURL + "holdings-storage/holdings/" + holdingInstanceId;
 
-			ResponseEntity<HoldingsRecord> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					HoldingsRecord.class);
+            ResponseEntity<HoldingsRecord> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    HoldingsRecord.class);
 
-			return response.getBody();
+            return response.getBody();
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	public HoldingRoot getHoldingsStorageByLocationId(String permanentLocationId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+    public HoldingRoot getHoldingsStorageByLocationId(String permanentLocationId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL
-					+ "holdings-storage/holdings?limit=10000&query=(permanentLocationId==" + permanentLocationId + ")";
+            String url = AppSystemProperties.FolioURL
+                    + "holdings-storage/holdings?limit=10000&query=(permanentLocationId==" + permanentLocationId + ")";
 
-			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					HoldingRoot.class);
+            ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    HoldingRoot.class);
 
-			return response.getBody();
+            return response.getBody();
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	public HoldingRoot getHoldingsStorageWithHoldingsStatemxents()
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+    public HoldingRoot getHoldingsStorageWithHoldingsStatemxents()
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL
-					+ "holdings-storage/holdings?limit=10000&query=(permanentLocationId==)";
+            String url = AppSystemProperties.FolioURL
+                    + "holdings-storage/holdings?limit=10000&query=(permanentLocationId==)";
 
-			ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					HoldingRoot.class);
+            ResponseEntity<HoldingRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    HoldingRoot.class);
 
-			return response.getBody();
+            return response.getBody();
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	public FolioUser getUserByExternalSystemId(String externalSystemId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+    public FolioUser getUserByExternalSystemId(String externalSystemId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "users?query=(externalSystemId==" + externalSystemId + ")";
+            String url = AppSystemProperties.FolioURL + "users?query=(externalSystemId==" + externalSystemId + ")";
 
-			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+            ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
-			if (response.getBody().users.size() > 0) {
+            if (response.getBody().users.size() > 0) {
 
-				return response.getBody().users.get(0);
+                return response.getBody().users.get(0);
 
-			} else {
+            } else {
 
-				return null;
-			}
+                return null;
+            }
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	///
-	// Get Patron Group By name
-	///
-	public FolioPatronGroup getPatronGroups()
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+///
+// Get Patron Group By name
 
-		try {
+    ///
+    public FolioPatronGroup getPatronGroups()
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			String url = AppSystemProperties.FolioURL + "groups?limit=1000";
+        try {
 
-			ResponseEntity<FolioPatronGroup> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					FolioPatronGroup.class);
+            String url = AppSystemProperties.FolioURL + "groups?limit=1000";
 
-			return response.getBody();
+            ResponseEntity<FolioPatronGroup> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    FolioPatronGroup.class);
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            return response.getBody();
 
-	///
-	// Get Patron Group By Id
-	///
-	public FolioPatronGroup getPatronGroupById(String id)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-		try {
+///
+// Get Patron Group By Id
 
-			String url = AppSystemProperties.FolioURL + "groups?query=(id=" + id + ")";
+    ///
+    public FolioPatronGroup getPatronGroupById(String id)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			ResponseEntity<FolioPatronGroup> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					FolioPatronGroup.class);
+        try {
 
-			return response.getBody();
+            String url = AppSystemProperties.FolioURL + "groups?query=(id=" + id + ")";
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            ResponseEntity<FolioPatronGroup> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    FolioPatronGroup.class);
 
-	///
-	// Get all the available categories.
-	///
-	public FolioPatronGroup getPatronGroup(String url)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            return response.getBody();
 
-		try {
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			ResponseEntity<FolioPatronGroup> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					FolioPatronGroup.class);
+///
+// Get all the available categories.
 
-			return response.getBody();
+    ///
+    public FolioPatronGroup getPatronGroup(String url)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+        try {
 
-	public boolean updateUser(FolioUser payload) {
+            ResponseEntity<FolioPatronGroup> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    FolioPatronGroup.class);
 
-		HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
+            return response.getBody();
 
-		try {
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public boolean updateUser(FolioUser payload) {
+
+        HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
+
+        try {
 
 //			ObjectWriter ow = new ObjectMapper().writer().withDefaultPrettyPrinter();
 //			String json = ow.writeValueAsString(payload);
 //			System.out.println(json);
 
-			String url = AppSystemProperties.FolioURL + "users/" + payload.id;
+            String url = AppSystemProperties.FolioURL + "users/" + payload.id;
 
-			ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
+            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
 
-			return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
+            return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Folio Update User - " + payload.externalSystemId);
+            System.out.println("Folio Update User - " + payload.externalSystemId);
 
-			e.getMessage();
-			e.printStackTrace();
+            e.getMessage();
+            e.printStackTrace();
 
-			printScreen("Folio Update User - " + payload.externalSystemId, Constants.ErrorLevel.ERROR);
-			printScreen(e.getMessage(), Constants.ErrorLevel.ERROR);
+            printScreen("Folio Update User - " + payload.externalSystemId, Constants.ErrorLevel.ERROR);
+            printScreen(e.getMessage(), Constants.ErrorLevel.ERROR);
 //
-			System.out.println(e.getMessage());
+            System.out.println(e.getMessage());
 
-			return false;
-		}
-	}
+            return false;
+        }
+    }
 
-	public String createUser(FolioUser payload) throws JsonMappingException, JsonProcessingException {
+    public String createUser(FolioUser payload) throws JsonMappingException, JsonProcessingException {
 
-		HttpHeaders headers = getHttpHeaders();
-		headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpHeaders headers = getHttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-		HttpEntity<?> request = new HttpEntity<Object>(payload, headers);
+        HttpEntity<?> request = new HttpEntity<Object>(payload, headers);
 
-		try {
+        try {
 
 //			Gson gson = new Gson();
 //			String jsonString = gson.toJson(payload);
 //			System.out.println("jsonString" + jsonString);
 
-			String url = AppSystemProperties.FolioURL + "users";
+            String url = AppSystemProperties.FolioURL + "users";
 
-			this.restTemplate.exchange(url, HttpMethod.POST, request, FolioUser.class);
+            this.restTemplate.exchange(url, HttpMethod.POST, request, FolioUser.class);
 
-			return null;
+            return null;
 
-		} catch (Exception e) {
+        } catch (Exception e) {
 
-			System.out.println("Error in Folio Create User");
-			e.getMessage();
-			e.printStackTrace();
+            System.out.println("Error in Folio Create User");
+            e.getMessage();
+            e.printStackTrace();
 
-			printScreen("Error in Folio Create User", Constants.ErrorLevel.ERROR);
-			printScreen(e.getMessage(), Constants.ErrorLevel.ERROR);
+            printScreen("Error in Folio Create User", Constants.ErrorLevel.ERROR);
+            printScreen(e.getMessage(), Constants.ErrorLevel.ERROR);
 
-			if (e instanceof HttpStatusCodeException) {
-				String errorResponse = ((HttpStatusCodeException) e).getResponseBodyAsString();
+            if (e instanceof HttpStatusCodeException) {
+                String errorResponse = ((HttpStatusCodeException) e).getResponseBodyAsString();
 
-				ErrorRoot map = mapper.readValue(errorResponse, ErrorRoot.class);
+                ErrorRoot map = mapper.readValue(errorResponse, ErrorRoot.class);
 
-				if (map.errors != null && map.errors.size() > 0) {
+                if (map.errors != null && map.errors.size() > 0) {
 
-					String error_message = map.errors.get(0).message;
+                    String error_message = map.errors.get(0).message;
 
-					if (error_message.contains("value already exists in table")) {
-						return "user_exists";
-					}
+                    if (error_message.contains("value already exists in table")) {
+                        return "user_exists";
+                    }
 
-					return error_message;
-				}
+                    return error_message;
+                }
 
-				return null;
-			}
-		}
+                return null;
+            }
+        }
 
-		return null;
-	}
+        return null;
+    }
 
 //	///
 //		public ArrayList<FolioUser>  getUsersbyPatronGroup(String patronGroup)
@@ -1521,382 +1641,390 @@ public class FolioService extends FolioServiceToken {
 //		}
 //		
 
-	public Root getActiveUsers() throws JsonParseException, JsonMappingException, RestClientException, IOException {
+    public Root getActiveUsers() throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "users?query=active==\"true\"&limit=100000";
+            String url = AppSystemProperties.FolioURL + "users?query=active==\"true\"&limit=100000";
 
-			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+            ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
-			return response.getBody();
+            return response.getBody();
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	///
-	// Get users by the institute code -
-	///
-	public Root getUsersbyPatronGroup(String patronGroup, UserStatusCheck status)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+///
+// Get users by the institute code -
 
-		try {
+    ///
+    public Root getUsersbyPatronGroup(String patronGroup, UserStatusCheck status)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			String url = AppSystemProperties.FolioURL + "users?query=patronGroup=" + patronGroup;
+        try {
 
-			switch (status) {
-			case TRUE:
-				url += " and active==\"true\"";
-				break;
+            String url = AppSystemProperties.FolioURL + "users?query=patronGroup=" + patronGroup;
 
-			case FALSE:
-				url = " and active==\"false\"";
-				break;
+            switch (status) {
+                case TRUE:
+                    url += " and active==\"true\"";
+                    break;
 
-			default:
-				break;
-			}
+                case FALSE:
+                    url = " and active==\"false\"";
+                    break;
 
-			url += "&limit=100000";
+                default:
+                    break;
+            }
 
-			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+            url += "&limit=100000";
 
-			return response.getBody();
+            ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            return response.getBody();
 
-	///
-	// Get users by the institute code -
-	///
-	public Root getInactiveUsersbyPatronGroup(String patronGroup)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-		try {
+///
+// Get users by the institute code -
 
-			String url = AppSystemProperties.FolioURL + "users?query=patronGroup=" + patronGroup
-					+ "  and active==\"false\"&limit=100000";
+    ///
+    public Root getInactiveUsersbyPatronGroup(String patronGroup)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+        try {
 
-			return response.getBody();
+            String url = AppSystemProperties.FolioURL + "users?query=patronGroup=" + patronGroup
+                    + "  and active==\"false\"&limit=100000";
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
-	///
-	// Get over due accounts by the institute code -
-	///
-	public ArrayList<ManualBlock> getPatronsBlocks()
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            return response.getBody();
 
-		try {
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			String url = AppSystemProperties.FolioURL + "manualblocks";
+///
+// Get over due accounts by the institute code -
 
-			ResponseEntity<ManualBlockRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					ManualBlockRoot.class);
+    ///
+    public ArrayList<ManualBlock> getPatronsBlocks()
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().manualblocks.size() / apiRecordlimit);
+        try {
 
-			ArrayList<ManualBlock> blocks = new ArrayList<>();
+            String url = AppSystemProperties.FolioURL + "manualblocks";
 
-			for (int iterations = 0; iterations < totalIterations; iterations++) {
+            ResponseEntity<ManualBlockRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    ManualBlockRoot.class);
 
-				response = null;
+            int totalIterations = (int) Math.ceil((double) response.getBody().manualblocks.size() / apiRecordlimit);
 
-				int offset = iterations * apiRecordlimit;
+            ArrayList<ManualBlock> blocks = new ArrayList<>();
 
-				url = AppSystemProperties.FolioURL + "manualblocks?limit=" + apiRecordlimit + "&offset" + offset;
+            for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), ManualBlockRoot.class);
+                response = null;
 
-				blocks.addAll(response.getBody().manualblocks);
-			}
+                int offset = iterations * apiRecordlimit;
 
-			return blocks;
+                url = AppSystemProperties.FolioURL + "manualblocks?limit=" + apiRecordlimit + "&offset" + offset;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+                response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), ManualBlockRoot.class);
 
-	public ArrayList<ManualBlock> getAllManualBlocks()
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+                blocks.addAll(response.getBody().manualblocks);
+            }
 
-		try {
+            return blocks;
 
-			String url = AppSystemProperties.FolioURL + "manualblocks?limit=500";
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			ResponseEntity<ManualBlockRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					ManualBlockRoot.class);
+    public ArrayList<ManualBlock> getAllManualBlocks()
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			return response.getBody().manualblocks;
+        try {
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            String url = AppSystemProperties.FolioURL + "manualblocks?limit=500";
 
-	/**
-	 * 
-	 * @param userId
-	 * @return
-	 * @throws JsonParseException
-	 * @throws JsonMappingException
-	 * @throws RestClientException
-	 * @throws IOException
-	 */
-	public PatronBlockRoot getAutomatedPatronBlocksByUser(String userId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            ResponseEntity<ManualBlockRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    ManualBlockRoot.class);
 
-		try {
+            return response.getBody().manualblocks;
 
-			String url = AppSystemProperties.FolioURL + "automated-patron-blocks/" + userId;
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			// System.out.println(url);
+    /**
+     *
+     * @param userId
+     * @return
+     * @throws JsonParseException
+     * @throws JsonMappingException
+     * @throws RestClientException
+     * @throws IOException
+     */
+    public PatronBlockRoot getAutomatedPatronBlocksByUser(String userId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			ResponseEntity<PatronBlockRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					PatronBlockRoot.class);
+        try {
 
-			return response.getBody();
+            String url = AppSystemProperties.FolioURL + "automated-patron-blocks/" + userId;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            // System.out.println(url);
 
-	///
-	// Get over due accounts by the institute code -
-	///
-	public ArrayList<Account> getOverDueAccounts(String feeFineOwner)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            ResponseEntity<PatronBlockRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    PatronBlockRoot.class);
 
-		try {
+            return response.getBody();
 
-			String url = AppSystemProperties.FolioURL + "accounts?query=(status.name==\"open\" and feeFineOwner=\""
-					+ feeFineOwner + "  \")";
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			ResponseEntity<Accounts> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					Accounts.class);
+///
+// Get over due accounts by the institute code -
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+    ///
+    public ArrayList<Account> getOverDueAccounts(String feeFineOwner)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			ArrayList<Account> accounts = new ArrayList<>();
+        try {
 
-			for (int iterations = 0; iterations < totalIterations; iterations++) {
+            String url = AppSystemProperties.FolioURL + "accounts?query=(status.name==\"open\" and feeFineOwner=\""
+                    + feeFineOwner + "  \")";
 
-				response = null;
+            ResponseEntity<Accounts> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    Accounts.class);
 
-				int offset = iterations * apiRecordlimit;
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
-				url = AppSystemProperties.FolioURL + "accounts?limit=" + apiRecordlimit
-						+ "&query=(status.name==\"open\" and feeFineOwner=\"" + feeFineOwner + "  \")&offset" + offset;
+            ArrayList<Account> accounts = new ArrayList<>();
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Accounts.class);
+            for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-				accounts.addAll(response.getBody().accounts);
-			}
+                response = null;
 
-			return accounts;
+                int offset = iterations * apiRecordlimit;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+                url = AppSystemProperties.FolioURL + "accounts?limit=" + apiRecordlimit
+                        + "&query=(status.name==\"open\" and feeFineOwner=\"" + feeFineOwner + "  \")&offset" + offset;
 
-	///
-	// Get loans based on the location and the year
-	///
-	public Inventory getInventoryLoanDetails(String location, String year)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
-		try {
+                response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Accounts.class);
 
-			String url = AppSystemProperties.FolioURL + "circulation/loans?limit=1000&query=(status.name==\"open\" and "
-					+ "itemEffectiveLocationIdAtCheckOut==\"" + location + "\"";
+                accounts.addAll(response.getBody().accounts);
+            }
 
-			if (!year.contentEquals("all")) {
-				url += "AND dueDate >= '" + year + "-01-01' \n" + "AND dueDate < '" + year + "-12-31')";
-			} else {
-				url += " )";
-			}
+            return accounts;
 
-			ResponseEntity<Inventory> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					Inventory.class);
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-			return response.getBody();
+///
+// Get loans based on the location and the year
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+    ///
+    public Inventory getInventoryLoanDetails(String location, String year)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        try {
 
-	///
-	// Get users by the patron group id - GUID
-	///
-	public Root getUsersByPatronGroupIdForLoans(String userGroupId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            String url = AppSystemProperties.FolioURL + "circulation/loans?limit=1000&query=(status.name==\"open\" and "
+                    + "itemEffectiveLocationIdAtCheckOut==\"" + location + "\"";
 
-		try {
+            if (!year.contentEquals("all")) {
+                url += "AND dueDate >= '" + year + "-01-01' \n" + "AND dueDate < '" + year + "-12-31')";
+            } else {
+                url += " )";
+            }
 
-			String url = AppSystemProperties.FolioURL + "users?query=(active==true and patronGroup==" + userGroupId
-					+ ")&limit=10000";
+            ResponseEntity<Inventory> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    Inventory.class);
 
-			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+            return response.getBody();
 
-			return response.getBody();
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+///
+// Get users by the patron group id - GUID
 
-	///
-	// Get users by the patron group id - GUID
-	///
-	public Root getUsersByPatronGroupId(String userGroupId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+    ///
+    public Root getUsersByPatronGroupIdForLoans(String userGroupId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "users?query=(active==true and patronGroup==" + userGroupId
-					+ ")&limit=40000";
+            String url = AppSystemProperties.FolioURL + "users?query=(active==true and patronGroup==" + userGroupId
+                    + ")&limit=10000";
 
-			// String url = AppSystemProperties.FolioURL + "users?active=true&patronGroup="
-			// + userGroupId;
+            ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
-			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+            return response.getBody();
 
-			return response.getBody();
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+///
+// Get users by the patron group id - GUID
 
-	///
-	// Get users by the patron group id - GUID
-	///
-	public ArrayList<FolioUser> getUsersByPatronGroupId2(String userGroupId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+    ///
+    public Root getUsersByPatronGroupId(String userGroupId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "users?query=(patronGroup==" + userGroupId + ")&limit=1";
+            String url = AppSystemProperties.FolioURL + "users?query=(active==true and patronGroup==" + userGroupId
+                    + ")&limit=40000";
 
-			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+            // String url = AppSystemProperties.FolioURL + "users?active=true&patronGroup="
+            // + userGroupId;
 
-			int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
+            ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
-			ArrayList<FolioUser> users = new ArrayList<>();
+            return response.getBody();
 
-			for (int iterations = 0; iterations < totalIterations; iterations++) {
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-				response = null;
+///
+// Get users by the patron group id - GUID
 
-				int offset = iterations * apiRecordlimit;
+    ///
+    public ArrayList<FolioUser> getUsersByPatronGroupId2(String userGroupId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-				url = AppSystemProperties.FolioURL + "users?query=(patronGroup==" + userGroupId + ")&limit="
-						+ apiRecordlimit + "&offset" + offset;
+        try {
 
-				response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+            String url = AppSystemProperties.FolioURL + "users?query=(patronGroup==" + userGroupId + ")&limit=1";
 
-				users.addAll(response.getBody().users);
-			}
+            ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
-			return users;
+            int totalIterations = (int) Math.ceil((double) response.getBody().totalRecords / apiRecordlimit);
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            ArrayList<FolioUser> users = new ArrayList<>();
 
-	public FolioUser getUsersByBarcode(String barCode)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            for (int iterations = 0; iterations < totalIterations; iterations++) {
 
-		try {
+                response = null;
 
-			String url = AppSystemProperties.FolioURL + "/users?query=barcode==" + barCode;
+                int offset = iterations * apiRecordlimit;
 
-			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+                url = AppSystemProperties.FolioURL + "users?query=(patronGroup==" + userGroupId + ")&limit="
+                        + apiRecordlimit + "&offset" + offset;
 
-			if (response.getBody().users.size() > 0) {
-				return response.getBody().users.get(0);
-			} else {
-				return null;
-			}
+                response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
-		} catch (Exception e) {
-			// TODO: handle exception
+                users.addAll(response.getBody().users);
+            }
 
-			System.out.println("Barcode" + barCode);
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            return users;
 
-	public FolioUser getUsersById(String userId)
-			throws JsonParseException, JsonMappingException, RestClientException, IOException {
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-		try {
+    public FolioUser getUsersByBarcode(String barCode)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
 
-			String url = AppSystemProperties.FolioURL + "users?query=id==" + userId;
+        try {
 
-			ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+            String url = AppSystemProperties.FolioURL + "/users?query=barcode==" + barCode;
 
-			if (response.getBody().users.size() > 0) {
-				return response.getBody().users.get(0);
-			} else {
-				return null;
-			}
+            ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+            if (response.getBody().users.size() > 0) {
+                return response.getBody().users.get(0);
+            } else {
+                return null;
+            }
+
+        } catch (Exception e) {
+            // TODO: handle exception
+
+            System.out.println("Barcode" + barCode);
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public FolioUser getUsersById(String userId)
+            throws JsonParseException, JsonMappingException, RestClientException, IOException {
+
+        try {
+
+            String url = AppSystemProperties.FolioURL + "users?query=id==" + userId;
+
+            ResponseEntity<Root> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(), Root.class);
+
+            if (response.getBody().users.size() > 0) {
+                return response.getBody().users.get(0);
+            } else {
+                return null;
+            }
+
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
 //	public FolioUser getUsersByExternalSystemId(String userId)
 //			throws JsonParseException, JsonMappingException, RestClientException, IOException {
@@ -1922,157 +2050,157 @@ public class FolioService extends FolioServiceToken {
 //		}
 //	}
 
-	public void printScreen(String msg, Constants.ErrorLevel errorLevel) {
-		switch (errorLevel) {
-		case ERROR:
-			LOG.error(msg);
-			break;
-		case INFO:
-			LOG.info(msg);
-			break;
-		case WARNING:
-			LOG.warn(msg);
-			break;
-		default:
-			LOG.warn(msg);
-			break;
+    public void printScreen(String msg, Constants.ErrorLevel errorLevel) {
+        switch (errorLevel) {
+            case ERROR:
+                LOG.error(msg);
+                break;
+            case INFO:
+                LOG.info(msg);
+                break;
+            case WARNING:
+                LOG.warn(msg);
+                break;
+            default:
+                LOG.warn(msg);
+                break;
 
-		}
-	}
+        }
+    }
 
-	public ArrayList<com.okstatelibrary.redbud.folio.entity.servicepoint.ServicePoint> getServicePoints() {
+    public ArrayList<com.okstatelibrary.redbud.folio.entity.servicepoint.ServicePoint> getServicePoints() {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "service-points?limit=100";
+            String url = AppSystemProperties.FolioURL + "service-points?limit=100";
 
-			ResponseEntity<ServicePointRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					ServicePointRoot.class);
+            ResponseEntity<ServicePointRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    ServicePointRoot.class);
 
-			return response.getBody().servicepoints;
+            return response.getBody().servicepoints;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	public ArrayList<com.okstatelibrary.redbud.folio.entity.institution.Institution> getInstitutions() {
+    public ArrayList<com.okstatelibrary.redbud.folio.entity.institution.Institution> getInstitutions() {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "location-units/institutions?limit=20";
+            String url = AppSystemProperties.FolioURL + "location-units/institutions?limit=20";
 
-			ResponseEntity<InstitutionRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					InstitutionRoot.class);
+            ResponseEntity<InstitutionRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    InstitutionRoot.class);
 
-			return response.getBody().locinsts;
+            return response.getBody().locinsts;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	public ArrayList<com.okstatelibrary.redbud.folio.entity.campus.Campus> getCampuses() {
+    public ArrayList<com.okstatelibrary.redbud.folio.entity.campus.Campus> getCampuses() {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "location-units/campuses?limit=20";
+            String url = AppSystemProperties.FolioURL + "location-units/campuses?limit=20";
 
-			ResponseEntity<CampusRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					CampusRoot.class);
+            ResponseEntity<CampusRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    CampusRoot.class);
 
-			return response.getBody().loccamps;
+            return response.getBody().loccamps;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	public ArrayList<com.okstatelibrary.redbud.folio.entity.library.Library> getLibraries() {
+    public ArrayList<com.okstatelibrary.redbud.folio.entity.library.Library> getLibraries() {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "location-units/libraries?limit=500";
+            String url = AppSystemProperties.FolioURL + "location-units/libraries?limit=500";
 
-			ResponseEntity<LibraryRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					LibraryRoot.class);
+            ResponseEntity<LibraryRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    LibraryRoot.class);
 
-			return response.getBody().loclibs;
+            return response.getBody().loclibs;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	public ArrayList<com.okstatelibrary.redbud.folio.entity.location.Location> getLocations() {
+    public ArrayList<com.okstatelibrary.redbud.folio.entity.location.Location> getLocations() {
 
-		try {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "locations?limit=500";
+            String url = AppSystemProperties.FolioURL + "locations?limit=500";
 
-			ResponseEntity<LocationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
-					LocationRoot.class);
+            ResponseEntity<LocationRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
+                    LocationRoot.class);
 
-			return response.getBody().locations;
+            return response.getBody().locations;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return null;
-		}
-	}
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return null;
+        }
+    }
 
-	public boolean deleteUserNote(String id) {
-		try {
+    public boolean deleteUserNote(String id) {
+        try {
 
-			String url = AppSystemProperties.FolioURL + "notes/" + id;
+            String url = AppSystemProperties.FolioURL + "notes/" + id;
 
-			ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE, getHttpRequest(),
-					String.class);
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE, getHttpRequest(),
+                    String.class);
 
-			String returnCode = response.getStatusCode().toString();
+            String returnCode = response.getStatusCode().toString();
 
-			return returnCode.equals("204 NO_CONTENT") ? true : false;
+            return returnCode.equals("204 NO_CONTENT") ? true : false;
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return false;
-		}
-	}
-	
-	public boolean deleteUser(String userId) {
-		try {
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return false;
+        }
+    }
 
-			String url = AppSystemProperties.FolioURL + "users/" + userId;
+    public boolean deleteUser(String userId) {
+        try {
 
-			ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE, getHttpRequest(),
-					String.class);
+            String url = AppSystemProperties.FolioURL + "users/" + userId;
 
-			String returnCode = response.getStatusCode().toString();
+            ResponseEntity<String> response = restTemplate.exchange(url, HttpMethod.DELETE, getHttpRequest(),
+                    String.class);
 
-			return returnCode.equals("204 NO_CONTENT") ? true : false;
+            String returnCode = response.getStatusCode().toString();
 
-		} catch (Exception e) {
-			// TODO: handle exception
-			e.getMessage();
-			e.printStackTrace();
-			return false;
-		}
-	}
+            return returnCode.equals("204 NO_CONTENT") ? true : false;
+
+        } catch (Exception e) {
+            // TODO: handle exception
+            e.getMessage();
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 }

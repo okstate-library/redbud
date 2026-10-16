@@ -11,87 +11,88 @@ import com.okstatelibrary.redbud.util.DateUtil;
 
 public class UserNotesPopulateProcess extends MainProcess {
 
-	// Stores the Start time
-	protected String startTime;
+    private ReportUserNoteService reportUserNoteService;
 
-	private ReportUserNoteService reportUserNoteService;
+    private UserNoteTypeService userNoteTypeService;
 
-	private UserNoteTypeService userNoteTypeService;
+    public UserNotesPopulateProcess(ReportUserNoteService reportUserNoteService,
+                                    UserNoteTypeService userNoteTypeService) {
+        this.reportUserNoteService = reportUserNoteService;
+        this.userNoteTypeService = userNoteTypeService;
+    }
 
-	public UserNotesPopulateProcess(ReportUserNoteService reportUserNoteService,
-			UserNoteTypeService userNoteTypeService) {
-		this.reportUserNoteService = reportUserNoteService;
-		this.userNoteTypeService = userNoteTypeService;
-	}
+    //
+    public void manipulate(boolean isCompareDateRange) {
 
-	//
-	public void manipulate(boolean isCompareDateRange) {
+        startTime = DateUtil.getTodayDateAndTime();
 
-		startTime = DateUtil.getTodayDateAndTime();
+        try {
 
-		// ArrayList<CsvRoot> csvUserList = new ArrayList<CsvRoot>();
+            System.out.println("Start UserNotesPopulateProcess Process");
 
-		try {
+            if (!isCompareDateRange) {
+                reportUserNoteService.truncate();
+            } else {
+                System.out.println("Time Period : " + DateUtil.getYesterdayDateWithTime(true) + " to " +
+                        DateUtil.getYesterdayDateWithTime(false));
+            }
 
-			System.out.println("Start");
+            List<UserNoteType> userNoteTypes = userNoteTypeService.getUserNoteTypeList();
 
-			if (!isCompareDateRange) {
-				reportUserNoteService.truncate();
-			}
+            for (UserNoteType userNoteType : userNoteTypes) {
 
-			List<UserNoteType> userNoteTypes = userNoteTypeService.getUserNoteTypeList();
+                ArrayList<UserNote> userNotes = folioService.getUserNotes(userNoteType.getUserNoteTypeId(),
+                        isCompareDateRange);
 
-			for (UserNoteType userNoteType : userNoteTypes) {
+                for (UserNote userNote : userNotes) {
 
-				// String generalUserNoteType ="150e1ed5-8da6-430f-b705-f84114d8569a";
+                    if (userNote.links != null && userNote.links.size() > 0) {
 
-				ArrayList<UserNote> userNotes = folioService.getUserNotes(userNoteType.getUserNoteTypeId(),
-						isCompareDateRange);
+                        String userId = userNote.links.get(0).id;
 
-				for (UserNote userNote : userNotes) {
+                        FolioUser folioUser = folioService.getUsersById(userNote.links.get(0).id);
 
-					if (userNote.links != null && userNote.links.size() > 0) {
+                        if (folioUser != null) {
 
-						String userId = userNote.links.get(0).id;
+                            ReportUserNote reportUserNote = getReportUserNote(userNoteType, userNote, folioUser);
 
-						FolioUser folioUser = folioService.getUsersById(userNote.links.get(0).id);
+                            reportUserNoteService.saveReportUserNote(reportUserNote);
 
-						if (folioUser != null) {
+                        } else {
+                            System.out.println("Null user id " + userId);
+                        }
 
-							ReportUserNote reportUserNote = new ReportUserNote();
-							reportUserNote.setNoteId(userNote.id);
-							reportUserNote.setNoteTypeId(userNoteType.getId());
-							reportUserNote.setName(folioUser.personal.firstName + " " + folioUser.personal.lastName);
-							reportUserNote.setPrimaryId(folioUser.externalSystemId);
-							reportUserNote.setCreatedDate(userNote.metadata.createdDate);
-							reportUserNote.setTitle(userNote.title);
-							reportUserNote.setContent(userNote.content);
+                    } else {
 
-							reportUserNoteService.saveReportUserNote(reportUserNote);
+                        System.out.println("User links are" + userNote.id);
+                    }
 
-						} else {
-							System.out.println("Null user id " + userId);
-						}
+                }
 
-					} else {
+                System.out.println("Note type: " + userNoteType.getName() + " # notes: " + userNotes.size());
+            }
 
-						System.out.println("User links are" + userNote.id);
-					}
+            System.out.println("End");
 
-				}
+        } catch (Exception e1) {
+            // TODO Auto-generated catch blocks
+            e1.printStackTrace();
+        }
 
-				System.out.println("Note type: " + userNoteType.getName() + " # notes: " + userNotes.size());
-			}
+    }
 
-			System.out.println("End");
+    private static ReportUserNote getReportUserNote(UserNoteType userNoteType, UserNote userNote, FolioUser folioUser) {
 
-			// emailUserInactiveReport(csvUserList);
+        ReportUserNote reportUserNote = new ReportUserNote();
+        reportUserNote.setNoteId(userNote.id);
+        reportUserNote.setNoteTypeId(userNoteType.getId());
+        reportUserNote.setName(folioUser.personal.firstName + " " + folioUser.personal.lastName);
+        reportUserNote.setPrimaryId(folioUser.externalSystemId);
+        reportUserNote.setCreatedDate(userNote.metadata.createdDate);
+        reportUserNote.setTitle(userNote.title);
+        reportUserNote.setContent(userNote.content);
+        return reportUserNote;
 
-		} catch (Exception e1) {
-			// TODO Auto-generated catch blocks
-			e1.printStackTrace();
-		}
-
-	}
+    }
 
 };

@@ -7,8 +7,14 @@ import com.okstatelibrary.redbud.folio.entity.Metadata;
 import com.okstatelibrary.redbud.folio.entity.Status;
 
 public class Item {
+
+	public Item() {
+		// Default constructor
+	}
+
 	public String itemId;
 	public String userId;
+	public String chronology;
 	public String instanceId;
 	public Date loanDate;
 	public Date dueDate;
@@ -73,3 +79,5 @@ public class Item {
 
 	}
 }
+
+

@@ -14,7 +14,6 @@ import org.springframework.web.client.RestClientException;
 import com.okstatelibrary.redbud.operations.CirculationLogProcess;
 import com.okstatelibrary.redbud.operations.InstitutionRecordCountProcess;
 import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
-import com.okstatelibrary.redbud.operations.UserIntegrationProcess;
 import com.okstatelibrary.redbud.operations.UserNotesPopulateProcess;
 import com.okstatelibrary.redbud.service.CirculationLogService;
 import com.okstatelibrary.redbud.service.GroupService;
@@ -143,16 +142,16 @@ public class DailyJobScheduler {
 			Thread myThread = new Thread(() -> {
 				CacheMap.set("UserIntegrationProcess", "true");
 
-				UserIntegrationProcess oprocess = new UserIntegrationProcess();
+				UserIntegrationProcess process = new UserIntegrationProcess();
 
-				oprocess.printScreen("Beeper starts for user integration process " + DateUtil.getTodayDateAndTime(),
+				process.printScreen("Beeper starts for user integration process " + DateUtil.getTodayDateAndTime(),
 						Constants.ErrorLevel.INFO);
 
-				oprocess.copyFiles("add_update");
+				process.copyFiles("add_update");
 
-				oprocess.copyFiles("inactive");
+				process.copyFiles("inactive");
 
-				oprocess.manipulate(groupService);
+				process.manipulate(groupService);
 
 				CacheMap.set("UserIntegrationProcess", "stop");
 			});
@@ -171,12 +170,13 @@ public class DailyJobScheduler {
 			Thread myThread = new Thread(() -> {
 				CacheMap.set("Running-CirculationJob", "true");
 
-				CirculationLogProcess oprocess = new CirculationLogProcess(circulationLogService);
-				oprocess.printScreen("Beeper starts for Circulation data extraction " + DateUtil.getTodayDateAndTime(),
+				CirculationLogProcess circulationProcess = new CirculationLogProcess(circulationLogService);
+
+				circulationProcess.printScreen("Beeper starts for Circulation data extraction " + DateUtil.getTodayDateAndTime(),
 						Constants.ErrorLevel.INFO);
 
 				try {
-					oprocess.manipulate(locationService, true, "0");
+					circulationProcess.manipulate(locationService, true, "0");
 				} catch (RestClientException | IOException e) {
 					e.printStackTrace();
 				}
@@ -192,22 +192,22 @@ public class DailyJobScheduler {
 	private void runUserNotePopulateJob() {
 		try {
 			Thread myThread = new Thread(() -> {
-				CacheMap.set("Running-CirculationJob", "true");
+				CacheMap.set("Running-User Note Populate", "true");
 
-				UserNotesPopulateProcess oprocess = new UserNotesPopulateProcess(reportUserNoteService,
+				UserNotesPopulateProcess userNoteProcess = new UserNotesPopulateProcess(reportUserNoteService,
 						userNoteTypeService);
 
-				oprocess.printScreen("Beeper starts for Circulation data extraction " + DateUtil.getTodayDateAndTime(),
+				userNoteProcess.printScreen("Beeper starts for Running-User Note Populate extraction " + DateUtil.getTodayDateAndTime(),
 						Constants.ErrorLevel.INFO);
 
 				try {
-					oprocess.manipulate(true);
+					userNoteProcess.manipulate(true);
 
 				} catch (RestClientException e) {
 					e.printStackTrace();
 				}
 
-				CacheMap.set("Running-CirculationJob", "stop");
+				CacheMap.set("Running-User Note Populate", "stop");
 			});
 			myThread.start();
 		} catch (Exception e1) {

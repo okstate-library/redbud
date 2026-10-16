@@ -821,9 +821,9 @@ public class ReportController {
 
 		System.out.println("Deleting note: " + id);
 
-		folioService.deleteUserNote(id);
-
 		reportUserNoteService.deleteReportUserNote(id);
+
+		folioService.deleteUserNote(id);
 
 		return ResponseEntity.ok("Deleted successfully");
 	}
