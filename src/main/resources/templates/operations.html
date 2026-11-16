@@ -1,1146 +1,1237 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.w3.org/1999/xhtml" lang="en">
-<head th:replace="common/header :: common-header" />
+<head th:replace="common/header :: common-header"/>
 <body roleId="page-top" data-spy="scroll"
-	data-target=".navbar-fixed-top">
-<head th:replace="common/header :: navbar" />
+      data-target=".navbar-fixed-top">
+<head th:replace="common/header :: navbar"/>
 <div class="container ">
 
-	<div class="row">
-		<div class="col-lg-12">
-			<h1 class="page-header">
-				Operations
-				<button type="button" class="btn btn-info" data-bs-toggle="modal"
-					id="helpButton" data-bs-target="#exampleModal">?</button>
-			</h1>
-		</div>
-
-
-		<div class="modal fade" id="exampleModal" tabindex="-1"
-			aria-labelledby="exampleModalLabel" aria-hidden="true">
-			<div class="modal-dialog">
-				<div class="modal-content">
-					<div class="modal-header">
-						<h3 class="modal-title" id="exampleModalLabel">Operations -
-							Help</h3>
-					</div>
-					<div class="modal-body">
-
-						<ul>
-							<li>All the helpful operations related to the FOLIO use
-								FOLIO API.</li>
-						</ul>
-					</div>
-
-				</div>
-			</div>
-		</div>
-	</div>
-
-
-
-	<ul class="nav nav-tabs">
-		<li class="active"><a data-toggle="tab" href="#general-tab">General</a></li>
-		<li><a data-toggle="tab" href="#cicr-log-tab">Circulation Log</a></li>
-		<li><a data-toggle="tab" href="#cicr-loan-tab">Circulation Loan</a></li>
-		<li><a data-toggle="tab" href="#item-tab">Item</a></li>
-		<li><a data-toggle="tab" href="#user-tab">User</a></li>
-		<li><a data-toggle="tab" href="#user-patron-group-tab">User
-				Patron Group</a></li>
-		<li><a data-toggle="tab" href="#settings-tab">Settings</a></li>
-	</ul>
-
-	<div class="tab-content">
-
-		<div id="general-tab" class="tab-pane fade in active">
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Semester Loan Due Dates.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/changeLoanDueDatesForPatronGroup}">
-
-					<div class="row">
-
-						<div class="col-xs-8">Retrieve users based on their patron
-							group, identify those with active loans, and update their loan
-							due dates to a specified date. As an example by executing
-							"OKS-OSU_Faculty" users and update their loans "2024-05-25".</div>
-						<div class="col-xs-2">
-							<button type="submit" id="executePatronGroupLoans" disabled
-								class="btn btn-success btn-md btn-block">Execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executePatronGroupLoans').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Change_LoanDueDates_ForPatronGroup}"></h5>
-						</div>
-
-					</div>
-				</form>
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>OCLC operation.</b>
-				</h4>
-				<h5>
-					<i>#ScheduleTask</i>
-				</h5>
-
-				<form method="get" th:action="@{/settings/oclcMetaDataProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Set and withdraw holdings in OCLC
-							based on recently updated FOLIO records. The tool utilizes the
-							FOLIO and OCLC APIs and is intended to run daily via a scheduled.</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executeoclcMetaDataProcess"
-								name="executeoclcMetaDataProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeoclcMetaDataProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${oclc_Number_Process}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Gov Docs. location update operation.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/govDocsLocationUpdateProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Update the location of the selected
-							Government documentations based on location.</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executegovDocsLocationUpdateProcess"
-								name="executegovDocsLocationUpdateProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executegovDocsLocationUpdateProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${oclc_Number_Process}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>ALMA loan count update from csv file.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/almaLoanCountUpdateProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Update the database from the ALMA loan
-							count from csv file.</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executealmaLoanCountUpdateProcess"
-								name="executealmaLoanCountUpdateProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executealmaLoanCountUpdateProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_Alma_Loan_Count}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Collecting resources count based on institutes.</b>
-				</h4>
-
-				<h5>
-					<i>#ScheduleTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/institutionalHoldingsRecordsProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Manually gather the record count for
-							Instances, Holdings, and Items associated with each institution.</div>
-
-						<div class="col-xs-2">
-							<button type="submit"
-								id="executeinstitutionalHoldingsRecordsProcess"
-								name="executeinstitutionalHoldingsRecordsProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeinstitutionalHoldingsRecordsProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Institutional_Holdings_Records_Process}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>ARL Reporting - Instance (format,type) count based on
-						institutes.</b>
-				</h4>
-
-				<h5>
-					<i>#ScheduleTask</i>
-				</h5>
-				<form method="get" th:action="@{/settings/arlReportingProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Manually gather the record count for
-							Instances, Holdings, and Items associated with each institution.</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executearlReportingProcess"
-								name="executearlReportingProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executearlReportingProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Institutional_Holdings_Records_Process}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>RFID report</b>
-				</h4>
-
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get" th:action="@{/settings/rfidReportingProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Gather the items from RFID report.</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executeRfidReportingProcess"
-								name="executeRfidReportingProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeRfidReportingProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Institutional_Holdings_Records_Process}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-		</div>
-
-		<div id="cicr-log-tab" class="tab-pane fade">
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Manual Process for getting the Circulation records to
-						database.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get" th:action="@{/settings/circulationDataStore}">
-
-					<div class="row">
-
-						<div class="col-xs-8">Get all 'open' and 'closed'
-							circulation log details from the API and stored in DB for
-							reporting purposes. This operation not depend on any time frame.</div>
-						<div class="col-xs-2">
-							<button type="submit" id="executeCirculationLog" disabled
-								class="btn btn-success btn-md btn-block">Execute</button>
-						</div>
-
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeCirculationLog').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Manual Process for getting the Circulation records to
-						database for a specific location.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get" th:action="@{/settings/circulationDataStore}">
-
-					<div class="row">
-
-						<div class="col-xs-12">Get 'open' and 'closed' circulation
-							log details from the API based on location and stored in DB for
-							reporting purposes.</div>
-					</div>
-
-
-					<div class="row top-buffer">
-
-						<div class="col-xs-2">
-							<select onchange="selectInstitution(this)" class="form-control"
-								id="institutionDropDown" name="institutionDropDown">
-								<option th:value="0">Select Institution</option>
-
-								<option th:each="institution : ${institutionList}"
-									th:value="${institution.institution_id}"
-									th:text="${institution.institution_name}"></option>
-							</select>
-						</div>
-						<div class="col-xs-2">
-							<select onchange="selectCampus(this)" class="form-control"
-								id="campusDropDown" name="campusDropDown">
-								<option th:value="0">Select Campus</option>
-
-								<option th:each="campus : ${campusList}"
-									th:value="${campus.campus_id}" th:text="${campus.campus_name}"></option>
-							</select>
-						</div>
-						<div class="col-xs-2">
-							<select onchange="selectLibrary(this)" class="form-control"
-								id="libraryDropDown" name="libraryDropDown">
-								<option th:value="0">Select Library</option>
-
-								<option th:each="library : ${libraryList}"
-									th:value="${library.library_id}"
-									th:text="${library.library_name}"></option>
-							</select>
-						</div>
-						<div class="col-xs-2"></div>
-						<div class="col-xs-2">
-							<button type="submit" id="executeCirculationLogByLocation"
-								disabled class="btn btn-success btn-md btn-block">Execute</button>
-						</div>
-
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeCirculationLogByLocation').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5
-								th:text="${Process_CirculationLog_API_Data_Extraction_By_Location}"></h5>
-						</div>
-
-					</div>
-
-				</form>
-
-			</div>
-
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Manual Process for getting the Circulation records to
-						database based on previous day records</b>
-				</h4>
-				<h5>
-					<i>#ScheduleTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/circulationDataStorseAutoProcess}">
-
-					<div class="row">
-
-						<div class="col-xs-8">Get 'open' and 'closed' circulation
-							log details from the API and stored in DB for reporting purposes.</div>
-						<div class="col-xs-2">
-							<button type="submit" id="executeCirculationLogAutoProcess"
-								disabled class="btn btn-success btn-md btn-block">Execute</button>
-						</div>
-
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeCirculationLogAutoProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5
-								th:text="${Process_CirculationLog_API_Data_Extraction_Auto_Process}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Update Circulation Log properties</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/updateCirculationLogRecordProperties}">
-
-					<div class="row">
-						<div class="col-xs-8">Modify staff notes and statements
-							associated with items in the circulation log records.</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executeUpdateStaffNoteInHolidings"
-								name="executeUpdateStaffNoteInHolidings" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeUpdateStaffNoteInHolidings').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${StaffNote_Update_Process}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-
-		</div>
-
-		<div id="cicr-loan-tab" class="tab-pane fade">
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Manual Process for getting the Circulation loan records to
-						database.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get" th:action="@{/settings/circulationLoanData}">
-
-					<div class="row">
-
-						<div class="col-xs-8">Get all circulation loan details from
-							the API and stored in DB for reporting purposes. This operation
-							not depend on any time frame.</div>
-						<div class="col-xs-2">
-							<button type="submit" id="executeCirculationLoan" disabled
-								class="btn btn-success btn-md btn-block">Execute</button>
-						</div>
-
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeCirculationLoan').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Manual Process for getting the Circulation Loan records to
-						database for a specific location.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get" th:action="@{/settings/circulationLoanData}">
-
-					<div class="row">
-
-						<div class="col-xs-12">Get circulation loan details from the
-							API based on location and stored in DB for reporting purposes.</div>
-					</div>
-
-
-					<div class="row top-buffer">
-
-						<div class="col-xs-2">
-							<select onchange="selectInstitution(this)" class="form-control"
-								id="institutionDropDown2" name="institutionDropDown">
-								<option th:value="0">Select Institution</option>
-
-								<option th:each="institution : ${institutionList}"
-									th:value="${institution.institution_id}"
-									th:text="${institution.institution_name}"></option>
-							</select>
-						</div>
-						<div class="col-xs-2">
-							<select onchange="selectCampus(this)" class="form-control"
-								id="campusDropDown2" name="campusDropDown">
-								<option th:value="0">Select Campus</option>
-
-								<option th:each="campus : ${campusList}"
-									th:value="${campus.campus_id}" th:text="${campus.campus_name}"></option>
-							</select>
-						</div>
-						<div class="col-xs-2">
-							<select onchange="selectLibrary(this)" class="form-control"
-								id="libraryDropDown2" name="libraryDropDown">
-								<option th:value="0">Select Library</option>
-
-								<option th:each="library : ${libraryList}"
-									th:value="${library.library_id}"
-									th:text="${library.library_name}"></option>
-							</select>
-						</div>
-						<div class="col-xs-2">
-							<select class="form-control" name="locationDropDown"
-								id="locationDropDown2">
-								<option th:value="0">Select Location</option>
-
-								<option th:each="location : ${locationList}"
-									th:value="${location.location_id}"
-									th:text="${location.location_name}"></option>
-							</select>
-						</div>
-						<div class="col-xs-2">
-							<button type="submit" id="executeCirculationLoanByLocation"
-								disabled class="btn btn-success btn-md btn-block">Execute</button>
-						</div>
-
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeCirculationLoanByLocation').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5
-								th:text="${process_CirculationLoan_API_Data_Extraction_By_Location}"></h5>
-						</div>
-
-					</div>
-
-				</form>
-
-			</div>
-
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Manual Process for getting the Circulation loan records to
-						database based on previous day records</b>
-				</h4>
-				<h5>
-					<i>#ScheduleTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/circulationLoanDailyProcess}">
-
-					<div class="row">
-
-						<div class="col-xs-8">Get circulation loan details from the
-							API and stored in DB for reporting purposes.</div>
-						<div class="col-xs-2">
-							<button type="submit" id="executeCirculationLoanDailyProcess"
-								disabled class="btn btn-success btn-md btn-block">Execute</button>
-						</div>
-
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeCirculationLoanDailyProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5
-								th:text="${process_CirculationLoan_API_Data_Extraction_Daily_Process}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-		</div>
-
-		<div id="item-tab" class="tab-pane fade">
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Find items in a specific location for not used</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-				      th:action="@{/settings/neverCirculatedItemsSearchProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Search items that never used for
-							circulations</div>
-
-						<div class="col-xs-2">
-							<button type="submit"
-							        id="executeNeverCirculatedItemsSearchProcess"
-							        name="executeNeverCirculatedItemsSearchProcess" disabled
-							        class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-							       onchange="document.getElementById('executeNeverCirculatedItemsSearchProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Never_Circulated_Items_Search_Process}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Effective location 'OKS-OSU LAB' should also have the Permanent location OKS-OSU LAB</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-				      th:action="@{/settings/changeItemLocationProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Search items that never used for
-							circulations</div>
-
-						<div class="col-xs-2">
-							<button type="submit"
-							        id="executeChangeItemLocationProcess"
-							        name="executeChangeItemLocationProcess" disabled
-							        class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-							       onchange="document.getElementById('executeChangeItemLocationProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Change_Item_Location_Process}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-		</div>
-
-		<div id="user-tab" class="tab-pane fade">
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>User Integration Process</b>
-				</h4>
-				<h5>
-					<i>#ManualTask #ScheduleTask</i>
-				</h5>
-				<form method="get" th:action="@{/settings/executeUserIntegration}">
-
-					<div class="row">
-						<div class="col-xs-8">Every day</div>
-						<div class="col-xs-2">
-							<button type="submit" id="btnExecuteUserIntegration" disabled
-								class="btn btn-success btn-md btn-block">Execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('btnExecuteUserIntegration').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_Execute_User_Integration}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Update expiration date of the active users.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/executeChangeExpirationDateOfActiveUsers}">
-
-					<div class="row">
-						<div class="col-xs-8">When executed, the process will
-							iterate through all user groups across all campuses to identify
-							active users and update their expiration dates to nine months
-							from the execution date..</div>
-						<div class="col-xs-2">
-							<button type="submit" id="executeInactiveUsers" disabled
-								class="btn btn-success btn-md btn-block">Execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeInactiveUsers').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_Execute_Inactive_Users}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Delete inactive users.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/executeDeleteInactiveUsers}">
-
-					<div class="row">
-						<div class="col-xs-8">When the users are inactive for one
-							year it's better to delete from the FOLIO.</div>
-						<div class="col-xs-2">
-							<button type="submit" id="executeDeleteInactiveUsers" disabled
-								class="btn btn-success btn-md btn-block">Execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeDeleteInactiveUsers').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_Execute_Delete_Inactive_Users}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-
-			<div class="row top-buffer container-border">
-
-				<form method="get" th:action="@{/settings/convertinactiveusers}">
-
-					<div class="row">
-						<div class="col-xs-8">Convert inactive users to active</div>
-						<div class="col-xs-2">
-							<button type="submit" id="executeConvertInactiveUsers" disabled
-								class="btn btn-success btn-md btn-block">Execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeConvertInactiveUsers').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Update User details from Excel file.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get" th:action="@{/settings/userFieldsUpdateProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Update the user details (birth date,
-							middle initial, phone number, and email) from excel file .</div>
-
-						<!-- Check mail on 2024-05-17 By Megan -->
-
-						<div class="col-xs-2">
-							<button type="submit" id="executeuserFieldsUpdateProcess"
-								name="executeoclcMetaDataProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeuserFieldsUpdateProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_Send_Test_Email}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Update User new bar codes.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/userBarcodesUpdateProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Update the user new bar code from csv
-							file .</div>
-
-						<!-- Check Megan Request from Slack on -->
-
-						<div class="col-xs-2">
-							<button type="submit" id="executeuserBarcodesUpdateProcess"
-								name="executeuserBarcodesUpdateProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeuserBarcodesUpdateProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_Send_Test_Email}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Check User with null Values</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/nullUserPropertyCheckProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Check User with null Values.</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executenullUserCheckProcess"
-								name="executenullUserCheckProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executenullUserCheckProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_Send_Test_Email}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Populate User Notes </b>
-				</h4>
-				<h5>
-					<i>#ScheduleTask #ManualTask</i>
-				</h5>
-				<form method="post"
-					th:action="@{/settings/userNotesPopulateProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Collects all the user notes after
-							truncating table.</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executeuserNotesPopulateProcess"
-								name="executeuserNotesPopulateProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeuserNotesPopulateProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_User_Notes_Populatesl}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Populate User Notes - Runs Daily Schedule Task</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="post"
-					th:action="@{/settings/userNotesPopulateDailyProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Get the user notes from
-							[[${yesterday_start_time}]] to [[${yesterday_end_time}]]</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executeUserNotesPopulateDailyProcess"
-								name="executeUserNotesPopulateDailyProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeUserNotesPopulateDailyProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_User_Notes_Daily_Populates}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-		</div>
-
-		<div id="user-patron-group-tab" class="tab-pane fade">
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Change patron group</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="post" th:action="@{/settings/changePatronGroup}">
-
-					<div class="row">
-						<div class="col-xs-8">Change patron group depending on
-							externally supplied CSV file uploaded.</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executeChangePatrons"
-								name="executeChangePatrons" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeChangePatrons').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_Change_Patron_Group}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Update User patron group, bar code and status.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/userPatronGroupUpdateProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Update User patron group, bar code and
-							status based on the plfeed/noc/pts (main) CSV file.</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executeUserPatronGroupUpdateProcess"
-								name="executeUserPatronGroupUpdateProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeUserPatronGroupUpdateProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_Send_Test_Email}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Compare user's "Patron group" with "Custom field"</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get"
-					th:action="@{/settings/userPatronGroupReportProcess}">
-
-					<div class="row">
-						<div class="col-xs-8">Compare FOLIO user's "Patron group"
-							with "Custom field" in order to check is there is differences or
-							not.</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executeUserPatronGroupReportProcess"
-								name="executeUserPatronGroupUpdateProcess" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeUserPatronGroupReportProcess').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_Send_Test_Email}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-		</div>
-
-		<div id="settings-tab" class="tab-pane fade">
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Send Test Email.</b>
-				</h4>
-				<h5>
-					<i>#ManualTask</i>
-				</h5>
-				<form method="get" th:action="@{/settings/sendTestEmail}">
-
-					<div class="row">
-						<div class="col-xs-8">Send test email to the developers who
-							using RedBud application.</div>
-
-						<div class="col-xs-2">
-							<button type="submit" id="executeSendEmail"
-								name="executeSendEmail" disabled
-								class="btn btn-success btn-md btn-block">execute</button>
-						</div>
-						<div class="col-xs-1">
-							<input type="checkbox"
-								onchange="document.getElementById('executeSendEmail').disabled = !this.checked;" />
-						</div>
-						<div class="col-xs-1">
-							<h5 th:text="${Process_Send_Test_Email}"></h5>
-						</div>
-
-					</div>
-				</form>
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Schedule jobs.</b>
-				</h4>
-
-				<div class="row">
-					<div class="col-xs-8">
-						<ul>
-							<li th:each="str : ${corn_scheduled_jobs}" th:text="${str}"></li>
-							<!-- <li th:text="${corn_scheduled_jobs_status}"></li> -->
-						</ul>
-					</div>
-
-				</div>
-
-
-			</div>
-
-			<div class="row top-buffer container-border">
-				<h4>
-					<b>Application Properties.</b>
-				</h4>
-
-				<div class="row">
-					<div class="col-xs-8">
-						<ul>
-							<li th:each="str : ${application_properties}" th:text="${str}"></li>
-							<!-- <li th:text="${corn_scheduled_jobs_status}"></li> -->
-						</ul>
-					</div>
-
-				</div>
-
-
-			</div>
-		</div>
-
-	</div>
-
-	<div class="row top-buffer"></div>
+    <div class="row">
+        <div class="col-lg-12">
+            <h1 class="page-header">
+                Operations
+                <button type="button" class="btn btn-info" data-bs-toggle="modal"
+                        id="helpButton" data-bs-target="#exampleModal">?
+                </button>
+            </h1>
+        </div>
+
+
+        <div class="modal fade" id="exampleModal" tabindex="-1"
+             aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title" id="exampleModalLabel">Operations -
+                            Help</h3>
+                    </div>
+                    <div class="modal-body">
+
+                        <ul>
+                            <li>All the helpful operations related to the FOLIO use
+                                FOLIO API.
+                            </li>
+                        </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <ul class="nav nav-tabs">
+        <li class="active"><a data-toggle="tab" href="#general-tab">General</a></li>
+        <li><a data-toggle="tab" href="#cicr-log-tab">Circulation Log</a></li>
+        <li><a data-toggle="tab" href="#cicr-loan-tab">Circulation Loan</a></li>
+        <li><a data-toggle="tab" href="#item-tab">Item</a></li>
+        <li><a data-toggle="tab" href="#user-tab">User</a></li>
+        <li><a data-toggle="tab" href="#user-patron-group-tab">User
+            Patron Group</a></li>
+        <li><a data-toggle="tab" href="#settings-tab">Settings</a></li>
+    </ul>
+
+    <div class="tab-content">
+
+        <div id="general-tab" class="tab-pane fade in active">
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Semester Loan Due Dates.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/changeLoanDueDatesForPatronGroup}">
+
+                    <div class="row">
+
+                        <div class="col-xs-8">Retrieve users based on their patron
+                            group, identify those with active loans, and update their loan
+                            due dates to a specified date. As an example by executing
+                            "OKS-OSU_Faculty" users and update their loans "2024-05-25".
+                        </div>
+                        <div class="col-xs-2">
+                            <button type="submit" id="executePatronGroupLoans" disabled
+                                    class="btn btn-success btn-md btn-block">Execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executePatronGroupLoans').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Change_LoanDueDates_ForPatronGroup}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>OCLC operation.</b>
+                </h4>
+                <h5>
+                    <i>#ScheduleTask</i>
+                </h5>
+
+                <form method="get" th:action="@{/settings/oclcMetaDataProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Set and withdraw holdings in OCLC
+                            based on recently updated FOLIO records. The tool utilizes the
+                            FOLIO and OCLC APIs and is intended to run daily via a scheduled.
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeoclcMetaDataProcess"
+                                    name="executeoclcMetaDataProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeoclcMetaDataProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${oclc_Number_Process}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Gov Docs. location update operation.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/govDocsLocationUpdateProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Update the location of the selected
+                            Government documentations based on location.
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executegovDocsLocationUpdateProcess"
+                                    name="executegovDocsLocationUpdateProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executegovDocsLocationUpdateProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${oclc_Number_Process}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>ALMA loan count update from csv file.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/almaLoanCountUpdateProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Update the database from the ALMA loan
+                            count from csv file.
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executealmaLoanCountUpdateProcess"
+                                    name="executealmaLoanCountUpdateProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executealmaLoanCountUpdateProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_Alma_Loan_Count}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Collecting resources count based on institutes.</b>
+                </h4>
+
+                <h5>
+                    <i>#ScheduleTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/institutionalHoldingsRecordsProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Manually gather the record count for
+                            Instances, Holdings, and Items associated with each institution.
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit"
+                                    id="executeinstitutionalHoldingsRecordsProcess"
+                                    name="executeinstitutionalHoldingsRecordsProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeinstitutionalHoldingsRecordsProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Institutional_Holdings_Records_Process}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>ARL Reporting - Instance (format,type) count based on
+                        institutes.</b>
+                </h4>
+
+                <h5>
+                    <i>#ScheduleTask</i>
+                </h5>
+                <form method="get" th:action="@{/settings/arlReportingProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Manually gather the record count for
+                            Instances, Holdings, and Items associated with each institution.
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executearlReportingProcess"
+                                    name="executearlReportingProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executearlReportingProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Institutional_Holdings_Records_Process}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>RFID report</b>
+                </h4>
+
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get" th:action="@{/settings/rfidReportingProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Gather the items from RFID report.</div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeRfidReportingProcess"
+                                    name="executeRfidReportingProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeRfidReportingProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Institutional_Holdings_Records_Process}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+
+        <div id="cicr-log-tab" class="tab-pane fade">
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Manual Process for getting the Circulation records to
+                        database.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get" th:action="@{/settings/circulationDataStore}">
+
+                    <div class="row">
+
+                        <div class="col-xs-8">Get all 'open' and 'closed'
+                            circulation log details from the API and stored in DB for
+                            reporting purposes. This operation not depend on any time frame.
+                        </div>
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeCirculationLog" disabled
+                                    class="btn btn-success btn-md btn-block">Execute
+                            </button>
+                        </div>
+
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeCirculationLog').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Manual Process for getting the Circulation records to
+                        database for a specific location.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get" th:action="@{/settings/circulationDataStore}">
+
+                    <div class="row">
+
+                        <div class="col-xs-12">Get 'open' and 'closed' circulation
+                            log details from the API based on location and stored in DB for
+                            reporting purposes.
+                        </div>
+                    </div>
+
+
+                    <div class="row top-buffer">
+
+                        <div class="col-xs-2">
+                            <select onchange="selectInstitution(this)" class="form-control"
+                                    id="institutionDropDown" name="institutionDropDown">
+                                <option th:value="0">Select Institution</option>
+
+                                <option th:each="institution : ${institutionList}"
+                                        th:value="${institution.institution_id}"
+                                        th:text="${institution.institution_name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-xs-2">
+                            <select onchange="selectCampus(this)" class="form-control"
+                                    id="campusDropDown" name="campusDropDown">
+                                <option th:value="0">Select Campus</option>
+
+                                <option th:each="campus : ${campusList}"
+                                        th:value="${campus.campus_id}" th:text="${campus.campus_name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-xs-2">
+                            <select onchange="selectLibrary(this)" class="form-control"
+                                    id="libraryDropDown" name="libraryDropDown">
+                                <option th:value="0">Select Library</option>
+
+                                <option th:each="library : ${libraryList}"
+                                        th:value="${library.library_id}"
+                                        th:text="${library.library_name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-xs-2"></div>
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeCirculationLogByLocation"
+                                    disabled class="btn btn-success btn-md btn-block">Execute
+                            </button>
+                        </div>
+
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeCirculationLogByLocation').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5
+                                    th:text="${Process_CirculationLog_API_Data_Extraction_By_Location}"></h5>
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Manual Process for getting the Circulation records to
+                        database based on previous day records</b>
+                </h4>
+                <h5>
+                    <i>#ScheduleTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/circulationDataStorseAutoProcess}">
+
+                    <div class="row">
+
+                        <div class="col-xs-8">Get 'open' and 'closed' circulation
+                            log details from the API and stored in DB for reporting purposes.
+                        </div>
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeCirculationLogAutoProcess"
+                                    disabled class="btn btn-success btn-md btn-block">Execute
+                            </button>
+                        </div>
+
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeCirculationLogAutoProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5
+                                    th:text="${Process_CirculationLog_API_Data_Extraction_Auto_Process}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Update Circulation Log properties</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/updateCirculationLogRecordProperties}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Modify staff notes and statements
+                            associated with items in the circulation log records.
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeUpdateStaffNoteInHolidings"
+                                    name="executeUpdateStaffNoteInHolidings" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeUpdateStaffNoteInHolidings').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${StaffNote_Update_Process}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+
+        </div>
+
+        <div id="cicr-loan-tab" class="tab-pane fade">
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Manual Process for getting the Circulation loan records to
+                        database.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get" th:action="@{/settings/circulationLoanData}">
+
+                    <div class="row">
+
+                        <div class="col-xs-8">Get all circulation loan details from
+                            the API and stored in DB for reporting purposes. This operation
+                            not depend on any time frame.
+                        </div>
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeCirculationLoan" disabled
+                                    class="btn btn-success btn-md btn-block">Execute
+                            </button>
+                        </div>
+
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeCirculationLoan').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Manual Process for getting the Circulation Loan records to
+                        database for a specific location.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get" th:action="@{/settings/circulationLoanData}">
+
+                    <div class="row">
+
+                        <div class="col-xs-12">Get circulation loan details from the
+                            API based on location and stored in DB for reporting purposes.
+                        </div>
+                    </div>
+
+
+                    <div class="row top-buffer">
+
+                        <div class="col-xs-2">
+                            <select onchange="selectInstitution(this)" class="form-control"
+                                    id="institutionDropDown2" name="institutionDropDown">
+                                <option th:value="0">Select Institution</option>
+
+                                <option th:each="institution : ${institutionList}"
+                                        th:value="${institution.institution_id}"
+                                        th:text="${institution.institution_name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-xs-2">
+                            <select onchange="selectCampus(this)" class="form-control"
+                                    id="campusDropDown2" name="campusDropDown">
+                                <option th:value="0">Select Campus</option>
+
+                                <option th:each="campus : ${campusList}"
+                                        th:value="${campus.campus_id}" th:text="${campus.campus_name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-xs-2">
+                            <select onchange="selectLibrary(this)" class="form-control"
+                                    id="libraryDropDown2" name="libraryDropDown">
+                                <option th:value="0">Select Library</option>
+
+                                <option th:each="library : ${libraryList}"
+                                        th:value="${library.library_id}"
+                                        th:text="${library.library_name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-xs-2">
+                            <select class="form-control" name="locationDropDown"
+                                    id="locationDropDown2">
+                                <option th:value="0">Select Location</option>
+
+                                <option th:each="location : ${locationList}"
+                                        th:value="${location.location_id}"
+                                        th:text="${location.location_name}"></option>
+                            </select>
+                        </div>
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeCirculationLoanByLocation"
+                                    disabled class="btn btn-success btn-md btn-block">Execute
+                            </button>
+                        </div>
+
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeCirculationLoanByLocation').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5
+                                    th:text="${process_CirculationLoan_API_Data_Extraction_By_Location}"></h5>
+                        </div>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Manual Process for getting the Circulation loan records to
+                        database based on previous day records</b>
+                </h4>
+                <h5>
+                    <i>#ScheduleTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/circulationLoanDailyProcess}">
+
+                    <div class="row">
+
+                        <div class="col-xs-8">Get circulation loan details from the
+                            API and stored in DB for reporting purposes.
+                        </div>
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeCirculationLoanDailyProcess"
+                                    disabled class="btn btn-success btn-md btn-block">Execute
+                            </button>
+                        </div>
+
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeCirculationLoanDailyProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5
+                                    th:text="${process_CirculationLoan_API_Data_Extraction_Daily_Process}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+
+        <div id="item-tab" class="tab-pane fade">
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Find items in a specific location for not used</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/neverCirculatedItemsSearchProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Search items that never used for
+                            circulations
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit"
+                                    id="executeNeverCirculatedItemsSearchProcess"
+                                    name="executeNeverCirculatedItemsSearchProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeNeverCirculatedItemsSearchProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Never_Circulated_Items_Search_Process}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Effective location 'OKS-OSU LAB' should also have the Permanent location OKS-OSU LAB</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/changeItemLocationProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Search items that never used for
+                            circulations
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit"
+                                    id="executeChangeItemLocationProcess"
+                                    name="executeChangeItemLocationProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeChangeItemLocationProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Change_Item_Location_Process}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Based on the effective location update the instance 'Statistical Code'</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/updateStatisticalCodeProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Search items Holdings based on location and get the relevant Holding and
+                            filter the relevant instance and update the Statistical code
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit"
+                                    id="executeStatisticalCodeUpdateProcess"
+                                    name="executeStatisticalCodeUpdateProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeStatisticalCodeUpdateProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Update_Instance_Statistical_Code}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+
+        </div>
+
+        <div id="user-tab" class="tab-pane fade">
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>User Integration Process</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask #ScheduleTask</i>
+                </h5>
+                <form method="get" th:action="@{/settings/executeUserIntegration}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Every day</div>
+                        <div class="col-xs-2">
+                            <button type="submit" id="btnExecuteUserIntegration" disabled
+                                    class="btn btn-success btn-md btn-block">Execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('btnExecuteUserIntegration').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_Execute_User_Integration}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Update expiration date of the active users.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/executeChangeExpirationDateOfActiveUsers}">
+
+                    <div class="row">
+                        <div class="col-xs-8">When executed, the process will
+                            iterate through all user groups across all campuses to identify
+                            active users and update their expiration dates to nine months
+                            from the execution date..
+                        </div>
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeInactiveUsers" disabled
+                                    class="btn btn-success btn-md btn-block">Execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeInactiveUsers').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_Execute_Inactive_Users}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Delete inactive users.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/executeDeleteInactiveUsers}">
+
+                    <div class="row">
+                        <div class="col-xs-8">When the users are inactive for one
+                            year it's better to delete from the FOLIO.
+                        </div>
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeDeleteInactiveUsers" disabled
+                                    class="btn btn-success btn-md btn-block">Execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeDeleteInactiveUsers').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_Execute_Delete_Inactive_Users}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+
+            <div class="row top-buffer container-border">
+
+                <form method="get" th:action="@{/settings/convertinactiveusers}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Convert inactive users to active</div>
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeConvertInactiveUsers" disabled
+                                    class="btn btn-success btn-md btn-block">Execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeConvertInactiveUsers').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_CirculationLog_API_Data_Extraction}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Update User details from Excel file.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get" th:action="@{/settings/userFieldsUpdateProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Update the user details (birth date,
+                            middle initial, phone number, and email) from excel file .
+                        </div>
+
+                        <!-- Check mail on 2024-05-17 By Megan -->
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeuserFieldsUpdateProcess"
+                                    name="executeoclcMetaDataProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeuserFieldsUpdateProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_Send_Test_Email}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Update User new bar codes.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/userBarcodesUpdateProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Update the user new bar code from csv
+                            file .
+                        </div>
+
+                        <!-- Check Megan Request from Slack on -->
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeuserBarcodesUpdateProcess"
+                                    name="executeuserBarcodesUpdateProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeuserBarcodesUpdateProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_Send_Test_Email}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Check User with null Values</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/nullUserPropertyCheckProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Check User with null Values.</div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executenullUserCheckProcess"
+                                    name="executenullUserCheckProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executenullUserCheckProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_Send_Test_Email}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Populate User Notes </b>
+                </h4>
+                <h5>
+                    <i>#ScheduleTask #ManualTask</i>
+                </h5>
+                <form method="post"
+                      th:action="@{/settings/userNotesPopulateProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Collects all the user notes after
+                            truncating table.
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeuserNotesPopulateProcess"
+                                    name="executeuserNotesPopulateProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeuserNotesPopulateProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_User_Notes_Populatesl}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Populate User Notes - Runs Daily Schedule Task</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="post"
+                      th:action="@{/settings/userNotesPopulateDailyProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Get the user notes from
+                            [[${yesterday_start_time}]] to [[${yesterday_end_time}]]
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeUserNotesPopulateDailyProcess"
+                                    name="executeUserNotesPopulateDailyProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeUserNotesPopulateDailyProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_User_Notes_Daily_Populates}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+
+        <div id="user-patron-group-tab" class="tab-pane fade">
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Change patron group</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="post" th:action="@{/settings/changePatronGroup}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Change patron group depending on
+                            externally supplied CSV file uploaded.
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeChangePatrons"
+                                    name="executeChangePatrons" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeChangePatrons').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_Change_Patron_Group}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Update User patron group, bar code and status.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/userPatronGroupUpdateProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Update User patron group, bar code and
+                            status based on the plfeed/noc/pts (main) CSV file.
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeUserPatronGroupUpdateProcess"
+                                    name="executeUserPatronGroupUpdateProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeUserPatronGroupUpdateProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_Send_Test_Email}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Compare user's "Patron group" with "Custom field"</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get"
+                      th:action="@{/settings/userPatronGroupReportProcess}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Compare FOLIO user's "Patron group"
+                            with "Custom field" in order to check is there is differences or
+                            not.
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeUserPatronGroupReportProcess"
+                                    name="executeUserPatronGroupUpdateProcess" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeUserPatronGroupReportProcess').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_Send_Test_Email}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+        </div>
+
+        <div id="settings-tab" class="tab-pane fade">
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Send Test Email.</b>
+                </h4>
+                <h5>
+                    <i>#ManualTask</i>
+                </h5>
+                <form method="get" th:action="@{/settings/sendTestEmail}">
+
+                    <div class="row">
+                        <div class="col-xs-8">Send test email to the developers who
+                            using RedBud application.
+                        </div>
+
+                        <div class="col-xs-2">
+                            <button type="submit" id="executeSendEmail"
+                                    name="executeSendEmail" disabled
+                                    class="btn btn-success btn-md btn-block">execute
+                            </button>
+                        </div>
+                        <div class="col-xs-1">
+                            <input type="checkbox"
+                                   onchange="document.getElementById('executeSendEmail').disabled = !this.checked;"/>
+                        </div>
+                        <div class="col-xs-1">
+                            <h5 th:text="${Process_Send_Test_Email}"></h5>
+                        </div>
+
+                    </div>
+                </form>
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Schedule jobs.</b>
+                </h4>
+
+                <div class="row">
+                    <div class="col-xs-8">
+                        <ul>
+                            <li th:each="str : ${corn_scheduled_jobs}" th:text="${str}"></li>
+                            <!-- <li th:text="${corn_scheduled_jobs_status}"></li> -->
+                        </ul>
+                    </div>
+
+                </div>
+
+
+            </div>
+
+            <div class="row top-buffer container-border">
+                <h4>
+                    <b>Application Properties.</b>
+                </h4>
+
+                <div class="row">
+                    <div class="col-xs-8">
+                        <ul>
+                            <li th:each="str : ${application_properties}" th:text="${str}"></li>
+                            <!-- <li th:text="${corn_scheduled_jobs_status}"></li> -->
+                        </ul>
+                    </div>
+
+                </div>
+
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row top-buffer"></div>
 </div>
 
 
 <div th:replace="common/footer :: footer"></div>
 <div th:replace="common/header :: body-bottom-scripts"></div>
 <script>
-	$("#executeCirculationLogByLocation").click(function() {
-		if (libraryDropDown.value == 0 || locationDropDown.value == 0) {
-			alert("Please select a value from at least one dropdown.");
-		}
-	});
+    $("#executeCirculationLogByLocation").click(function () {
+        if (libraryDropDown.value == 0 || locationDropDown.value == 0) {
+            alert("Please select a value from at least one dropdown.");
+        }
+    });
 </script>
 </body>
 </html>

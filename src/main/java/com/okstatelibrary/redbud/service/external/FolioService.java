@@ -1,7 +1,6 @@
 package com.okstatelibrary.redbud.service.external;
 
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.*;
 
@@ -129,10 +128,10 @@ public class FolioService extends FolioServiceToken {
 
         try {
 
-            String mainUrl = AppSystemProperties.FolioURL + "inventory/items?limit=%s&query=(" +
+            String mainUrl = AppSystemProperties.FolioURL + "inventory/items?limit=%s&query=(permanentLocationId== NULL " +
                     "effectiveLocationId==" + locationID + " )";
 
-            // System.out.println("mainUrl - " + String.format(mainUrl, "0"));
+            System.out.println("mainUrl - " + String.format(mainUrl, "0"));
 
             ResponseEntity<ItemRoot> response = restTemplate.exchange(String.format(mainUrl, "0"), HttpMethod.GET,
                     getHttpRequest(), ItemRoot.class);
@@ -219,6 +218,41 @@ public class FolioService extends FolioServiceToken {
         }
 
     }
+
+    public void readFirstColumn() throws IOException {
+
+        try (BufferedReader br = new BufferedReader(new FileReader("item_ids.csv"))) {
+            String line;
+
+            PermanentLocation permanentLocation = new PermanentLocation();
+            permanentLocation.id = "4e4331ec-d652-4591-af7f-4c0dc6ddf485";
+
+            while ((line = br.readLine()) != null) {
+
+                String[] columns = line.split(",", -1);
+
+                if (columns.length > 0) {
+
+                    String itemId = columns[0].trim();
+
+                    Item item = getItem(itemId);
+
+//                    item.permanentLocation = permanentLocation;
+//                    HttpEntity<?> request = new HttpEntity<Object>(item, getHttpHeaders());
+//
+//                    ResponseEntity<String> responseEntity = restTemplate.exchange(itemPutUrl + item.id, HttpMethod.PUT, request, String.class);
+//
+//                    if (responseEntity.getStatusCode().toString().equals("204 NO_CONTENT")) {
+//                        System.out.println("Item barcode updated " + item.barcode);
+//                    }
+                }
+
+
+            }
+        }
+
+    }
+
 
     public ArrayList<Item> getItemsByLocationId(String locationID, String locationName, String status)
             throws JsonParseException, JsonMappingException, RestClientException, IOException {
@@ -482,17 +516,8 @@ public class FolioService extends FolioServiceToken {
         }
     }
 
-    /**
-     *
-     * @param instanceId
-     * @return
-     * @throws JsonParseException
-     * @throws JsonMappingException
-     * @throws RestClientException
-     * @throws IOException
-     */
     public ArrayList<Instance> getInstanceByInstanceId(String instanceId)
-            throws JsonParseException, JsonMappingException, RestClientException, IOException {
+            throws RestClientException {
 
         try {
 
@@ -501,8 +526,6 @@ public class FolioService extends FolioServiceToken {
             ResponseEntity<InstanceRoot> response = restTemplate.exchange(url, HttpMethod.GET, getHttpRequest(),
                     InstanceRoot.class);
 
-            // System.out.println("Total records- " + response.getBody());
-
             return response.getBody().instances;
 
         } catch (Exception e) {
@@ -510,6 +533,30 @@ public class FolioService extends FolioServiceToken {
             System.err.println("Error: FolioService : getHoldingRecordByHoldingId " + e.getMessage());
 
             return null;
+        }
+    }
+
+    public boolean updateInstance(Instance payload) {
+
+        HttpEntity<?> request = new HttpEntity<Object>(payload, getHttpHeaders());
+
+        try {
+
+            String url = AppSystemProperties.FolioURL + "inventory/instances/" + payload.id;
+
+            ResponseEntity<String> responseEntity = restTemplate.exchange(url, HttpMethod.PUT, request, String.class);
+
+            return responseEntity.getStatusCode().toString().equals("204 NO_CONTENT") ? true : false;
+
+        } catch (Exception e) {
+
+            System.out.println("Error update Instance - " + payload.id);
+
+            e.getMessage();
+
+            e.printStackTrace();
+
+            return false;
         }
     }
 
@@ -901,7 +948,7 @@ public class FolioService extends FolioServiceToken {
 
             ArrayList<HoldingsRecord2> pairList = new ArrayList<>();
 
-            System.out.println("totalIterations - " + totalIterations);
+            //System.out.println("totalIterations - " + totalIterations);
 
             // totalIterations = 20;
 
@@ -1014,17 +1061,17 @@ public class FolioService extends FolioServiceToken {
 
                 if (!instance.staffSuppress) {
 
-                    for (Identifier identifier : instance.identifiers) {
-
-                        String originalText = identifier.value;
-
-                        if (originalText.toLowerCase().contains("(ocolc)")
-                                && identifier.identifierTypeId.equals("439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef")) {
-
-                            oclcNumbers.add(originalText.replaceAll("\\D+", ""));
-                        }
-
-                    }
+//                    for (Identifier identifier : instance.identifiers) {
+//
+//                        String originalText = identifier.value;
+//
+//                        if (originalText.toLowerCase().contains("(ocolc)")
+//                                && identifier.identifierTypeId.equals("439bfbae-75bc-4f74-9fc7-b2a2d47ce3ef")) {
+//
+//                            oclcNumbers.add(originalText.replaceAll("\\D+", ""));
+//                        }
+//
+//                    }
                 }
             }
 
@@ -1082,16 +1129,16 @@ public class FolioService extends FolioServiceToken {
 
                     List<String> list = new ArrayList<String>();
 
-                    for (Identifier identifier : instance.identifiers) {
-
-                        String originalText = identifier.value;
-
-                        if (originalText.toLowerCase().contains("(ocolc)")) {
-
-                            list.add(originalText + "#" + originalText.replaceAll("\\D+", ""));
-                        }
-
-                    }
+//                    for (Identifier identifier : instance.identifiers) {
+//
+//                        String originalText = identifier.value;
+//
+//                        if (originalText.toLowerCase().contains("(ocolc)")) {
+//
+//                            list.add(originalText + "#" + originalText.replaceAll("\\D+", ""));
+//                        }
+//
+//                    }
 
                     map.put(instance.id, list);
 

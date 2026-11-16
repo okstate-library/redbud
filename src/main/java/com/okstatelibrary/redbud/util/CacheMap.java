@@ -51,6 +51,8 @@ public class CacheMap {
 
 	public static final String process_Change_Item_Location_Process = "Change_Item_Location_Process";
 
+	public static final String process_Update_Instance_Statistical_Code = "Update_Instance_Statistical_Code";
+
 	public static final String process_User_Notes_Populates = "Process_User_Notes_Populates";
 	
 	public static final String process_User_Notes_Daily_Populates = "Process_User_Notes_Daily_Populates";

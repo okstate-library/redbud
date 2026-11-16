@@ -96,15 +96,15 @@ public class AlmaLoanCountUpdateProcess extends MainProcess {
 
 												Instance specficIstance = instances.get(0);
 
-												if (specficIstance.publication.size() > 0) {
-													circulationLog.setPublishYear(
-															specficIstance.publication.get(0).dateOfPublication);
-												}
+//												if (specficIstance.publication.size() > 0) {
+////													circulationLog.setPublishYear(
+////															specficIstance.publication.get(0).dateOfPublication);
+//												}
 
-												if (specficIstance.editions.size() > 0) {
-													circulationLog
-															.setEdition(String.join(" ", specficIstance.editions));
-												}
+//												if (specficIstance.editions.size() > 0) {
+//													circulationLog
+//															.setEdition(String.join(" ", specficIstance.editions));
+//												}
 
 											}
 
@@ -141,15 +141,15 @@ public class AlmaLoanCountUpdateProcess extends MainProcess {
 
 												Instance specficIstance = instances.get(0);
 
-												if (specficIstance.publication.size() > 0) {
-													circulationLog.setPublishYear(
-															specficIstance.publication.get(0).dateOfPublication);
-												}
-
-												if (specficIstance.editions.size() > 0) {
-													circulationLog
-															.setEdition(String.join(" ", specficIstance.editions));
-												}
+//												if (specficIstance.publication.size() > 0) {
+//													circulationLog.setPublishYear(
+//															specficIstance.publication.get(0).dateOfPublication);
+//												}
+//
+//												if (specficIstance.editions.size() > 0) {
+//													circulationLog
+//															.setEdition(String.join(" ", specficIstance.editions));
+//												}
 
 											}
 

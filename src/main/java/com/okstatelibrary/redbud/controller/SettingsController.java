@@ -1462,4 +1462,59 @@ public class SettingsController {
 
 		return "operations";
 	}
+
+
+	@GetMapping("/updateStatisticalCodeProcess")
+	public String updateStatisticalCodeProcess(Principal principal, Model model) {
+
+		System.out.println("Running updateStatisticalCodeProcess");
+
+		User user = userService.findByUsername(principal.getName());
+
+		model.addAttribute("user", user);
+
+		try {
+
+			Thread myThread = new Thread(new Runnable() {
+
+				public void run() {
+
+					CacheMap.set(CacheMap.process_Update_Instance_Statistical_Code, CacheMap.running);
+
+					model.addAttribute(CacheMap.process_Update_Instance_Statistical_Code, CacheMap.running);
+
+					StatisticalCodeUpdateProcess oProcess = new StatisticalCodeUpdateProcess();
+
+					try {
+
+						oProcess.manipulate(institutionService, campusService, libraryService, locationService,
+								servicePointService, circulationLogService);
+
+						CacheMap.set(CacheMap.process_Update_Instance_Statistical_Code, CacheMap.idle);
+
+					} catch (RestClientException | IOException e) {
+
+						CacheMap.set(CacheMap.process_Update_Instance_Statistical_Code,
+								CacheMap.error + e.getMessage());
+
+						e.printStackTrace();
+					}
+
+				}
+			});
+
+			myThread.start();
+
+			model.addAttribute(CacheMap.process_Update_Instance_Statistical_Code,
+					CacheMap.get(CacheMap.process_Update_Instance_Statistical_Code));
+
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+
+			LOG.error(e1.getMessage());
+		}
+
+		return "operations";
+	}
 }
